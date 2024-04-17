@@ -12,19 +12,4 @@ public partial class Main : Node
     public override void _Process(double delta)
     {
     }
-
-    public void OnQuitButtonFocusExited()
-    {
-        GD.Print($"{Name}.OnQuitButtonFocusExited");
-    }
-
-    public void OnQuitButtonPressed()
-    {
-        GD.Print($"{Name}.OnQuitButtonPressed");
-    }
-
-    public void OnQuitButtonToggled(bool isOn)
-    {
-        GD.Print($"{Name}.OnQuitButtonToggled={isOn}");
-    }
 }

@@ -5,7 +5,7 @@ public partial class sms_menu : state_machine_state
 {
     public override void EnterState()
     {
-        GetTree().Paused = true;
+        GetTree().Paused = false;
     }
 
     public override void Update(double delta)
