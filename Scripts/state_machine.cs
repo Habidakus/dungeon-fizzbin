@@ -77,5 +77,5 @@ public partial class state_machine : Node
 		{
 			throw new Exception("state machine has no parent");
 		}
-	}
+    }
 }

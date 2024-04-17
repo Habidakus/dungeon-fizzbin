@@ -1,115 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://cyg6udbgcsgle"]
+[gd_scene load_steps=7 format=3 uid="uid://cyg6udbgcsgle"]
 
 [ext_resource type="PackedScene" uid="uid://xk13m276r8fe" path="res://Scenes/state_machine.tscn" id="1_cfnxq"]
+[ext_resource type="Script" path="res://Scripts/Main.cs" id="1_rrlci"]
+[ext_resource type="PackedScene" uid="uid://blunstfg1u5v7" path="res://Scenes/hud.tscn" id="2_btoq2"]
 [ext_resource type="PackedScene" uid="uid://c6bmnvbmqyo61" path="res://Scenes/state_machine_state.tscn" id="2_sdobx"]
 [ext_resource type="Script" path="res://Scripts/States/sms_start_up.cs" id="3_463al"]
 [ext_resource type="Script" path="res://Scripts/States/sms_menu.cs" id="4_rls27"]
-[ext_resource type="Script" path="res://Scripts/HUD.cs" id="5_r1xw5"]
 
 [node name="Main" type="Node"]
+script = ExtResource("1_rrlci")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" parent="." instance=ExtResource("2_btoq2")]
 unique_name_in_owner = true
-script = ExtResource("5_r1xw5")
-
-[node name="TextureRect" type="TextureRect" parent="HUD"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TitlePage" type="Control" parent="HUD"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="HUD/TitlePage"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/TitlePage/MarginContainer"]
-layout_mode = 2
-
-[node name="padding2" type="Label" parent="HUD/TitlePage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="RichTextLabel" type="Label" parent="HUD/TitlePage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 72
-text = "Fantasy Fizzbin
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="padding" type="Label" parent="HUD/TitlePage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="MenuPage" type="Control" parent="HUD"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-
-[node name="MarginContainer" type="MarginContainer" parent="HUD/MenuPage"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 500
-theme_override_constants/margin_top = 100
-theme_override_constants/margin_right = 500
-theme_override_constants/margin_bottom = 100
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MenuPage/MarginContainer"]
-layout_mode = 2
-
-[node name="PlayButton" type="Button" parent="HUD/MenuPage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Play"
-
-[node name="padding" type="Label" parent="HUD/MenuPage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="QuitButton" type="Button" parent="HUD/MenuPage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Quit
-"
 
 [node name="StateMachine" parent="." instance=ExtResource("1_cfnxq")]
 unique_name_in_owner = true
@@ -119,9 +21,3 @@ script = ExtResource("3_463al")
 
 [node name="Menu" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("4_rls27")
-
-[connection signal="button_down" from="HUD/MenuPage/MarginContainer/VBoxContainer/QuitButton" to="HUD" method="_on_quit_button_pressed"]
-[connection signal="button_up" from="HUD/MenuPage/MarginContainer/VBoxContainer/QuitButton" to="HUD" method="_on_quit_button_pressed"]
-[connection signal="focus_entered" from="HUD/MenuPage/MarginContainer/VBoxContainer/QuitButton" to="HUD" method="_on_quit_button_focus_entered"]
-[connection signal="pressed" from="HUD/MenuPage/MarginContainer/VBoxContainer/QuitButton" to="HUD" method="_on_quit_button_pressed"]
-[connection signal="toggled" from="HUD/MenuPage/MarginContainer/VBoxContainer/QuitButton" to="HUD" method="OnQuitButtonToggled" flags=3]
