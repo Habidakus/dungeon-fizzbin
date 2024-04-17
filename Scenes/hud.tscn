@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=2 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
-[ext_resource type="Script" path="res://Scripts/MenuButton.cs" id="2_pih26"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_yllrm")
@@ -111,7 +110,6 @@ mouse_filter = 1
 theme_override_font_sizes/font_size = 32
 text = "Quit
 "
-script = ExtResource("2_pih26")
 
 [connection signal="pressed" from="MenuPage/MarginContainer/VBoxContainer/PlayButton" to="." method="OnPlayPressed"]
 [connection signal="pressed" from="MenuPage/MarginContainer/VBoxContainer/QuitButton" to="." method="OnQuitButtonPressed"]

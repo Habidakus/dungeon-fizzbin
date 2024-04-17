@@ -8,7 +8,7 @@ public partial class sms_start_up : state_machine_state
 
     public override void EnterState()
     {
-        GetTree().Paused = true;
+        //GetTree().Paused = true;
         _countDown = 2;
     }
 

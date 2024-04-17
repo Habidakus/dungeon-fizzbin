@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://cyg6udbgcsgle"]
+[gd_scene load_steps=8 format=3 uid="uid://cyg6udbgcsgle"]
 
 [ext_resource type="PackedScene" uid="uid://xk13m276r8fe" path="res://Scenes/state_machine.tscn" id="1_cfnxq"]
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_rrlci"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c6bmnvbmqyo61" path="res://Scenes/state_machine_state.tscn" id="2_sdobx"]
 [ext_resource type="Script" path="res://Scripts/States/sms_start_up.cs" id="3_463al"]
 [ext_resource type="Script" path="res://Scripts/States/sms_menu.cs" id="4_rls27"]
+[ext_resource type="Script" path="res://Scripts/States/sms_start_play.cs" id="7_op5e6"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_rrlci")
@@ -21,3 +22,6 @@ script = ExtResource("3_463al")
 
 [node name="Menu" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("4_rls27")
+
+[node name="Play" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("7_op5e6")

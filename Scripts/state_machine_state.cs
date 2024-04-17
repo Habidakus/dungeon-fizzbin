@@ -20,6 +20,11 @@ public partial class state_machine_state : Node
         return GetStateMachine().GetHUD();
     }
 
+    protected Main GetMainNode()
+    {
+        return GetStateMachine().GetMainNode();
+    }
+
     protected state_machine GetStateMachine()
     {
         if (GetParent() is state_machine sm)
@@ -27,6 +32,6 @@ public partial class state_machine_state : Node
             return sm;
         }
 
-        throw new Exception($"sms_start_up {this.Name} is not a child of a state machine");
+        throw new Exception($"{this.Name} is not a child of a state machine");
     }
 }

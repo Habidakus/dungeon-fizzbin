@@ -36,6 +36,8 @@ public partial class HUD : CanvasLayer
             case "Menu":
                 MenuPage.Show();
                 break;
+            case "Play":
+                break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
         }
@@ -51,6 +53,8 @@ public partial class HUD : CanvasLayer
             case "Menu":
                 MenuPage.Hide();
                 break;
+            case "Play":
+                break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
         }
@@ -63,6 +67,9 @@ public partial class HUD : CanvasLayer
 
     public void OnPlayPressed()
     {
-        GD.Print($"{Name}.OnPlayPressed()");
+        if (GetParent() is Main mainNode)
+        {
+            mainNode.GetStateMachine().SwitchState("Play");
+        }
     }
 }

@@ -53,29 +53,36 @@ public partial class state_machine : Node
         _current_state.EnterState();
     }
 
-    public HUD GetHUD()
+	public Main GetMainNode()
 	{
-		if (GetParent() is Node mainNode)
+        if (GetParent() is Main mainNode)
+        {
+			return mainNode;
+        }
+        else
+        {
+            throw new Exception($"{Name} has no Main parent");
+        }
+    }
+
+	public HUD GetHUD()
+	{
+		Main mainNode = GetMainNode();
+        if (mainNode.FindChild("HUD") is HUD hud)
 		{
-			if (mainNode.FindChild("HUD") is HUD hud)
-			{
-				return hud;
-			}
-			else
-			{
-				StringBuilder sb = new StringBuilder();
-				foreach (var node in mainNode.GetChildren())
-				{
-					if (sb.Length > 0)
-						sb.Append(", ");
-					sb.Append(node.Name);
-				}
-				throw new Exception($"state machine parent {mainNode.Name} has no child %HUD. Children are: {sb.ToString()}");
-			}
+			return hud;
 		}
 		else
 		{
-			throw new Exception("state machine has no parent");
+			StringBuilder sb = new StringBuilder();
+			foreach (var node in mainNode.GetChildren())
+			{
+				if (sb.Length > 0)
+					sb.Append(", ");
+				sb.Append(node.Name);
+			}
+
+			throw new Exception($"state machine parent {mainNode.Name} has no child HUD. Children are: {sb.ToString()}");
 		}
-    }
+	}
 }

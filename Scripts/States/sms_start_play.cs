@@ -1,17 +1,18 @@
 using Godot;
 using System;
 
-public partial class sms_menu : state_machine_state
+#nullable enable
+
+public partial class sms_start_play : state_machine_state
 {
     public override void EnterState()
     {
-        //GetTree().Paused = false;
+        //GetTree().Paused = true;
+        GetMainNode().StartFreshDeal();
     }
 
     public override void Update(double delta)
     {
-        //GD.Print($"Menu update {delta}");
-        //throw new Exception("no printf?");
     }
 
     public override void ExitState()
