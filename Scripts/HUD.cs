@@ -1,10 +1,12 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class HUD : CanvasLayer
 {
 	private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
+    private Control PlayPage { get { return GetChildControl("PlayPage"); } }
 
     private Control GetChildControl(string name)
 	{
@@ -19,6 +21,7 @@ public partial class HUD : CanvasLayer
     {
         TitlePage.Hide();
         MenuPage.Hide();
+        PlayPage.Hide();
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -37,6 +40,7 @@ public partial class HUD : CanvasLayer
                 MenuPage.Show();
                 break;
             case "Play":
+                PlayPage.Show();
                 break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
@@ -54,6 +58,7 @@ public partial class HUD : CanvasLayer
                 MenuPage.Hide();
                 break;
             case "Play":
+                PlayPage.Hide();
                 break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
@@ -72,4 +77,21 @@ public partial class HUD : CanvasLayer
             mainNode.GetStateMachine().SwitchState("Play");
         }
     }
+
+    internal void SetVisibleHand(Hand hand)
+    {
+        if (FindChild($"Hand{hand.PositionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.Update(hand);
+        }
+    }
+
+    internal void SetHandDiscards(Hand hand, List<Card> discards)
+    {
+        if (FindChild($"Hand{hand.PositionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.SetDiscards(discards);
+        }
+    }
+
 }

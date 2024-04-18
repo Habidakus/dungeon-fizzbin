@@ -1,11 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=3 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
+[ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_yllrm")
 
 [node name="TextureRect" type="TextureRect" parent="."]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -61,6 +63,30 @@ text = "
 "
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="PlayPage" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Hand0" parent="PlayPage" instance=ExtResource("2_ihxo0")]
+position = Vector2(576, 486)
+
+[node name="Hand1" parent="PlayPage" instance=ExtResource("2_ihxo0")]
+position = Vector2(230, 324)
+
+[node name="Hand2" parent="PlayPage" instance=ExtResource("2_ihxo0")]
+position = Vector2(288, 162)
+
+[node name="Hand3" parent="PlayPage" instance=ExtResource("2_ihxo0")]
+position = Vector2(864, 162)
+
+[node name="Hand4" parent="PlayPage" instance=ExtResource("2_ihxo0")]
+position = Vector2(922, 324)
 
 [node name="MenuPage" type="Control" parent="."]
 visible = false
