@@ -1,0 +1,4 @@
+16th initial state machine & hud
+17th initial work on deck, hands, and discards
+18th (half) visible hands, sample if potential hand too large
+19th (half) aggregate worth
