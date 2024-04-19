@@ -1,10 +1,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using static Godot.OpenXRHand;
 
 #nullable enable
 
@@ -27,7 +25,123 @@ public partial class Main : Node
     {
     }
 
-    private void Test()
+    private void Test(Random rnd)
+    {
+        Player player = new Player(0);
+        
+        Suit suitA = Suit.DefaultSuits[0];
+        Suit suitB = Suit.DefaultSuits[1];
+        Suit suitC = Suit.DefaultSuits[2];
+        Suit suitD = Suit.DefaultSuits[3];
+
+        List<Suit> suits = new List<Suit>()
+        {
+            suitA, suitB, suitC, suitD
+        };
+
+        Rank rank2 = Rank.DefaultRanks[0];
+        Rank rank3 = Rank.DefaultRanks[1];
+        Rank rank4 = Rank.DefaultRanks[2];
+        Rank rank5 = Rank.DefaultRanks[3];
+        Rank rank6 = Rank.DefaultRanks[4];
+        Rank rank7 = Rank.DefaultRanks[5];
+        Rank rank8 = Rank.DefaultRanks[6];
+        Rank rank9 = Rank.DefaultRanks[7];
+        Rank rank10 = Rank.DefaultRanks[8];
+        Rank rankJ = Rank.DefaultRanks[9];
+        Rank rankQ = Rank.DefaultRanks[10];
+        Rank rankK = Rank.DefaultRanks[11];
+        Rank rankA = Rank.DefaultRanks[12];
+
+        List<Rank> ranks = new List<Rank>()
+        {
+            rank2,
+            rank3,
+            rank4,
+            rank5,
+            rank6,
+            rank7,
+            rank8,
+            rank9,
+            rank10,
+            rankJ,
+            rankQ,
+            rankK,
+            rankA,
+        };
+
+        Rank.ExtractMinAndMax(ranks, out int minRank, out int maxRank);
+
+        { // A 9 4 3 2
+            Hand hand = new Hand(player);
+
+            Card cardAce = new Card(suitA, rankA);
+            Card cardNine = new Card(suitB, rank9);
+            Card cardFour = new Card(suitC, rank4);
+            Card cardThree = new Card(suitD, rank3);
+            Card cardTwo = new Card(suitA, rank2);
+            hand.AddCard(cardAce);
+            hand.AddCard(cardNine);
+            hand.AddCard(cardFour);
+            hand.AddCard(cardThree);
+            hand.AddCard(cardTwo);
+
+            List<Card> availableCards = new List<Card>();
+            foreach(Rank rank in ranks)
+            {
+                foreach(Suit suit in suits)
+                {
+                    Card c = new Card(suit, rank);
+                    if (c.CompareTo(cardAce) != 0 &&
+                        c.CompareTo(cardNine) != 0 &&
+                        c.CompareTo(cardFour) != 0 &&
+                        c.CompareTo(cardThree) != 0 &&
+                        c.CompareTo(cardTwo) != 0)
+                    {
+                        availableCards.Add(c);
+                    }
+                }
+            }
+
+            List<Tuple<Hand, Card, Card>> sortedList = new List<Tuple<Hand, Card, Card>>();
+            foreach (Card discardCard in new List<Card>() { cardNine, cardTwo })
+            {
+                foreach (Card replacement in availableCards)
+                {
+                    Hand potentialHand = hand.CloneWithDiscard(discardCard, replacement);
+                    potentialHand.ComputeBestScore(minRank, maxRank);
+                    sortedList.Add(Tuple.Create(potentialHand, discardCard, replacement));
+                }
+            }
+
+            sortedList.Sort((a,b) => {
+                return a.Item1.CompareTo(b.Item1);
+            });
+
+            //foreach (var entry in sortedList)
+            //{
+            //    GD.Print($"Replacing {entry.Item2} for {entry.Item1}: {entry.Item1._bestScore.GetDesc()}");
+            //}
+
+            for (int i = 0; i < 5; ++i)
+            {
+                Tuple<AggregateValue, List<Card>> discard = hand.SelectDiscards(i, availableCards, minRank, maxRank, rnd);
+                if (discard.Item1._handValue != null)
+                {
+                    StringBuilder cardsAsText = new StringBuilder();
+                    foreach (Card card in discard.Item2)
+                    {
+                        if (cardsAsText.Length > 0)
+                            cardsAsText.Append(", ");
+                        cardsAsText.Append(card.ToString());
+                    }
+                    GD.Print($"Discarding {i}: trying for {discard.Item1._handValue.GetDesc()} by discarding {cardsAsText}");
+                }
+            }
+        }
+    }
+
+    private void Test1()
     {
         Player player = new Player(0);
         List<Hand> hands = new List<Hand>();
@@ -170,12 +284,17 @@ public partial class Main : Node
 
     internal void StartFreshDeal()
     {
-        _deal = new Deal(_players, new Random((int)DateTime.Now.Ticks));
+        Random rnd = new Random((int)DateTime.Now.Ticks);
+
+        //Test(rnd);
+
+        _deal = new Deal(_players, rnd);
         _deal.UpdateHUD(GetHUD());
 
-        for (int i = 1; i< _players.Count; i++)
-            _deal.SelectDiscards(GetHUD(), _players[i], 0, 2);
-        //Test();
+        var start = DateTime.Now;
+        for (int i = 0; i< _players.Count; i++)
+            _deal.SelectDiscards(GetHUD(), _players[i], 0, 3, rnd);
+        GD.Print($"Processing took {(DateTime.Now - start).TotalSeconds} seconds");
     }
 
     internal HUD GetHUD()
@@ -199,26 +318,66 @@ public partial class Main : Node
     }
 }
 
+class AggregateValue
+{
+    readonly Player _player;
+    internal HandValue? _handValue = null;
+
+    public AggregateValue(Player player, Hand hand)
+    {
+        _player = player;
+        Add(hand._bestScore);
+    }
+
+    internal AggregateValue(Player player)
+    {
+        _player = player;
+    }
+
+    internal void Add(SortedSet<Hand> sortedHands)
+    {
+        // Best values are at the back
+        int i = sortedHands.Count * 11 / 12;
+        Add(sortedHands.ElementAt(i)._bestScore);
+    }
+
+    internal void Add(SortedSet<HandValue> sortedValues)
+    {
+        // Best values are at the back
+        int i = sortedValues.Count * 11 / 12;
+        Add(sortedValues.ElementAt(i));
+    }
+
+    private void Add(HandValue? handValue)
+    {
+        if (_handValue != null)
+            throw new Exception("Clobbering AggregateValue");
+
+        _handValue = handValue;
+    }
+
+    internal bool UpdateIfBetter(AggregateValue other)
+    {
+        if (_handValue == null && other._handValue == null)
+            return false;
+        if (other._handValue == null)
+            return false;
+        if (_handValue == null || _handValue.CompareTo(other._handValue) < 0)
+        {
+            _handValue = other._handValue;
+            return true;
+        }
+
+        return false;
+    }
+}
+
 class Player
 {
     internal int PositionID { get; private set; }
     internal Player(int positionID)
     {
-        PositionID = positionID; 
-    }
-
-    internal Score? ExtractExpectedScore(SortedSet<Score> scoreList)
-    {
-        if (scoreList.Count == 0)
-            return null;
-        if (scoreList.Count == 1)
-            return scoreList.First();
-
-        // #TODO: Reasonable Optimist
-        int index = scoreList.Count * 10 / 11;
-        return scoreList.ElementAt(index);
-
-        //GD.Print($"Discarding {discardCard}: Best is {scoreList.Last().GetDesc()}  Worst is {scoreList.First().GetDesc()}  Player Expects {ourScore.GetDesc()}");
+        PositionID = positionID;
     }
 }
 
@@ -373,9 +532,12 @@ class Rank : IComparable<Rank>
         maxRank = int.MinValue;
         foreach(Rank rank in ranks)
         {
-            if (minRank < rank._strength)
+            if (rank.Wraps)
+                continue;
+
+            if (minRank > rank._strength)
                 minRank = rank._strength;
-            if (maxRank > rank._strength)
+            if (maxRank < rank._strength)
                 maxRank = rank._strength;
         }
     }
@@ -413,7 +575,7 @@ class Card : IComparable<Card>
     }
 }
 
-class Score : IComparable<Score>
+class HandValue : IComparable<HandValue>
 {
     internal enum HandRanking
     {
@@ -459,14 +621,14 @@ class Score : IComparable<Score>
         }
     }
 
-    internal Score(List<Card> cards)
+    internal HandValue(List<Card> cards)
     {
         _handRanking = HandRanking.HighCard;
         _highCard = cards.First();
         _fractionalValue = ComputeFractionalValue(cards);
     }
 
-    internal Score(HandRanking ranking, List<Card> cards)
+    internal HandValue(HandRanking ranking, List<Card> cards)
     {
         _handRanking = ranking;
         _highCard = cards.First();
@@ -490,7 +652,7 @@ class Score : IComparable<Score>
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public int CompareTo(Score? other)
+    public int CompareTo(HandValue? other)
     {
         if (other == null)
             return -1;
@@ -512,7 +674,7 @@ class Hand : IComparable<Hand>
 {
     readonly internal Player _player;
     internal List<Card> _cards = new List<Card>();
-    internal Score? _bestScore = null;
+    internal HandValue? _bestScore = null;
 
     public int PositionID { get { return _player.PositionID; } }
 
@@ -534,6 +696,11 @@ class Hand : IComparable<Hand>
 
     internal bool IsStraight(int minRank, int maxRank)
     {
+        if (minRank >= maxRank)
+        {
+            throw new Exception("Min and Max rank not accurately calculated");
+        }
+
         List<Card> cardsInOrder = _cards.OrderBy(a => a).ToList();
         bool retVal = true;
         for (int i = 1; retVal && i < cardsInOrder.Count; ++i)
@@ -583,7 +750,7 @@ class Hand : IComparable<Hand>
     {
         List<Card> cardsSortedHighestToLowest = _cards.OrderByDescending(a => a).ToList();
         Card highCard = cardsSortedHighestToLowest.First();
-        _bestScore = new Score(cardsSortedHighestToLowest);
+        _bestScore = new HandValue(cardsSortedHighestToLowest);
         bool isStraight = IsStraight(minRank, maxRank);
         bool isFlush = IsFlush;
         if (isStraight)
@@ -592,18 +759,18 @@ class Hand : IComparable<Hand>
             {
                 Card lowCard = _cards.OrderBy(a => a).First();
                 if (lowCard.Rank.IsTenOrHigher())
-                    _bestScore = new Score(Score.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                    _bestScore = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
                 else
-                    _bestScore = new Score(Score.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                    _bestScore = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
             }
             else
             {
-                _bestScore = new Score(Score.HandRanking.Straight, cardsSortedHighestToLowest);
+                _bestScore = new HandValue(HandValue.HandRanking.Straight, cardsSortedHighestToLowest);
             }
         }
         else if (isFlush)
         {
-            _bestScore = new Score(Score.HandRanking.Flush, cardsSortedHighestToLowest);
+            _bestScore = new HandValue(HandValue.HandRanking.Flush, cardsSortedHighestToLowest);
         }
 
         ExtractOfAKind(_cards, out List<Card> ofAKind, out List<Card> remainder);
@@ -611,16 +778,16 @@ class Hand : IComparable<Hand>
         {
             ofAKind.Sort();
             ofAKind.Reverse();
-            Score? possiblyBetter = null;
+            HandValue? possiblyBetter = null;
             if (ofAKind.Count == 5)
             {
-                possiblyBetter = new Score(Score.HandRanking.FiveOfAKind, ofAKind);
+                possiblyBetter = new HandValue(HandValue.HandRanking.FiveOfAKind, ofAKind);
             }
             else if (ofAKind.Count == 4)
             {
                 List<Card> orderOfImportance = new List<Card>(ofAKind);
                 orderOfImportance.AddRange(remainder.OrderByDescending(a => a).ToList());
-                possiblyBetter = new Score(Score.HandRanking.FourOfAKind, orderOfImportance);
+                possiblyBetter = new HandValue(HandValue.HandRanking.FourOfAKind, orderOfImportance);
             }
             else
             {
@@ -634,12 +801,12 @@ class Hand : IComparable<Hand>
                     if (secondOfAKind.Count > 0)
                     {
                         Card remainderHighCard = secondOfAKind.OrderByDescending(a => a).First();
-                        possiblyBetter = new Score(Score.HandRanking.FullHouse, orderOfImportance);
+                        possiblyBetter = new HandValue(HandValue.HandRanking.FullHouse, orderOfImportance);
                     }
                     else
                     {
                         Card remainderHighCard = remainder.OrderByDescending(a => a).First();
-                        possiblyBetter = new Score(Score.HandRanking.ThreeOfAKind, orderOfImportance);
+                        possiblyBetter = new HandValue(HandValue.HandRanking.ThreeOfAKind, orderOfImportance);
                     }
                 }
                 else if (ofAKind.Count == 2)
@@ -647,12 +814,12 @@ class Hand : IComparable<Hand>
                     if (secondOfAKind.Count > 0)
                     {
                         Card remainderHighCard = secondOfAKind.OrderByDescending(a => a).First();
-                        possiblyBetter = new Score(Score.HandRanking.TwoPairs, orderOfImportance);
+                        possiblyBetter = new HandValue(HandValue.HandRanking.TwoPairs, orderOfImportance);
                     }
                     else
                     {
                         Card remainderHighCard = remainder.OrderByDescending(a => a).First();
-                        possiblyBetter = new Score(Score.HandRanking.TwoOfAKind, orderOfImportance);
+                        possiblyBetter = new HandValue(HandValue.HandRanking.TwoOfAKind, orderOfImportance);
                     }
                 }
             }
@@ -665,7 +832,7 @@ class Hand : IComparable<Hand>
                 }
                 else
                 {
-                    if (_bestScore._handRanking == Score.HandRanking.HighCard)
+                    if (_bestScore._handRanking == HandValue.HandRanking.HighCard)
                     {
                         GD.Print($"HighCard better than {possiblyBetter._handRanking}?");
                     }
@@ -782,7 +949,7 @@ class Hand : IComparable<Hand>
         }
     }
 
-    private Hand CloneWithDiscard(Card discardCard, Card replacementCard)
+    internal Hand CloneWithDiscard(Card discardCard, Card replacementCard)
     {
         Hand retVal = new Hand(_player);
         foreach(Card card in _cards)
@@ -796,24 +963,169 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal Tuple<Score?, List<Card>> SelectDiscards(int discards, List<Card> availableCards, int minRank, int maxRank)
+    internal static List<List<int>> GenerateUniqueDiscardSelections(int discards, int min, int max)
     {
         if (discards == 0)
         {
-            if (_bestScore == null)
-                throw new Exception("_bestScore hasn't been computed for SelectDiscards()");
+            throw new Exception("Why are we GenerateUniqueDiscardSelections() with zero discards?");
+        }
 
-            return Tuple.Create(_bestScore, new List<Card>());
+        if (max - min < discards - 1)
+        {
+            throw new Exception($"Asking for more discards than is available (min={min}, max={max}, discards={discards})");
+        }
+
+        List<List<int>> retVal = new List<List<int>>();
+        if (discards == 1)
+        {
+            for (int i = min; i <= max; ++i)
+            {
+                retVal.Add(new List<int>() { i });
+            }
+        }
+        else
+        {
+            for (int i = min; i <= max; ++i)
+            {
+                if (i + discards - 1 <= max)
+                {
+                    foreach (List<int> subIter in GenerateUniqueDiscardSelections(discards - 1, i + 1, max))
+                    {
+                        var a = new List<int>() { i };
+                        a.AddRange(subIter);
+                        retVal.Add(a);
+                    }
+                }
+            }
+        }
+
+        return retVal;
+    }
+
+    private List<Hand> GenerateHands(List<int> discardIndices, List<Card> availableCards, Random rnd)
+    {
+        if (discardIndices.Count == 0)
+            throw new Exception("GenerateHands() with zero discard indicies");
+
+        int multiple = availableCards.Count;
+        int count = 1;
+        for (int i = 0; i < discardIndices.Count; ++i, --multiple)
+            count *= multiple;
+
+        if (count < 9000)
+        {
+            return GenerateAllHands(discardIndices, availableCards);
+        }
+        else
+        {
+            return GenerateSampledHands(discardIndices, availableCards, rnd);
+        }
+    }
+
+    private void GeneratePullIndices(int cardCount, int discardCount, Random rnd, ref List<int> pullIndices)
+    {
+        for (int k = 0; k < discardCount; ++k)
+        {
+            bool matchFound = true;
+            while (matchFound)
+            {
+                matchFound = false;
+                pullIndices[k] = rnd.Next() % cardCount;
+                for (int i = 0; i < k && !matchFound; ++i)
+                {
+                    if (pullIndices[i] == pullIndices[k])
+                        matchFound = true;
+                }
+            }
+        }
+    }
+
+    private List<Hand> GenerateSampledHands(List<int> discardIndices, List<Card> availableCards, Random rnd)
+    {
+        List<Hand> retVal = new List<Hand>();
+        List<int> pullIndices = new List<int>();
+        for(int k = 0; k < discardIndices.Count; ++k)
+            pullIndices.Add(k);
+
+        for (int i = 0; i<5000; ++i)
+        {
+            GeneratePullIndices(availableCards.Count, discardIndices.Count, rnd, ref pullIndices);
+            Hand clone = CloneWithDiscard(_cards[discardIndices[0]], availableCards[pullIndices[0]]);
+            for (int j = 1; j < discardIndices.Count; ++j)
+            {
+                clone._cards[discardIndices[j]] = availableCards[pullIndices[j]];
+            }
+
+            retVal.Add(clone);
+        }
+
+        return retVal;
+    }
+
+    private List<Hand> GenerateAllHands(List<int> discardIndices, List<Card> availableCards)
+    {
+        List<Hand> retVal = new List<Hand>();
+        if (discardIndices.Count == 1)
+        {
+            foreach (Card card in availableCards)
+            {
+                retVal.Add(CloneWithDiscard(_cards[discardIndices[0]], card));
+            }
+        }
+        else
+        {
+            List<int> subIndicies = discardIndices.GetRange(1, discardIndices.Count - 1);
+            foreach (Card card in availableCards)
+            {
+                Hand subHand = CloneWithDiscard(_cards[discardIndices[0]], card);
+                List<Card> remainingCards = availableCards.Where(a => a != card).ToList();
+                retVal.AddRange(subHand.GenerateAllHands(subIndicies, remainingCards));
+            }
+        }
+
+        return retVal;
+    }
+
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(List<int> discardIndices, List<Card> availableCards, int minRank, int maxRank, Random rnd)
+    {
+        if (discardIndices.Count == 0)
+            throw new Exception("SelectDiscards() with zero discard indicies");
+
+        List<Hand> generatedHands = GenerateHands(discardIndices, availableCards, rnd);
+        SortedSet<Hand> sortedHands = new SortedSet<Hand>();
+        foreach (Hand hand in generatedHands)
+        {
+            hand.ComputeBestScore(minRank, maxRank);
+            sortedHands.Add(hand);
+        }
+
+        List<Card> discards = new List<Card>();
+        foreach(int index in discardIndices)
+        {
+            discards.Add(_cards[index]);
+        }
+
+        AggregateValue aggValue = new AggregateValue(_player);
+        aggValue.Add(sortedHands);
+
+        return Tuple.Create(aggValue, discards);
+    }
+
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(int noOfDiscards, List<Card> availableCards, int minRank, int maxRank, Random rnd)
+    {
+        if (noOfDiscards == 0)
+        {
+            return Tuple.Create(new AggregateValue(_player, this), new List<Card>());
         }
 
         List<Card> retVal = new List<Card>();
-        Score? best = null;
+        AggregateValue best = new AggregateValue(_player);
 
-        if (discards == 1)
+        if (noOfDiscards == 1)
         {
             foreach(Card discardCard in _cards)
             {
-                SortedSet<Score> scoreList = new SortedSet<Score>();
+                SortedSet<HandValue> scoreList = new SortedSet<HandValue>();
                 foreach (Card replacement in availableCards)
                 {
                     Hand potentialHand = CloneWithDiscard(discardCard, replacement);
@@ -823,52 +1135,58 @@ class Hand : IComparable<Hand>
 
                 if (scoreList.Count > 0)
                 {
-                    Score? ourScore = _player.ExtractExpectedScore(scoreList);
-                    if (ourScore != null)
+                    AggregateValue aggValue = new AggregateValue(_player);
+                    aggValue.Add(scoreList);
+
+                    if (best.UpdateIfBetter(aggValue))
                     {
-                        if (best == null || ourScore.CompareTo(best) > 0)
-                        {
-                            best = ourScore;
-                            retVal = new List<Card> { discardCard };
-                        }
+                        retVal = new List<Card> { discardCard };
                     }
                 }
             }
-
-            return Tuple.Create(best, retVal);
         }
-
-        // #TODO Implement replacing more than one card
-        return Tuple.Create(best, retVal);
-    }
-
-    internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal)
-    {
-        Rank.ExtractMinAndMax(actualDeal._ranks, out int minRank, out int maxRank);
-        List<Card> availableCards = actualDeal.AvailableCardsFromHandsView(this);
-        List<Card> retVal = new List<Card>();
-        Score? best = null;
-        for (int discards = minDiscards; discards <= maxDiscards; ++discards)
+        else
         {
-            Tuple<Score?, List<Card>> subBest = SelectDiscards(discards, availableCards, minRank, maxRank);
-            if (subBest.Item1 != null)
+            foreach (List<int> iter in GenerateUniqueDiscardSelections(noOfDiscards, 0, 4))
             {
-                if (best == null || best.CompareTo(subBest.Item1) < 0)
+                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, rnd);
+                if (best.UpdateIfBetter(subBest.Item1))
                 {
-                    best = subBest.Item1;
                     retVal = subBest.Item2;
                 }
             }
         }
 
-        //StringBuilder cards = new StringBuilder();
-        //foreach (Card card in retVal)
-        //{
-        //    if (cards.Length > 0)
-        //        cards.Append(" ");
-        //    cards.Append(card.ToString());
-        //}
-        //GD.Print($"{availableCards.Count} cards to pick from for player {_player.PositionID}: Replaces {cards} trying for {best?.GetDesc()}");
+        return Tuple.Create(best!, retVal);
+    }
+
+    internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)
+    {
+        Rank.ExtractMinAndMax(actualDeal._ranks, out int minRank, out int maxRank);
+        List<Card> availableCards = actualDeal.AvailableCardsFromHandsView(this);
+        List<Card> retVal = new List<Card>();
+        AggregateValue best = new AggregateValue(_player);
+        for (int discards = minDiscards; discards <= maxDiscards; ++discards)
+        {
+            Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(discards, availableCards, minRank, maxRank, rnd);
+            if (best.UpdateIfBetter(subBest.Item1))
+            {
+                retVal = subBest.Item2;
+            }
+        }
+
+        if (best._handValue != null)
+        {
+            StringBuilder cardsToText = new StringBuilder();
+            foreach (Card card in retVal)
+            {
+                if (cardsToText.Length > 0)
+                    cardsToText.Append(" ");
+                cardsToText.Append(card.ToString());
+            }
+
+            GD.Print($"Player {_player.PositionID} replaces {cardsToText} trying for {best._handValue.GetDesc()}");
+        }
 
         return retVal;
     }
@@ -1018,10 +1336,10 @@ class Deal
         }
     }
 
-    internal void SelectDiscards(HUD hud, Player player, int minDiscards, int maxDiscards)
+    internal void SelectDiscards(HUD hud, Player player, int minDiscards, int maxDiscards, Random rnd)
     {
         Hand hand = _hands.First(a => a._player == player);
-        List<Card> discards = hand.SelectDiscards(minDiscards, maxDiscards, this);
+        List<Card> discards = hand.SelectDiscards(minDiscards, maxDiscards, this, rnd);
         hud.SetHandDiscards(hand, discards);
     }
 
