@@ -75,16 +75,23 @@ public partial class Main : Node
         { // A 9 4 3 2
             Hand hand = new Hand(player);
 
-            Card cardAce = new Card(suitA, rankA);
+            //Card cardAce = new Card(suitA, rankA);
+            //Card cardFour = new Card(suitC, rank4);
+            //Card cardThree = new Card(suitD, rank3);
+
+            Card cardJack = new Card(suitA, rankJ);
             Card cardNine = new Card(suitB, rank9);
-            Card cardFour = new Card(suitC, rank4);
-            Card cardThree = new Card(suitD, rank3);
-            Card cardTwo = new Card(suitA, rank2);
-            hand.AddCard(cardAce);
+            Card cardSevenA = new Card(suitB, rank7);
+            Card cardSevenB = new Card(suitA, rank7);
+            Card cardFive = new Card(suitC, rank5);
+            hand.AddCard(cardJack);
             hand.AddCard(cardNine);
-            hand.AddCard(cardFour);
-            hand.AddCard(cardThree);
-            hand.AddCard(cardTwo);
+            hand.AddCard(cardSevenA);
+            hand.AddCard(cardSevenB);
+            hand.AddCard(cardFive);
+            hand.ComputeBestScore(minRank, maxRank);
+
+            GD.Print($"Evaluating {hand}");
 
             List<Card> availableCards = new List<Card>();
             foreach(Rank rank in ranks)
@@ -92,51 +99,64 @@ public partial class Main : Node
                 foreach(Suit suit in suits)
                 {
                     Card c = new Card(suit, rank);
-                    if (c.CompareTo(cardAce) != 0 &&
+                    if (c.CompareTo(cardJack) != 0 &&
                         c.CompareTo(cardNine) != 0 &&
-                        c.CompareTo(cardFour) != 0 &&
-                        c.CompareTo(cardThree) != 0 &&
-                        c.CompareTo(cardTwo) != 0)
+                        c.CompareTo(cardSevenA) != 0 &&
+                        c.CompareTo(cardSevenB) != 0 &&
+                        c.CompareTo(cardFive) != 0)
                     {
                         availableCards.Add(c);
                     }
                 }
             }
 
-            List<Tuple<Hand, Card, Card>> sortedList = new List<Tuple<Hand, Card, Card>>();
-            foreach (Card discardCard in new List<Card>() { cardNine, cardTwo })
-            {
-                foreach (Card replacement in availableCards)
-                {
-                    Hand potentialHand = hand.CloneWithDiscard(discardCard, replacement);
-                    potentialHand.ComputeBestScore(minRank, maxRank);
-                    sortedList.Add(Tuple.Create(potentialHand, discardCard, replacement));
-                }
-            }
+            //List<Tuple<Hand, Card, Card>> sortedList = new List<Tuple<Hand, Card, Card>>();
+            //foreach (Card discardCard in new List<Card>() { cardNine, cardTwo })
+            //{
+            //    foreach (Card replacement in availableCards)
+            //    {
+            //        Hand potentialHand = hand.CloneWithDiscard(discardCard, replacement);
+            //        potentialHand.ComputeBestScore(minRank, maxRank);
+            //        sortedList.Add(Tuple.Create(potentialHand, discardCard, replacement));
+            //    }
+            //}
 
-            sortedList.Sort((a,b) => {
-                return a.Item1.CompareTo(b.Item1);
-            });
+            //sortedList.Sort((a,b) => {
+            //    return a.Item1.CompareTo(b.Item1);
+            //});
 
             //foreach (var entry in sortedList)
             //{
-            //    GD.Print($"Replacing {entry.Item2} for {entry.Item1}: {entry.Item1._bestScore.GetDesc()}");
+            //    GD.Print($"Replacing {entry.Item2} for {entry.Item1}: {entry.Item1.GetDesc()}");
             //}
 
-            for (int i = 0; i < 5; ++i)
+            List<Tuple<AggregateValue, string>> choices = new List<Tuple<AggregateValue, string>>();
+            foreach (int i in new List<int>(){ 3, 3, 3, 3})
             {
                 Tuple<AggregateValue, List<Card>> discard = hand.SelectDiscards(i, availableCards, minRank, maxRank, rnd);
-                if (discard.Item1._handValue != null)
+                StringBuilder cardsAsText = new StringBuilder();
+                if (discard.Item2.Count == 0)
                 {
-                    StringBuilder cardsAsText = new StringBuilder();
+                    cardsAsText.Append("nothing");
+                }
+                else
+                {
                     foreach (Card card in discard.Item2)
                     {
                         if (cardsAsText.Length > 0)
                             cardsAsText.Append(", ");
                         cardsAsText.Append(card.ToString());
                     }
-                    GD.Print($"Discarding {i}: trying for {discard.Item1._handValue.GetDesc()} by discarding {cardsAsText}");
                 }
+
+                choices.Add(Tuple.Create(discard.Item1, $"Discarding {i} cards: trying for {discard.Item1.GetDesc()} by discarding {cardsAsText}"));
+            }
+
+            choices.Sort((a,b) => a.Item1.CompareTo(b.Item1));
+            choices.Reverse();
+            foreach (var choice in choices)
+            {
+                GD.Print(choice.Item2);
             }
         }
     }
@@ -286,7 +306,7 @@ public partial class Main : Node
     {
         Random rnd = new Random((int)DateTime.Now.Ticks);
 
-        //Test(rnd);
+        Test(rnd);
 
         _deal = new Deal(_players, rnd);
         _deal.UpdateHUD(GetHUD());
@@ -318,53 +338,156 @@ public partial class Main : Node
     }
 }
 
-class AggregateValue
+class AggregateValue : IComparable<AggregateValue>
 {
     readonly Player _player;
-    internal HandValue? _handValue = null;
+    internal HandValue? _hopefulValue = null;
+    internal double _normalizedWealth = -1;
+    internal Dictionary<HandValue.HandRanking, Tuple<double, int>> _normalizedByRank = new Dictionary<HandValue.HandRanking, Tuple<double, int>>();
 
     public AggregateValue(Player player, Hand hand)
     {
         _player = player;
-        Add(hand._bestScore);
+        SetHopefulValue(hand._bestScore);
+
+        _normalizedWealth = 0;
+        if (hand._bestScore == null)
+            throw new Exception("Initializing with scoreless hand");
+        AddAggreageWorth(hand._bestScore, 1);
     }
 
     internal AggregateValue(Player player)
     {
         _player = player;
+        _normalizedWealth = -2;
+    }
+
+    internal string DictText
+    {
+        get
+        {
+            StringBuilder sb = new  StringBuilder();
+            sb.Append("[");
+            bool first = true;
+            foreach (var pair in _normalizedByRank)
+            {
+                if (!first)
+                    sb.Append(", ");
+                first = false;
+                sb.Append($"{pair.Key} {pair.Value.Item1:F2} {pair.Value.Item2}");
+            }
+            sb.Append("]");
+            return sb.ToString();
+        }
+    }
+
+    internal string GetDesc()
+    {
+        if (_hopefulValue != null)
+            return $"{_hopefulValue.GetDesc()} ${_normalizedWealth:F2} {DictText}";
+        else
+            return $"() ${_normalizedWealth:F2} {DictText}";
     }
 
     internal void Add(SortedSet<Hand> sortedHands)
     {
+        if (_normalizedWealth >= 0)
+            throw new Exception($"Clobbering already set normalized wealth");
+
+        _normalizedWealth = 0;
+
         // Best values are at the back
         int i = sortedHands.Count * 11 / 12;
-        Add(sortedHands.ElementAt(i)._bestScore);
+        SetHopefulValue(sortedHands.ElementAt(i)._bestScore);
+        foreach(Hand hand in sortedHands)
+        {
+            AddAggreageWorth(hand._bestScore, sortedHands.Count);
+        }
     }
 
     internal void Add(SortedSet<HandValue> sortedValues)
     {
+        if (_normalizedWealth >= 0)
+            throw new Exception($"Clobbering already set normalized wealth");
+
+        _normalizedWealth = 0;
+
         // Best values are at the back
         int i = sortedValues.Count * 11 / 12;
-        Add(sortedValues.ElementAt(i));
+        SetHopefulValue(sortedValues.ElementAt(i));
+        foreach (HandValue value in sortedValues)
+        {
+            AddAggreageWorth(value, sortedValues.Count);
+        }
     }
 
-    private void Add(HandValue? handValue)
+    private void SetHopefulValue(HandValue? handValue)
     {
-        if (_handValue != null)
+        if (_hopefulValue != null)
             throw new Exception("Clobbering AggregateValue");
 
-        _handValue = handValue;
+        _hopefulValue = handValue;
+    }
+
+    private void AddAggreageWorth(HandValue? handValue, int setSize)
+    {
+        if (handValue == null)
+            return;
+
+        double highCardValue = (handValue._highCard.FractionalValue / Card.MaxFractionalValue);
+        double totalValue = handValue.Worth + highCardValue;
+        _normalizedWealth += totalValue / (double) setSize;
+
+        if (_normalizedByRank.TryGetValue(handValue._handRanking, out Tuple<double, int>? value))
+        {
+            _normalizedByRank[handValue._handRanking] = Tuple.Create((totalValue / (double) setSize) + value.Item1, value.Item2 + 1);
+        }
+        else
+        {
+            _normalizedByRank[handValue._handRanking] = Tuple.Create((totalValue / (double)setSize), 1);
+        }
+    }
+
+    public int CompareTo(AggregateValue? other)
+    {
+        if (other == null)
+            return 1;
+        if (_normalizedWealth <= 0)
+        {
+            throw new Exception($"Aggregate value [{GetDesc()}] doesn't have normalized wealth set");
+        }
+        if (other._normalizedWealth <= 0)
+        {
+            throw new Exception($"Aggregate value [{other.GetDesc()}] doesn't have normalized wealth set");
+        }
+
+        if (_normalizedWealth != other._normalizedWealth)
+        {
+            return _normalizedWealth.CompareTo(other._normalizedWealth);
+        }
+
+        return _hopefulValue.CompareTo(other._hopefulValue);
+
+        //if (_hopefulValue == null && other._hopefulValue == null)
+        //    return false;
+        //if (other._hopefulValue == null)
+        //    return false;
+        //if (_hopefulValue == null || _hopefulValue.CompareTo(other._hopefulValue) < 0)
+        //{
+        //    _hopefulValue = other._hopefulValue;
+        //    return true;
+        //}
+
+        //return false;
     }
 
     internal bool UpdateIfBetter(AggregateValue other)
     {
-        if (_handValue == null && other._handValue == null)
-            return false;
-        if (other._handValue == null)
-            return false;
-        if (_handValue == null || _handValue.CompareTo(other._handValue) < 0)
+        if (_normalizedWealth < other._normalizedWealth)
         {
-            _handValue = other._handValue;
+            _hopefulValue = other._hopefulValue;
+            _normalizedWealth = other._normalizedWealth;
+            _normalizedByRank = other._normalizedByRank;
             return true;
         }
 
@@ -579,26 +702,27 @@ class HandValue : IComparable<HandValue>
 {
     internal enum HandRanking
     {
-        FiveOfAKind, // Only possible with more suits
-        RoyalFlush,
-        StraightFlush,
-        FourOfAKind,
-        FullHouse,
-        Flush, // LESS COMMON with more suits
-        Straight,
-        ThreeOfAKind,
-        TwoPairs,
-        TwoOfAKind,
-        HighCard,
+        FiveOfAKind = 3898434 * 4, // Only possible with more suits
+        RoyalFlush = 3898434,
+        StraightFlush = 433154,
+        FourOfAKind = 24984,
+        FullHouse = 4158,
+        Flush = 3047, // LESS COMMON with more suits
+        Straight = 1523,
+        ThreeOfAKind = 278,
+        TwoPairs = 120,
+        TwoOfAKind = 8,
+        HighCard = 6, // Maybe just lower this?
     };
 
     internal HandRanking _handRanking;
     internal Card _highCard;
     internal Double _fractionalValue;
+    internal double Worth { get { return (double)_handRanking; } }
 
     internal string GetDesc()
     {
-        return $"{ToString()} ({_highCard}) ({_fractionalValue})";
+        return $"{ToString()} ({_highCard}) ({_fractionalValue:F2})";
     }
 
     public override string ToString()
@@ -659,7 +783,7 @@ class HandValue : IComparable<HandValue>
 
         if (_handRanking != other._handRanking)
         {
-            return (_handRanking < other._handRanking) ? 1 : -1;
+            return (_handRanking > other._handRanking) ? 1 : -1;
         }
 
         int comp = _highCard.CompareTo(other._highCard);
@@ -1175,7 +1299,7 @@ class Hand : IComparable<Hand>
             }
         }
 
-        if (best._handValue != null)
+        if (best._hopefulValue != null)
         {
             StringBuilder cardsToText = new StringBuilder();
             foreach (Card card in retVal)
@@ -1185,7 +1309,7 @@ class Hand : IComparable<Hand>
                 cardsToText.Append(card.ToString());
             }
 
-            GD.Print($"Player {_player.PositionID} replaces {cardsToText} trying for {best._handValue.GetDesc()}");
+            GD.Print($"Player {_player.PositionID} replaces {cardsToText} trying for {best.GetDesc()}");
         }
 
         return retVal;
