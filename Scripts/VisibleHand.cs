@@ -15,6 +15,22 @@ public partial class VisibleHand : Node2D
 	{
 	}
 
+    public void OnContainerResized()
+    {
+        if (FindChild("ColorRect") is ColorRect cr)
+        {
+            if (FindChild("Container") is Control container)
+            {
+                cr.Position = container.Position;
+                cr.Size = container.Size;
+            }
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child ColorRect");
+        }
+    }
+
     internal void Update(Hand hand)
     {
 		if (FindChild("Cards") is Label cardsLabel)
