@@ -79,16 +79,11 @@ public partial class Main : Node
             //Card cardFour = new Card(suitC, rank4);
             //Card cardThree = new Card(suitD, rank3);
 
-            Card cardJack = new Card(suitA, rankJ);
-            Card cardNine = new Card(suitB, rank9);
-            Card cardSevenA = new Card(suitB, rank7);
-            Card cardSevenB = new Card(suitA, rank7);
-            Card cardFive = new Card(suitC, rank5);
-            hand.AddCard(cardJack);
-            hand.AddCard(cardNine);
-            hand.AddCard(cardSevenA);
-            hand.AddCard(cardSevenB);
-            hand.AddCard(cardFive);
+            hand.AddCard(new Card(suitA, rankA));
+            hand.AddCard(new Card(suitB, rankA));
+            hand.AddCard(new Card(suitC, rankQ));
+            hand.AddCard(new Card(suitA, rank9));
+            hand.AddCard(new Card(suitA, rank3));
             hand.ComputeBestScore(minRank, maxRank);
 
             GD.Print($"Evaluating {hand}");
@@ -99,11 +94,16 @@ public partial class Main : Node
                 foreach(Suit suit in suits)
                 {
                     Card c = new Card(suit, rank);
-                    if (c.CompareTo(cardJack) != 0 &&
-                        c.CompareTo(cardNine) != 0 &&
-                        c.CompareTo(cardSevenA) != 0 &&
-                        c.CompareTo(cardSevenB) != 0 &&
-                        c.CompareTo(cardFive) != 0)
+                    bool addCard = true;
+                    foreach (Card card in hand._cards)
+                    {
+                        if (c.CompareTo(card) == 0)
+                        {
+                            addCard = false;
+                        }
+                    }
+
+                    if (addCard)
                     {
                         availableCards.Add(c);
                     }
@@ -130,10 +130,12 @@ public partial class Main : Node
             //    GD.Print($"Replacing {entry.Item2} for {entry.Item1}: {entry.Item1.GetDesc()}");
             //}
 
-            List<Tuple<AggregateValue, string>> choices = new List<Tuple<AggregateValue, string>>();
-            foreach (int i in new List<int>(){ 3, 3, 3, 3})
+            List<Tuple<AggregateValue, string, TimeSpan>> choices = new List<Tuple<AggregateValue, string, TimeSpan>>();
+            foreach (int i in new List<int>(){ 2, 3, 3, 3, 3})
             {
+                DateTime start = DateTime.Now;
                 Tuple<AggregateValue, List<Card>> discard = hand.SelectDiscards(i, availableCards, minRank, maxRank, rnd);
+                TimeSpan dur = DateTime.Now - start;
                 StringBuilder cardsAsText = new StringBuilder();
                 if (discard.Item2.Count == 0)
                 {
@@ -149,14 +151,14 @@ public partial class Main : Node
                     }
                 }
 
-                choices.Add(Tuple.Create(discard.Item1, $"Discarding {i} cards: trying for {discard.Item1.GetDesc()} by discarding {cardsAsText}"));
+                choices.Add(Tuple.Create(discard.Item1, $"Discarding {i} cards: trying for {discard.Item1.GetDesc()} by discarding {cardsAsText}", dur));
             }
 
             choices.Sort((a,b) => a.Item1.CompareTo(b.Item1));
             choices.Reverse();
             foreach (var choice in choices)
             {
-                GD.Print(choice.Item2);
+                GD.Print($"{choice.Item2} time={choice.Item3.TotalSeconds:F2}");
             }
         }
     }
@@ -306,7 +308,7 @@ public partial class Main : Node
     {
         Random rnd = new Random((int)DateTime.Now.Ticks);
 
-        Test(rnd);
+        //Test(rnd);
 
         _deal = new Deal(_players, rnd);
         _deal.UpdateHUD(GetHUD());
@@ -389,7 +391,7 @@ class AggregateValue : IComparable<AggregateValue>
             return $"() ${_normalizedWealth:F2} {DictText}";
     }
 
-    internal void Add(SortedSet<Hand> sortedHands)
+    internal void Add(Hand[] sortedHands, bool sampled)
     {
         if (_normalizedWealth >= 0)
             throw new Exception($"Clobbering already set normalized wealth");
@@ -397,15 +399,24 @@ class AggregateValue : IComparable<AggregateValue>
         _normalizedWealth = 0;
 
         // Best values are at the back
-        int i = sortedHands.Count * 11 / 12;
+        int i = sortedHands.Length * 11 / 12;
         SetHopefulValue(sortedHands.ElementAt(i)._bestScore);
-        foreach(Hand hand in sortedHands)
+
+        // If we're reading sampled values then we can poison the results by having some bad edge cases.
+        int maxReads = sortedHands.Length;
+        if (sampled)
         {
-            AddAggreageWorth(hand._bestScore, sortedHands.Count);
+            maxReads = (int) Math.Round(1999 * maxReads / 2000f);
+        }
+
+        for (i = 0; i < maxReads; ++i)
+        {
+            AddAggreageWorth(sortedHands.ElementAt(i)._bestScore, maxReads);
         }
     }
 
-    internal void Add(SortedSet<HandValue> sortedValues)
+    // #TODO: Might be faster if we convert the SortedSet<> to an Array<> before we call here, if ElementAt() is slow
+    internal void Add(HandValue[] sortedValues, bool sampled)
     {
         if (_normalizedWealth >= 0)
             throw new Exception($"Clobbering already set normalized wealth");
@@ -413,11 +424,19 @@ class AggregateValue : IComparable<AggregateValue>
         _normalizedWealth = 0;
 
         // Best values are at the back
-        int i = sortedValues.Count * 11 / 12;
+        int i = sortedValues.Length * 11 / 12;
         SetHopefulValue(sortedValues.ElementAt(i));
-        foreach (HandValue value in sortedValues)
+
+        // If we're reading sampled values then we can poison the results by having some bad edge cases.
+        int maxReads = sortedValues.Length;
+        if (sampled)
         {
-            AddAggreageWorth(value, sortedValues.Count);
+            maxReads = (int)Math.Round(999 * maxReads / 1000f);
+        }
+
+        for (i = 0; i<maxReads; ++i)
+        {
+            AddAggreageWorth(sortedValues.ElementAt(i), maxReads);
         }
     }
 
@@ -1126,7 +1145,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    private List<Hand> GenerateHands(List<int> discardIndices, List<Card> availableCards, Random rnd)
+    private Tuple<bool, List<Hand>> GenerateHands(List<int> discardIndices, List<Card> availableCards, Random rnd)
     {
         if (discardIndices.Count == 0)
             throw new Exception("GenerateHands() with zero discard indicies");
@@ -1138,11 +1157,11 @@ class Hand : IComparable<Hand>
 
         if (count < 9000)
         {
-            return GenerateAllHands(discardIndices, availableCards);
+            return Tuple.Create(false, GenerateAllHands(discardIndices, availableCards));
         }
         else
         {
-            return GenerateSampledHands(discardIndices, availableCards, rnd);
+            return Tuple.Create(true, GenerateSampledHands(discardIndices, availableCards, rnd));
         }
     }
 
@@ -1215,9 +1234,9 @@ class Hand : IComparable<Hand>
         if (discardIndices.Count == 0)
             throw new Exception("SelectDiscards() with zero discard indicies");
 
-        List<Hand> generatedHands = GenerateHands(discardIndices, availableCards, rnd);
+        Tuple<bool, List<Hand>> generatedHands = GenerateHands(discardIndices, availableCards, rnd);
         SortedSet<Hand> sortedHands = new SortedSet<Hand>();
-        foreach (Hand hand in generatedHands)
+        foreach (Hand hand in generatedHands.Item2)
         {
             hand.ComputeBestScore(minRank, maxRank);
             sortedHands.Add(hand);
@@ -1230,7 +1249,7 @@ class Hand : IComparable<Hand>
         }
 
         AggregateValue aggValue = new AggregateValue(_player);
-        aggValue.Add(sortedHands);
+        aggValue.Add(sortedHands.ToArray(), generatedHands.Item1);
 
         return Tuple.Create(aggValue, discards);
     }
@@ -1260,7 +1279,7 @@ class Hand : IComparable<Hand>
                 if (scoreList.Count > 0)
                 {
                     AggregateValue aggValue = new AggregateValue(_player);
-                    aggValue.Add(scoreList);
+                    aggValue.Add(scoreList.ToArray(), false);
 
                     if (best.UpdateIfBetter(aggValue))
                     {
