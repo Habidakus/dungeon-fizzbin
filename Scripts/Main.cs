@@ -8,8 +8,13 @@ using System.Text;
 
 public partial class Main : Node
 {
+    Random rnd = new Random((int)DateTime.Now.Ticks);
     private List<Player> _players = new List<Player>();
     private Deal? _deal = null;
+
+    private int startingPlayer = 0;
+    private int currentBetLimit = 1;
+    private int currentBetPlayer = 0;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -18,6 +23,10 @@ public partial class Main : Node
         {
             _players.Add(new Player(i));
         }
+
+        startingPlayer = 1; // Should advance each round
+        currentBetLimit = 1;
+        currentBetPlayer = 0;
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -306,17 +315,11 @@ public partial class Main : Node
 
     internal void StartFreshDeal()
     {
-        Random rnd = new Random((int)DateTime.Now.Ticks);
 
         //Test(rnd);
 
         _deal = new Deal(_players, rnd);
         _deal.UpdateHUD(GetHUD());
-
-        var start = DateTime.Now;
-        for (int i = 0; i< _players.Count; i++)
-            _deal.SelectDiscards(GetHUD(), _players[i], 0, 3, rnd);
-        GD.Print($"Processing took {(DateTime.Now - start).TotalSeconds} seconds");
     }
 
     internal HUD GetHUD()
@@ -337,6 +340,112 @@ public partial class Main : Node
         }
 
         throw new Exception($"{Name} does not have child state_machine");
+    }
+
+    public bool SomeoneNeedsToDiscard()
+    {
+        foreach (Player player in _players)
+        {
+            if (!player.HasDiscarded)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void ForceSomeoneToDiscard()
+    {
+        if (_deal == null)
+            throw new Exception("Can force someone to discard if there is no deal");
+
+        for (int i = 0; i < _players.Count; ++i)
+        {
+            int j = (startingPlayer + i) % _players.Count;
+            if (!_players[j].HasDiscarded)
+            {
+                Hand hand = _deal.GetPlayerHand(_players[j]);
+                _players[j].Discards = hand.SelectDiscards(0, 3, _deal, rnd);
+                _players[j].HasDiscarded = true;
+                //hud.SetHandDiscards(hand);
+
+                GetStateMachine().SwitchState("Play_Animate_Discards");
+
+                return;
+            }
+        }
+
+        throw new Exception("There was no player awaiting discard");
+    }
+
+    public bool ProgressDiscardAnimation()
+    {
+        if (_deal == null)
+            throw new Exception("Can force someone to animate discard if there is no deal");
+
+        HUD hud = GetHUD();
+        foreach (Player player in _players)
+        {
+            if (player.Discards != null && player.Discards.Count > 0)
+            {
+                _deal.MoveCardToDiscard(hud, player, player.Discards.First());
+                player.Discards.RemoveAt(0);
+                return true;
+            }
+        }
+
+        if (_deal.ProgressReplaceDiscard(hud))
+            return true;
+
+        return false;
+    }
+
+    public bool SomeoneNeedsToBet()
+    {
+        int consider = _players.Count;
+
+        while (consider > 0)
+        {
+            if (_players[currentBetPlayer].HasFolded)
+            {
+                consider -= 1;
+                currentBetPlayer = (currentBetPlayer + 1) % _players.Count;
+                continue;
+            }
+
+            if (_players[currentBetPlayer].AmountBet == currentBetLimit)
+            {
+                consider -= 1;
+                currentBetPlayer = (currentBetPlayer + 1) % _players.Count;
+                continue;
+            }
+
+            if (_players[currentBetPlayer].AmountBet > currentBetLimit)
+                throw new Exception($"Why is player #{currentBetPlayer} got more bet ({_players[currentBetPlayer]}) than the current bet limit ({currentBetLimit})?");
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void ForceNextBet()
+    {
+
+    }
+
+    public bool SomeoneNeedsToReveal()
+    {
+        foreach (Player player in _players)
+        {
+            if (!player.HasRevealed)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
@@ -518,10 +627,21 @@ class Player
 {
     internal int PositionID { get; private set; }
     internal bool IsNPC { get; private set; }
+    internal bool HasDiscarded { get; set; }
+    internal bool HasFolded { get; private set; }
+    internal int AmountBet { get; private set; }
+    internal bool HasRevealed { get; private set; }
+    internal List<Card>? Discards { get; set; }
+
     internal Player(int positionID)
     {
         PositionID = positionID;
         IsNPC = positionID > 0;
+        HasDiscarded = false;
+        HasFolded = false;
+        HasRevealed = false;
+        AmountBet = 0;
+        Discards = null;
     }
 }
 
@@ -836,6 +956,20 @@ class Hand : IComparable<Hand>
         }
         else
         {
+            return true;
+        }
+    }
+
+    public bool IsEveryCardVisible
+    {
+        get
+        {
+            foreach (Card card in _cards)
+            {
+                if (!IsVisible(card))
+                    return false;
+            }
+
             return true;
         }
     }
@@ -1349,6 +1483,7 @@ class Deal
     internal List<Rank> _ranks = new List<Rank>();
     internal List<Card> _drawPile = new List<Card>();
     internal List<Hand> _hands = new List<Hand>();
+    internal List<Card> _discards = new List<Card> ();
 
     internal Deal(List<Player> players, Random rnd)
     {
@@ -1487,12 +1622,12 @@ class Deal
         }
     }
 
-    internal void SelectDiscards(HUD hud, Player player, int minDiscards, int maxDiscards, Random rnd)
-    {
-        Hand hand = _hands.First(a => a._player == player);
-        List<Card> discards = hand.SelectDiscards(minDiscards, maxDiscards, this, rnd);
-        hud.SetHandDiscards(hand, discards);
-    }
+    //internal List<Card> SelectDiscards(Player player, int minDiscards, int maxDiscards, Random rnd)
+    //{
+    //    Hand hand = _hands.First(a => a._player == player);
+    //    return hand.SelectDiscards(minDiscards, maxDiscards, this, rnd);
+    //    hud.SetHandDiscards(hand, discards);
+    //}
 
     internal List<Card> AvailableCardsFromHandsView(Hand viewHand)
     {
@@ -1512,6 +1647,37 @@ class Deal
         }
 
         return retVal;
+    }
+
+    internal Hand GetPlayerHand(Player player)
+    {
+        return _hands.First(a => a._player == player);
+    }
+
+    internal void MoveCardToDiscard(HUD hud, Player player, Card card)
+    {
+        Hand hand = GetPlayerHand(player);
+        hand._cards.Remove(card);
+        _discards.Add(card);
+        hud.SetVisibleHand(hand);
+        hud.MoveCardToDiscard(player.PositionID, card);
+    }
+
+    internal bool ProgressReplaceDiscard(HUD hud)
+    {
+        foreach (Hand hand in _hands)
+        {
+            if (hand._cards.Count < 5)
+            {
+                Card card = _drawPile.First();
+                _drawPile.RemoveAt(0);
+                hand._cards.Add(card);
+                hud.SetVisibleHand(hand);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

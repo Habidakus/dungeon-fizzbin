@@ -38,6 +38,10 @@ public partial class VisibleHand : Node2D
     {
 		if (FindChild("Cards") is Control cards)
 		{
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+                cards.RemoveChild(child);
+
             if (_visibleCard != null)
             {
                 foreach (Card card in hand._cards)
@@ -56,7 +60,7 @@ public partial class VisibleHand : Node2D
                             if (cardLabel.Visible)
                             {
                                 visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
-                                GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
+                                //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
                             }
                         }
                         else
@@ -94,35 +98,44 @@ public partial class VisibleHand : Node2D
 
         if (FindChild("Score") is Label scoreLabel)
         {
-            scoreLabel.Text = hand.ScoreAsString();
+            if (hand.IsEveryCardVisible)
+            {
+                scoreLabel.Text = hand.ScoreAsString();
+                scoreLabel.Show();
+            }
+            else
+            {
+                scoreLabel.Hide();
+            }
         }
         else
         {
             throw new Exception($"{Name} does not have a child Score");
         }
 
-        if (FindChild("Discards") is Label discardLabel)
-        {
-            discardLabel.Text = "";
-        }
-        else
-        {
-            throw new Exception($"{Name} does not have a child Score");
-        }
+        //if (FindChild("Discards") is Label discardLabel)
+        //{
+        //    discardLabel.Text = "";
+        //}
+        //else
+        //{
+        //    throw new Exception($"{Name} does not have a child Score");
+        //}
     }
 
-    internal void SetDiscards(List<Card> discards)
+    internal void AddDiscard(Card discard)
     {
         if (FindChild("Discards") is Label discardLabel)
         {
-            StringBuilder sb = new StringBuilder("Discard: ");
-            for (int i = 0; i < discards.Count; ++i)
-            {
-                if (i > 0)
-                    sb.Append(", ");
-                sb.Append(discards[i].ToString());
-            }
+            StringBuilder sb = new StringBuilder();
 
+            if (discardLabel.Text.Length == 0)
+                sb.Append("Discard:");
+            else
+                sb.Append(discardLabel.Text);
+
+            sb.Append(' ');
+            sb.Append(discard);
             discardLabel.Text = sb.ToString();
         }
         else

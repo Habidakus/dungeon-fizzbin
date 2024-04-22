@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cyg6udbgcsgle"]
+[gd_scene load_steps=12 format=3 uid="uid://cyg6udbgcsgle"]
 
 [ext_resource type="PackedScene" uid="uid://xk13m276r8fe" path="res://Scenes/state_machine.tscn" id="1_cfnxq"]
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_rrlci"]
@@ -6,7 +6,11 @@
 [ext_resource type="PackedScene" uid="uid://c6bmnvbmqyo61" path="res://Scenes/state_machine_state.tscn" id="2_sdobx"]
 [ext_resource type="Script" path="res://Scripts/States/sms_start_up.cs" id="3_463al"]
 [ext_resource type="Script" path="res://Scripts/States/sms_menu.cs" id="4_rls27"]
-[ext_resource type="Script" path="res://Scripts/States/sms_start_play.cs" id="7_op5e6"]
+[ext_resource type="Script" path="res://Scripts/States/sms_play_loop.cs" id="7_op5e6"]
+[ext_resource type="Script" path="res://Scripts/States/sms_play_someone_discards.cs" id="8_0d8lb"]
+[ext_resource type="Script" path="res://Scripts/States/sms_play_deal.cs" id="8_vph38"]
+[ext_resource type="Script" path="res://Scripts/States/sms_play_animate_discards.cs" id="9_sy8uv"]
+[ext_resource type="Script" path="res://Scripts/States/sms_play_someone_bets.cs" id="11_cnu6f"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_rrlci")
@@ -23,5 +27,17 @@ script = ExtResource("3_463al")
 [node name="Menu" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("4_rls27")
 
-[node name="Play" parent="StateMachine" instance=ExtResource("2_sdobx")]
+[node name="Play_Loop" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("7_op5e6")
+
+[node name="Play_Deal" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("8_vph38")
+
+[node name="Play_Someone_Discards" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("8_0d8lb")
+
+[node name="Play_Animate_Discards" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("9_sy8uv")
+
+[node name="Play_Someone_Bets" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("11_cnu6f")

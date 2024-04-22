@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using static Godot.OpenXRInterface;
 
 public partial class HUD : CanvasLayer
 {
@@ -39,7 +40,11 @@ public partial class HUD : CanvasLayer
             case "Menu":
                 MenuPage.Show();
                 break;
-            case "Play":
+            case "Play_Deal":
+            case "Play_Loop":
+            case "Play_Someone_Discards":
+            case "Play_Animate_Discards":
+            case "Play_Someone_Bets":
                 PlayPage.Show();
                 break;
             default:
@@ -57,7 +62,11 @@ public partial class HUD : CanvasLayer
             case "Menu":
                 MenuPage.Hide();
                 break;
-            case "Play":
+            case "Play_Deal":
+            case "Play_Loop":
+            case "Play_Someone_Discards":
+            case "Play_Animate_Discards":
+            case "Play_Someone_Bets":
                 PlayPage.Hide();
                 break;
             default:
@@ -74,7 +83,7 @@ public partial class HUD : CanvasLayer
     {
         if (GetParent() is Main mainNode)
         {
-            mainNode.GetStateMachine().SwitchState("Play");
+            mainNode.GetStateMachine().SwitchState("Play_Deal");
         }
     }
 
@@ -86,12 +95,15 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void SetHandDiscards(Hand hand, List<Card> discards)
+    //internal void SetHandDiscards(Hand hand, List<Card> discards)
+    //{
+    //}
+
+    internal void MoveCardToDiscard(int positionID, Card card)
     {
-        if (FindChild($"Hand{hand.PositionID}") is VisibleHand visibleHand)
+        if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
-            visibleHand.SetDiscards(discards);
+            visibleHand.AddDiscard(card);
         }
     }
-
 }
