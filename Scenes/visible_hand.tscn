@@ -1,14 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://es0qj11xru43"]
+[gd_scene load_steps=3 format=3 uid="uid://es0qj11xru43"]
 
 [ext_resource type="Script" path="res://Scripts/VisibleHand.cs" id="1_qn6xg"]
+[ext_resource type="PackedScene" uid="uid://bgth6f6cw771c" path="res://Scenes/card.tscn" id="2_d84d1"]
 
 [node name="VisibleHand" type="Node2D"]
 script = ExtResource("1_qn6xg")
+_visibleCard = ExtResource("2_d84d1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_right = 40.0
 offset_bottom = 40.0
-color = Color(0.145098, 0.490196, 0, 1)
+color = Color(0.152941, 0.466667, 0.0784314, 1)
 
 [node name="Container" type="VBoxContainer" parent="."]
 anchors_preset = 8
@@ -25,7 +27,11 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Cards" type="Label" parent="Container"]
+[node name="Cards" type="HBoxContainer" parent="Container"]
+layout_mode = 2
+
+[node name="Cards_Old" type="Label" parent="Container"]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "TEST"

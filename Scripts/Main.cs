@@ -517,9 +517,11 @@ class AggregateValue : IComparable<AggregateValue>
 class Player
 {
     internal int PositionID { get; private set; }
+    internal bool IsNPC { get; private set; }
     internal Player(int positionID)
     {
         PositionID = positionID;
+        IsNPC = positionID > 0;
     }
 }
 
@@ -828,8 +830,14 @@ class Hand : IComparable<Hand>
 
     internal bool IsVisible(Card card)
     {
-        // #TODO: implement me
-        return false;
+        if (_player.IsNPC)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     internal void AddCard(Card card)

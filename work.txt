@@ -2,3 +2,9 @@
 17th initial work on deck, hands, and discards
 18th (half) visible hands, sample if potential hand too large
 19th (half) aggregate worth
+22nd - fix sample prediction, card art
+
+felt green #277714
+card red #f03a17
+monarch red #770b21
+jewel green #147754
