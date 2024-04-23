@@ -389,7 +389,17 @@ public partial class Main : Node
         {
             if (player.Discards != null && player.Discards.Count > 0)
             {
-                _deal.MoveCardToDiscard(hud, player, player.Discards.First());
+                Card card = player.Discards.First();
+                List<int> playersWhoCanSeeThisDiscard = new List<int>();
+                foreach (Player viewingPlayer in _players)
+                {
+                    if (_deal.GetPlayerHand(player).IsVisible(card, viewingPlayer))
+                    {
+                        playersWhoCanSeeThisDiscard.Add(viewingPlayer.PositionID);
+                    }
+                }
+
+                _deal.MoveCardToDiscard(hud, player, playersWhoCanSeeThisDiscard, card);
                 player.Discards.RemoveAt(0);
                 return true;
             }

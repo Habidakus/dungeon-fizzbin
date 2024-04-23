@@ -3,13 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+class DiscardCards
+{
+    internal Card Card { get; set; }
+    internal List<int> PlayersWhoCanSeeThis = new List<int>();
+    internal int PlayerWhoDiscardedThis { get; set; }
+};
+
 class Deal
 {
     internal List<Suit> _suits = new List<Suit>();
     internal List<Rank> _ranks = new List<Rank>();
     internal List<Card> _drawPile = new List<Card>();
     internal List<Hand> _hands = new List<Hand>();
-    internal List<Card> _discards = new List<Card> ();
+    internal List<DiscardCards> _discards = new List<DiscardCards> ();
 
     public Player NonNPCPlayer {
         get
@@ -187,11 +194,11 @@ class Deal
         return _hands.First(a => a._player == player);
     }
 
-    internal void MoveCardToDiscard(HUD hud, Player player, Card card)
+    internal void MoveCardToDiscard(HUD hud, Player player, List<int> playersWhoCanSeeThisDiscard, Card card)
     {
         Hand hand = GetPlayerHand(player);
         hand._cards.Remove(card);
-        _discards.Add(card);
+        _discards.Add(new DiscardCards() { Card = card, PlayerWhoDiscardedThis = player.PositionID, PlayersWhoCanSeeThis = playersWhoCanSeeThisDiscard });
         hud.SetVisibleHand(hand, NonNPCPlayer);
         hud.MoveCardToDiscard(player.PositionID, card);
     }
