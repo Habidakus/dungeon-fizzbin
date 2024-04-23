@@ -200,7 +200,7 @@ class Deal
         hand._cards.Remove(card);
         _discards.Add(new DiscardCards() { Card = card, PlayerWhoDiscardedThis = player.PositionID, PlayersWhoCanSeeThis = playersWhoCanSeeThisDiscard });
         hud.SetVisibleHand(hand, NonNPCPlayer);
-        hud.MoveCardToDiscard(player.PositionID, card);
+        hud.MoveCardToDiscard(player.PositionID, card, playersWhoCanSeeThisDiscard.Contains(NonNPCPlayer.PositionID));
     }
 
     internal bool ProgressReplaceDiscard(HUD hud)

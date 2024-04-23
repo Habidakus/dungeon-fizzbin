@@ -97,11 +97,11 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void MoveCardToDiscard(int positionID, Card card)
+    internal void MoveCardToDiscard(int positionID, Card card, bool isVisibileToNonNPC)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
-            visibleHand.AddDiscard(card);
+            visibleHand.AddDiscard(card, isVisibileToNonNPC);
         }
     }
 

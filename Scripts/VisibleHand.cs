@@ -124,7 +124,7 @@ public partial class VisibleHand : Node2D
         //}
     }
 
-    internal void AddDiscard(Card discard)
+    internal void AddDiscard(Card discard, bool isVisibleToNonNPC)
     {
         if (FindChild("Discards") is Label discardLabel)
         {
@@ -136,7 +136,15 @@ public partial class VisibleHand : Node2D
                 sb.Append(discardLabel.Text);
 
             sb.Append(' ');
-            sb.Append(discard);
+            if (isVisibleToNonNPC)
+            {
+                sb.Append(discard);
+            }
+            else
+            {
+                sb.Append('?');
+            }
+
             discardLabel.Text = sb.ToString();
         }
         else
