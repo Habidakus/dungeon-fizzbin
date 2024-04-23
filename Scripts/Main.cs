@@ -12,9 +12,10 @@ public partial class Main : Node
     private List<Player> _players = new List<Player>();
     private Deal? _deal = null;
 
-    private int startingPlayer = 0;
+    internal int Dealer { get; private set; }
+    internal int InitialBetter { get { return (Dealer + 1) % _players.Count; } }
+    internal int CurrentBetter { get; private set; }
     private double currentBetLimit = 1.0;
-    private int currentBetPlayer = 0;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -24,9 +25,9 @@ public partial class Main : Node
             _players.Add(new Player(i));
         }
 
-        startingPlayer = 1; // Should advance each round
-        currentBetLimit = 1;
-        currentBetPlayer = 0;
+        Dealer = 0; // Should advance each round
+        CurrentBetter = InitialBetter;
+        currentBetLimit = 1.0; // $1.00
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -362,7 +363,7 @@ public partial class Main : Node
 
         for (int i = 0; i < _players.Count; ++i)
         {
-            int j = (startingPlayer + i) % _players.Count;
+            int j = (InitialBetter + i) % _players.Count;
             if (!_players[j].HasDiscarded)
             {
                 Hand hand = _deal.GetPlayerHand(_players[j]);
@@ -417,22 +418,22 @@ public partial class Main : Node
 
         while (consider > 0)
         {
-            if (_players[currentBetPlayer].HasFolded)
+            if (_players[CurrentBetter].HasFolded)
             {
                 consider -= 1;
-                currentBetPlayer = (currentBetPlayer + 1) % _players.Count;
+                CurrentBetter = (CurrentBetter + 1) % _players.Count;
                 continue;
             }
 
-            if (_players[currentBetPlayer].AmountBet == currentBetLimit)
+            if (_players[CurrentBetter].AmountBet == currentBetLimit)
             {
                 consider -= 1;
-                currentBetPlayer = (currentBetPlayer + 1) % _players.Count;
+                CurrentBetter = (CurrentBetter + 1) % _players.Count;
                 continue;
             }
 
-            if (_players[currentBetPlayer].AmountBet > currentBetLimit)
-                throw new Exception($"Why is player #{currentBetPlayer} got more bet ({_players[currentBetPlayer].AmountBet}) than the current bet limit ({currentBetLimit})?");
+            if (_players[CurrentBetter].AmountBet > currentBetLimit)
+                throw new Exception($"Why is player #{CurrentBetter} got more bet ({_players[CurrentBetter].AmountBet}) than the current bet limit ({currentBetLimit})?");
 
             return true;
         }
@@ -447,7 +448,7 @@ public partial class Main : Node
 
         _deal.ExtractMinAndMax(out int minRank, out int maxRank);
 
-        Hand hand = _deal.GetPlayerHand(_players[currentBetPlayer]);
+        Hand hand = _deal.GetPlayerHand(_players[CurrentBetter]);
         hand.ComputeBestScore(minRank, maxRank);
 
         double maxPercent = double.MinValue;
@@ -465,19 +466,19 @@ public partial class Main : Node
             }
         }
 
-        GD.Print($"Player #{_players[currentBetPlayer].PositionID} believes they have {100.0 - maxPercent:F2}% chance of winning");
+        GD.Print($"Player #{_players[CurrentBetter].PositionID} believes they have {100.0 - maxPercent:F2}% chance of winning");
 
         if (maxPercent > 75)
         {
-            _players[currentBetPlayer].Fold(GetHUD());
+            _players[CurrentBetter].Fold(GetHUD());
         }
         else
         {
             double howMuchToBet = 3.0 - (maxPercent / 25.0);
             howMuchToBet = 10.0 * howMuchToBet * howMuchToBet / 9.0;
-            _players[currentBetPlayer].Bet(GetHUD(), howMuchToBet, currentBetLimit);
-            if (!_players[currentBetPlayer].HasFolded)
-                currentBetLimit = _players[currentBetPlayer].AmountBet;
+            _players[CurrentBetter].Bet(GetHUD(), howMuchToBet, currentBetLimit);
+            if (!_players[CurrentBetter].HasFolded)
+                currentBetLimit = _players[CurrentBetter].AmountBet;
         }
     }
 
@@ -504,7 +505,7 @@ public partial class Main : Node
 
         for (int i = 0;i < _players.Count; ++i)
         {
-            int position = (currentBetPlayer + i) % _players.Count;
+            int position = (InitialBetter + i) % _players.Count;
             if (_players[position].HasFolded)
                 continue;
             if (_players[position].HasRevealed)
@@ -534,6 +535,7 @@ public partial class Main : Node
                     throw new Exception($"How are hands {revealedHand} and {previouslyRevealedHand} equal?");
                 }
             }
+
             return;
         }
     }
