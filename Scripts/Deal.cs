@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 class DiscardCards
 {
@@ -37,10 +38,10 @@ class Deal
 
         //_ranks.Add(Rank.Sadness);
         //_ranks.Add(Rank.Ankh);
-        _ranks.Add(Rank.Saturn);
+        //_ranks.Add(Rank.Saturn);
         //_ranks.Add(Rank.Jupiter);
 
-        Rank.ExtractMinAndMax(_ranks, out int minRank, out int maxRank);
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         foreach (Suit suit in _suits)
         {
@@ -63,7 +64,7 @@ class Deal
                 _drawPile.RemoveAt(0);
             }
 
-            hand.ComputeBestScore(minRank, maxRank);
+            hand.ComputeBestScore(minRank, maxRank, suitsCount);
 
             _hands.Add(hand);
         }
@@ -71,12 +72,12 @@ class Deal
 
     private void Test(Random rnd, Player player)
     {
-        Rank.ExtractMinAndMax(_ranks, out int minRank, out int maxRank);
-        int flush = 0;
-        int straight = 0;
-        int straightFlush = 0;
-        Dictionary<Tuple<int, int>, int> kindCount = new Dictionary<Tuple<int, int>, int>();
-        for (int i = 0; i < 1250000; ++i)
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+        const int flushIndex = 1;
+        const int straightIndex = 2;
+        const int minorHouseIndex = 4; 
+        Dictionary<Tuple<int, int, int>, int> kindCount = new Dictionary<Tuple<int, int, int>, int>();
+        for (int i = 0; i < 2500000; ++i)
         {
             var newPile = _drawPile.Shuffle(rnd).ToList();
             Hand hand = new Hand(player);
@@ -85,14 +86,15 @@ class Deal
                 hand.AddCard(newPile[j]);
             }
 
-            hand.CountTypes(minRank, maxRank, out bool isFlush, out bool isStraight, out int primaryOfAKind, out int secondaryOfAKind);
+            hand.CountTypes(minRank, maxRank, out bool isFlush, out bool isStraight, out bool isMinorHouse, out int primaryOfAKind, out int secondaryOfAKind);
+            int index = 0;
             if (isFlush)
-                ++flush;
+                index += flushIndex;
             if (isStraight)
-                ++straight;
-            if (isStraight && isFlush)
-                ++straightFlush;
-            var key = Tuple.Create(primaryOfAKind, secondaryOfAKind);
+                index += straightIndex;
+            if (isMinorHouse)
+                index += minorHouseIndex;
+            var key = Tuple.Create(index, primaryOfAKind, secondaryOfAKind);
             if (kindCount.TryGetValue(key, out int count))
             {
                 kindCount[key] = count + 1;
@@ -103,18 +105,67 @@ class Deal
             }
         }
 
-        GD.Print($"Flush: {flush}");
-        GD.Print($"Straight: {straight}");
-        GD.Print($"Straight Flush: {straightFlush}");
         foreach (var entry in kindCount)
         {
-            GD.Print($"{entry.Key}: {entry.Value}");
+            StringBuilder sb = new StringBuilder();
+            int key = entry.Key.Item1;
+            if ((key & flushIndex) == flushIndex)
+            {
+                sb.Append(" Flush");
+                key -= flushIndex;
+            }
+            if ((key & straightIndex) == straightIndex)
+            {
+                sb.Append(" Straight");
+                key -= straightIndex;
+            }
+            if ((key & minorHouseIndex) == minorHouseIndex)
+            {
+                sb.Append(" MinorHouse");
+                key -= minorHouseIndex;
+            }
+            if (key != 0)
+            {
+                if (sb.Length == 0)
+                    sb.Append(" Highcard");
+                else
+                    sb.Append($" 0x{key}");
+            }
+            if (entry.Key.Item3 == 0)
+            {
+                switch (entry.Key.Item2)
+                {
+                    case 5: sb.Append(" FiveOfAKind"); break;
+                    case 4: sb.Append(" FourOfAKind"); break;
+                    case 3: sb.Append(" ThreeOfAKind"); break;
+                    case 2: sb.Append(" Pair"); break;
+                    case 0: sb.Append(" Highcard"); break;
+                    default:
+                        sb.Append($" ?{entry.Key.Item2}0");
+                        break;
+                }
+            }
+            else if (entry.Key.Item3 == 2)
+            {
+                if (entry.Key.Item2 == 3)
+                    sb.Append(" FullHouse");
+                else if (entry.Key.Item2 == 2)
+                    sb.Append(" TwoPair");
+                else
+                    sb.Append($" ?{entry.Key.Item2}2");
+            }
+            else
+            {
+                sb.Append($" ?{entry.Key.Item2}{entry.Key.Item3}");
+            }
+
+            GD.Print($"{entry.Value} {sb}");
         }
     }
 
     private void Test2(Random rnd, Player player)
     {
-        Rank.ExtractMinAndMax(_ranks, out int minRank, out int maxRank);
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         Hand? bestHand = null;
         Hand? worstHand = null;
         for (int i = 0; i < 25000; ++i)
@@ -126,7 +177,7 @@ class Deal
                 hand.AddCard(newPile[j]);
             }
 
-            hand.ComputeBestScore(minRank, maxRank);
+            hand.ComputeBestScore(minRank, maxRank, suitsCount);
             if (bestHand == null || hand.CompareTo(bestHand) > 0)
             {
                 bestHand = hand;
@@ -220,14 +271,14 @@ class Deal
         return false;
     }
 
-    internal void ExtractMinAndMax(out int minRank, out int maxRank)
+    internal void ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount)
     {
-        Rank.ExtractMinAndMax(_ranks, out minRank, out maxRank);
+        Rank.ExtractMinAndMax(_ranks, _suits, out minRank, out maxRank, out suitsCount);
     }
 
     internal double WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(Player otherPlayer, Hand ourHand, List<Card> unseenCards, Random rnd)
     {
-        ExtractMinAndMax(out int minRank, out int maxRank);
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         Hand otherHand = GetPlayerHand(otherPlayer);
 
         int theyWin = 0;
@@ -235,7 +286,7 @@ class Deal
         for (int i = 0; i < numHandsToCreate; ++i)
         {
             Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd);
-            potentialHand.ComputeBestScore(minRank, maxRank);
+            potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
 
             // #TODO: The hand now needs to discard the same amount that the other player discarded.
 

@@ -80,7 +80,7 @@ public partial class Main : Node
             rankA,
         };
 
-        Rank.ExtractMinAndMax(ranks, out int minRank, out int maxRank);
+        Rank.ExtractMinAndMax(ranks, suits, out int minRank, out int maxRank, out int suitsCount);
 
         { // A 9 4 3 2
             Hand hand = new Hand(player);
@@ -94,7 +94,7 @@ public partial class Main : Node
             hand.AddCard(new Card(suitC, rankQ));
             hand.AddCard(new Card(suitA, rank9));
             hand.AddCard(new Card(suitA, rank3));
-            hand.ComputeBestScore(minRank, maxRank);
+            hand.ComputeBestScore(minRank, maxRank, suitsCount);
 
             GD.Print($"Evaluating {hand}");
 
@@ -144,7 +144,7 @@ public partial class Main : Node
             foreach (int i in new List<int>(){ 2, 3, 3, 3, 3})
             {
                 DateTime start = DateTime.Now;
-                Tuple<AggregateValue, List<Card>> discard = hand.SelectDiscards(i, availableCards, minRank, maxRank, rnd);
+                Tuple<AggregateValue, List<Card>> discard = hand.SelectDiscards(i, availableCards, minRank, maxRank, suitsCount, rnd);
                 TimeSpan dur = DateTime.Now - start;
                 StringBuilder cardsAsText = new StringBuilder();
                 if (discard.Item2.Count == 0)
@@ -304,7 +304,7 @@ public partial class Main : Node
         }
         foreach (Hand hand in hands)
         {
-            hand.ComputeBestScore(rank2._strength, rankK._strength);
+            hand.ComputeBestScore(rank2._strength, rankK._strength, 4);
         }
         hands.Sort();
         GD.Print("Worst to best:");
@@ -446,10 +446,10 @@ public partial class Main : Node
         if (_deal == null)
             throw new Exception("Can force someone to bet if there is no deal");
 
-        _deal.ExtractMinAndMax(out int minRank, out int maxRank);
+        _deal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         Hand hand = _deal.GetPlayerHand(_players[CurrentBetter]);
-        hand.ComputeBestScore(minRank, maxRank);
+        hand.ComputeBestScore(minRank, maxRank, suitsCount);
 
         double maxPercent = double.MinValue;
         foreach (Player player in _players)

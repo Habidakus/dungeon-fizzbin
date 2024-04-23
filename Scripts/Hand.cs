@@ -101,13 +101,52 @@ class Hand : IComparable<Hand>
         }
     }
 
-    internal void ComputeBestScore(int minRank, int maxRank)
+    internal bool IsMinorHouse
+    {
+        get
+        {
+            Suit? primary = null;
+            int pCount = 0;
+            Suit? secondary = null;
+            int sCount = 0;
+            foreach (Card card in _cards)
+            {
+                if (primary == null)
+                {
+                    primary = card.Suit;
+                    pCount = 1;
+                }
+                else if (card.Suit == primary)
+                {
+                    ++pCount;
+                }
+                else if (secondary == null)
+                {
+                    secondary = card.Suit;
+                    sCount = 1;
+                }
+                else if (secondary == card.Suit)
+                {
+                    ++sCount;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return (pCount + 1 == sCount) || (sCount + 1 == pCount);
+        }
+    }
+
+    internal void ComputeBestScore(int minRank, int maxRank, int suitsCount)
     {
         List<Card> cardsSortedHighestToLowest = _cards.OrderByDescending(a => a).ToList();
         Card highCard = cardsSortedHighestToLowest.First();
         _bestScore = new HandValue(cardsSortedHighestToLowest);
         bool isStraight = IsStraight(minRank, maxRank);
         bool isFlush = IsFlush;
+        bool isMinorHouse = suitsCount > 4 ? IsMinorHouse : false;
         if (isStraight)
         {
             if (isFlush)
@@ -117,6 +156,10 @@ class Hand : IComparable<Hand>
                     _bestScore = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
                 else
                     _bestScore = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+            }
+            else if (isMinorHouse)
+            {
+                _bestScore = new HandValue(HandValue.HandRanking.Castle, cardsSortedHighestToLowest);
             }
             else
             {
@@ -166,7 +209,12 @@ class Hand : IComparable<Hand>
                 }
                 else if (ofAKind.Count == 2)
                 {
-                    if (secondOfAKind.Count > 0)
+                    if (isMinorHouse)
+                    {
+                        // Minor House ignores single & double pairs: "No pairs in a prison"
+                        possiblyBetter = new HandValue(HandValue.HandRanking.Prison, cardsSortedHighestToLowest);
+                    }
+                    else if (secondOfAKind.Count > 0)
                     {
                         Card remainderHighCard = secondOfAKind.OrderByDescending(a => a).First();
                         possiblyBetter = new HandValue(HandValue.HandRanking.TwoPairs, orderOfImportance);
@@ -241,10 +289,11 @@ class Hand : IComparable<Hand>
     }
 
 
-    internal void CountTypes(int minRank, int maxRank, out bool isFlush, out bool isStraight, out int primaryOfAKind, out int secondaryOfAKind)
+    internal void CountTypes(int minRank, int maxRank, out bool isFlush, out bool isStraight, out bool isMinorHouse, out int primaryOfAKind, out int secondaryOfAKind)
     {
         isFlush = IsFlush;
         isStraight = IsStraight(minRank, maxRank);
+        isMinorHouse = IsMinorHouse;
         ExtractOfAKind(_cards, out List<Card> ofAKind, out List<Card> remainder);
         primaryOfAKind = ofAKind.Count;
         if (primaryOfAKind > 0)
@@ -462,7 +511,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal Tuple<AggregateValue, List<Card>> SelectDiscards(List<int> discardIndices, List<Card> availableCards, int minRank, int maxRank, Random rnd)
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(List<int> discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd)
     {
         if (discardIndices.Count == 0)
             throw new Exception("SelectDiscards() with zero discard indicies");
@@ -471,7 +520,7 @@ class Hand : IComparable<Hand>
         SortedSet<Hand> sortedHands = new SortedSet<Hand>();
         foreach (Hand hand in generatedHands.Item2)
         {
-            hand.ComputeBestScore(minRank, maxRank);
+            hand.ComputeBestScore(minRank, maxRank, suitsCount);
             sortedHands.Add(hand);
         }
 
@@ -487,7 +536,7 @@ class Hand : IComparable<Hand>
         return Tuple.Create(aggValue, discards);
     }
 
-    internal Tuple<AggregateValue, List<Card>> SelectDiscards(int noOfDiscards, List<Card> availableCards, int minRank, int maxRank, Random rnd)
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(int noOfDiscards, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd)
     {
         if (noOfDiscards == 0)
         {
@@ -505,7 +554,7 @@ class Hand : IComparable<Hand>
                 foreach (Card replacement in availableCards)
                 {
                     Hand potentialHand = CloneWithDiscard(discardCard, replacement);
-                    potentialHand.ComputeBestScore(minRank, maxRank);
+                    potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
                     scoreList.Add(potentialHand._bestScore!);
                 }
 
@@ -525,7 +574,7 @@ class Hand : IComparable<Hand>
         {
             foreach (List<int> iter in GenerateUniqueDiscardSelections(noOfDiscards, 0, 4))
             {
-                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, rnd);
+                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, rnd);
                 if (best.UpdateIfBetter(subBest.Item1))
                 {
                     retVal = subBest.Item2;
@@ -538,13 +587,13 @@ class Hand : IComparable<Hand>
 
     internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)
     {
-        Rank.ExtractMinAndMax(actualDeal._ranks, out int minRank, out int maxRank);
+        actualDeal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         List<Card> availableCards = actualDeal.AvailableCardsFromHandsView(this);
         List<Card> retVal = new List<Card>();
         AggregateValue best = new AggregateValue(_player);
         for (int discards = minDiscards; discards <= maxDiscards; ++discards)
         {
-            Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(discards, availableCards, minRank, maxRank, rnd);
+            Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(discards, availableCards, minRank, maxRank, suitsCount, rnd);
             if (best.UpdateIfBetter(subBest.Item1))
             {
                 retVal = subBest.Item2;
@@ -738,11 +787,13 @@ class HandValue : IComparable<HandValue>
         FiveOfAKind = 3898434 * 4, // Only possible with more suits
         RoyalFlush = 3898434,
         StraightFlush = 433154,
+        Castle = 75656, // Only allowed when 5+ suits
         FourOfAKind = 24984,
         FullHouse = 4158,
         Flush = 3047, // LESS COMMON with more suits
         Straight = 1523,
         ThreeOfAKind = 278,
+        Prison = 146, // Ignores pairs if present, only if 5+ suits
         TwoPairs = 120,
         TwoOfAKind = 8,
         HighCard = 6, // Maybe just lower this?
@@ -766,11 +817,13 @@ class HandValue : IComparable<HandValue>
             case HandRanking.RoyalFlush: return "Royal Flush";
             case HandRanking.StraightFlush: return "Straight Flush";
             case HandRanking.FourOfAKind: return "Four of a Kind";
+            case HandRanking.Castle: return "Castle";
             case HandRanking.FullHouse: return "Full House";
             case HandRanking.Flush: return "Flush";
             case HandRanking.Straight: return "Straight";
             case HandRanking.ThreeOfAKind: return "Three of a Kind";
             case HandRanking.TwoPairs: return "Two Pair";
+            case HandRanking.Prison: return "Prison";
             case HandRanking.TwoOfAKind: return "A Pair";
             case HandRanking.HighCard: return "High Card";
             default:

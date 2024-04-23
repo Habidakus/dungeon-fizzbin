@@ -180,10 +180,11 @@ class Rank : IComparable<Rank>
         }
     }
 
-    internal static void ExtractMinAndMax(List<Rank> ranks, out int minRank, out int maxRank)
+    internal static void ExtractMinAndMax(List<Rank> ranks, List<Suit> suits, out int minRank, out int maxRank, out int suitsCount)
     {
         minRank = int.MaxValue;
         maxRank = int.MinValue;
+        suitsCount = suits.Count;
         foreach (Rank rank in ranks)
         {
             if (rank.Wraps)
