@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Godot.OpenXRInterface;
 
 public partial class VisibleHand : Node2D
 {
@@ -96,22 +97,22 @@ public partial class VisibleHand : Node2D
 			throw new Exception($"{Name} does not have a child Cards");
         }
 
-        if (FindChild("Score") is Label scoreLabel)
-        {
-            if (hand.IsEveryCardVisible)
-            {
-                scoreLabel.Text = hand.ScoreAsString();
-                scoreLabel.Show();
-            }
-            else
-            {
-                scoreLabel.Hide();
-            }
-        }
-        else
-        {
-            throw new Exception($"{Name} does not have a child Score");
-        }
+        //if (FindChild("Score") is Label scoreLabel)
+        //{
+        //    if (hand.IsEveryCardVisible)
+        //    {
+        //        scoreLabel.Text = hand.ScoreAsString();
+        //        scoreLabel.Show();
+        //    }
+        //    else
+        //    {
+        //        scoreLabel.Hide();
+        //    }
+        //}
+        //else
+        //{
+        //    throw new Exception($"{Name} does not have a child Score");
+        //}
 
         //if (FindChild("Discards") is Label discardLabel)
         //{
@@ -137,6 +138,57 @@ public partial class VisibleHand : Node2D
             sb.Append(' ');
             sb.Append(discard);
             discardLabel.Text = sb.ToString();
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Score");
+        }
+    }
+
+    internal void FoldHand()
+    {
+        if (FindChild("Score") is Label scoreLabel)
+        {
+            scoreLabel.Text = "Fold";
+            scoreLabel.Show();
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Score");
+        }
+
+        if (FindChild("ColorRect") is ColorRect cr)
+        {
+            cr.Color = Color.FromString("#770b21", Color.Color8(128,128,128));
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child ColorRect");
+        }
+    }
+
+    internal void SetFeltToLost()
+    {
+        if (FindChild("ColorRect") is ColorRect cr)
+        {
+            cr.Color = Color.FromString("#770b21", Color.Color8(128, 128, 128));
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child ColorRect");
+        }
+    }
+
+    internal void SetBetAmount(double amountBet, string? description)
+    {
+        if (FindChild("Score") is Label scoreLabel)
+        {
+            if (string.IsNullOrEmpty(description))
+                scoreLabel.Text = $"${amountBet:F2}";
+            else
+                scoreLabel.Text = $"${amountBet:F2} {description}";
+
+            scoreLabel.Show();
         }
         else
         {

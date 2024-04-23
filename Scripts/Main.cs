@@ -13,7 +13,7 @@ public partial class Main : Node
     private Deal? _deal = null;
 
     private int startingPlayer = 0;
-    private int currentBetLimit = 1;
+    private double currentBetLimit = 1.0;
     private int currentBetPlayer = 0;
 
     // Called when the node enters the scene tree for the first time.
@@ -422,7 +422,7 @@ public partial class Main : Node
             }
 
             if (_players[currentBetPlayer].AmountBet > currentBetLimit)
-                throw new Exception($"Why is player #{currentBetPlayer} got more bet ({_players[currentBetPlayer]}) than the current bet limit ({currentBetLimit})?");
+                throw new Exception($"Why is player #{currentBetPlayer} got more bet ({_players[currentBetPlayer].AmountBet}) than the current bet limit ({currentBetLimit})?");
 
             return true;
         }
@@ -432,13 +432,52 @@ public partial class Main : Node
 
     public void ForceNextBet()
     {
+        if (_deal == null)
+            throw new Exception("Can force someone to bet if there is no deal");
 
+        _deal.ExtractMinAndMax(out int minRank, out int maxRank);
+
+        Hand hand = _deal.GetPlayerHand(_players[currentBetPlayer]);
+        hand.ComputeBestScore(minRank, maxRank);
+
+        double maxPercent = double.MinValue;
+        foreach (Player player in _players)
+        {
+            if (player.PositionID != hand.PositionID)
+            {
+                if (!player.HasFolded)
+                {
+                    List<Card> unseenCards = _deal.AvailableCardsFromHandsView(hand);
+                    double percent = _deal.WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(player, hand, unseenCards, rnd);
+                    if (percent > maxPercent)
+                        maxPercent = percent;
+                }
+            }
+        }
+
+        GD.Print($"Player #{_players[currentBetPlayer].PositionID} believes they have {100.0 - maxPercent:F2}% chance of winning");
+
+        if (maxPercent > 75)
+        {
+            _players[currentBetPlayer].Fold(GetHUD());
+        }
+        else
+        {
+            double howMuchToBet = 3.0 - (maxPercent / 25.0);
+            howMuchToBet = 10.0 * howMuchToBet * howMuchToBet / 9.0;
+            _players[currentBetPlayer].Bet(GetHUD(), howMuchToBet, currentBetLimit);
+            if (!_players[currentBetPlayer].HasFolded)
+                currentBetLimit = _players[currentBetPlayer].AmountBet;
+        }
     }
 
     public bool SomeoneNeedsToReveal()
     {
         foreach (Player player in _players)
         {
+            if (player.HasFolded)
+                continue;
+
             if (!player.HasRevealed)
             {
                 return true;
@@ -447,6 +486,48 @@ public partial class Main : Node
 
         return false;
     }
+
+    public void RevealHand()
+    {
+        if (_deal == null)
+            throw new Exception("Can force someone to reveal if there is no deal");
+
+        for (int i = 0;i < _players.Count; ++i)
+        {
+            int position = (currentBetPlayer + i) % _players.Count;
+            if (_players[position].HasFolded)
+                continue;
+            if (_players[position].HasRevealed)
+                continue;
+
+            Hand revealedHand = _deal.GetPlayerHand(_players[position]);
+            _deal.Reveal(_players[position], GetHUD(), revealedHand.ScoreAsString());
+            foreach(Player player in _players)
+            {
+                if (!player.HasRevealed)
+                    continue;
+                if (player.PositionID == position)
+                    continue;
+                
+                Hand previouslyRevealedHand = _deal.GetPlayerHand(player);
+                int comparison = previouslyRevealedHand.CompareTo(revealedHand);
+                if (comparison > 0)
+                {
+                    GetHUD().SetFeltToLost(position);
+                }
+                else if (comparison < 0)
+                {
+                    GetHUD().SetFeltToLost(player.PositionID);
+                }
+                else
+                {
+                    throw new Exception($"How are hands {revealedHand} and {previouslyRevealedHand} equal?");
+                }
+            }
+            return;
+        }
+    }
+
 }
 
 class AggregateValue : IComparable<AggregateValue>
@@ -629,8 +710,8 @@ class Player
     internal bool IsNPC { get; private set; }
     internal bool HasDiscarded { get; set; }
     internal bool HasFolded { get; private set; }
-    internal int AmountBet { get; private set; }
-    internal bool HasRevealed { get; private set; }
+    internal double AmountBet { get; private set; }
+    internal bool HasRevealed { get; set; }
     internal List<Card>? Discards { get; set; }
 
     internal Player(int positionID)
@@ -642,6 +723,29 @@ class Player
         HasRevealed = false;
         AmountBet = 0;
         Discards = null;
+    }
+
+    internal void Fold(HUD hud)
+    {
+        HasFolded = true;
+        hud.FoldHand(PositionID);
+    }
+
+    internal void Bet(HUD hud, double amount, double currentAmount)
+    {
+        // TODO: This should be governed by race or personality
+        const double paddingAmount = 1;
+
+        double amountWeAreWillingToGoTo = Math.Round(paddingAmount + amount * 10.0) / 10.0;
+        if (amountWeAreWillingToGoTo < currentAmount)
+        {
+            Fold(hud);
+        }
+        else
+        {
+            AmountBet = amountWeAreWillingToGoTo;
+            hud.SetBetAmount(PositionID, AmountBet, null);
+        }
     }
 }
 
@@ -950,7 +1054,11 @@ class Hand : IComparable<Hand>
 
     internal bool IsVisible(Card card)
     {
-        if (_player.IsNPC)
+        if (_player.HasRevealed)
+        {
+            return true;
+        }
+        else if (_player.IsNPC)
         {
             return false;
         }
@@ -1248,6 +1356,27 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
+    internal Hand GeneratePotentialHand(List<Card> unseenCards, Random rnd)
+    {
+        Hand retVal = new Hand(_player);
+        while (retVal._cards.Count < 5)
+        {
+            int cardIndex = rnd.Next() % unseenCards.Count;
+            Card card = unseenCards.ElementAt(cardIndex);
+            bool alreadyUsed = false;
+            for (int i = 0; !alreadyUsed && i < retVal._cards.Count; ++i)
+            {
+                if (retVal._cards[i] == card)
+                    alreadyUsed = true;
+            }
+
+            if (!alreadyUsed)
+                retVal.AddCard(card);
+        }
+
+        return retVal;
+    }
+
     internal static List<List<int>> GenerateUniqueDiscardSelections(int discards, int min, int max)
     {
         if (discards == 0)
@@ -1497,7 +1626,7 @@ class Deal
 
         //_ranks.Add(Rank.Sadness);
         //_ranks.Add(Rank.Ankh);
-        //_ranks.Add(Rank.Saturn);
+        _ranks.Add(Rank.Saturn);
         //_ranks.Add(Rank.Jupiter);
 
         Rank.ExtractMinAndMax(_ranks, out int minRank, out int maxRank);
@@ -1622,6 +1751,13 @@ class Deal
         }
     }
 
+    internal void Reveal(Player player, HUD hud, string description)
+    {
+        player.HasRevealed = true;
+        hud.SetVisibleHand(GetPlayerHand(player));
+        hud.SetBetAmount(player.PositionID, player.AmountBet, description);
+    }
+
     //internal List<Card> SelectDiscards(Player player, int minDiscards, int maxDiscards, Random rnd)
     //{
     //    Hand hand = _hands.First(a => a._player == player);
@@ -1678,6 +1814,34 @@ class Deal
         }
 
         return false;
+    }
+
+    internal void ExtractMinAndMax(out int minRank, out int maxRank)
+    {
+        Rank.ExtractMinAndMax(_ranks, out minRank, out maxRank);
+    }
+
+    internal double WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(Player otherPlayer, Hand ourHand, List<Card> unseenCards, Random rnd)
+    {
+        ExtractMinAndMax(out int minRank, out int maxRank);
+        Hand otherHand = GetPlayerHand(otherPlayer);
+
+        int theyWin = 0;
+        const int numHandsToCreate = 1000;
+        for (int i = 0; i < numHandsToCreate; ++i)
+        {
+            Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd);
+            potentialHand.ComputeBestScore(minRank, maxRank);
+
+            // #TODO: The hand now needs to discard the same amount that the other player discarded.
+
+            if (ourHand.CompareTo(potentialHand) < 0)
+            {
+                theyWin += 1;
+            }
+        }
+
+        return 100.0 * theyWin / numHandsToCreate;
     }
 }
 

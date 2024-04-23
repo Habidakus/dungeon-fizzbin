@@ -1,7 +1,5 @@
 using Godot;
 using System;
-using System.Collections.Generic;
-using static Godot.OpenXRInterface;
 
 public partial class HUD : CanvasLayer
 {
@@ -45,6 +43,8 @@ public partial class HUD : CanvasLayer
             case "Play_Someone_Discards":
             case "Play_Animate_Discards":
             case "Play_Someone_Bets":
+            case "Play_Someone_Reveals":
+            case "Play_Declare_Winner":
                 PlayPage.Show();
                 break;
             default:
@@ -67,6 +67,8 @@ public partial class HUD : CanvasLayer
             case "Play_Someone_Discards":
             case "Play_Animate_Discards":
             case "Play_Someone_Bets":
+            case "Play_Someone_Reveals":
+            case "Play_Declare_Winner":
                 PlayPage.Hide();
                 break;
             default:
@@ -95,15 +97,35 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    //internal void SetHandDiscards(Hand hand, List<Card> discards)
-    //{
-    //}
-
     internal void MoveCardToDiscard(int positionID, Card card)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.AddDiscard(card);
+        }
+    }
+
+    public void FoldHand(int positionID)
+    {
+        if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.FoldHand();
+        }
+    }
+
+    internal void SetBetAmount(int positionID, double amountBet, string? description)
+    {
+        if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.SetBetAmount(amountBet, description);
+        }
+    }
+
+    internal void SetFeltToLost(int positionID)
+    {
+        if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.SetFeltToLost();
         }
     }
 }
