@@ -11,6 +11,13 @@ class Deal
     internal List<Hand> _hands = new List<Hand>();
     internal List<Card> _discards = new List<Card> ();
 
+    public Player NonNPCPlayer {
+        get
+        {
+            return _hands[0].Player;
+        }
+    }
+
     internal Deal(List<Player> players, Random rnd)
     {
         _suits.AddRange(Suit.DefaultSuits);
@@ -144,23 +151,16 @@ class Deal
     {
         foreach (Hand hand in _hands)
         {
-            hud.SetVisibleHand(hand);
+            hud.SetVisibleHand(hand, NonNPCPlayer);
         }
     }
 
     internal void Reveal(Player player, HUD hud, string description)
     {
         player.HasRevealed = true;
-        hud.SetVisibleHand(GetPlayerHand(player));
+        hud.SetVisibleHand(GetPlayerHand(player), NonNPCPlayer);
         hud.SetBetAmount(player.PositionID, player.AmountBet, description);
     }
-
-    //internal List<Card> SelectDiscards(Player player, int minDiscards, int maxDiscards, Random rnd)
-    //{
-    //    Hand hand = _hands.First(a => a._player == player);
-    //    return hand.SelectDiscards(minDiscards, maxDiscards, this, rnd);
-    //    hud.SetHandDiscards(hand, discards);
-    //}
 
     internal List<Card> AvailableCardsFromHandsView(Hand viewHand)
     {
@@ -172,7 +172,7 @@ class Deal
                 continue;
             foreach (Card card in hand._cards)
             {
-                if (!hand.IsVisible(card))
+                if (!hand.IsVisible(card, viewHand.Player))
                 {
                     retVal.Add(card);
                 }
@@ -192,7 +192,7 @@ class Deal
         Hand hand = GetPlayerHand(player);
         hand._cards.Remove(card);
         _discards.Add(card);
-        hud.SetVisibleHand(hand);
+        hud.SetVisibleHand(hand, NonNPCPlayer);
         hud.MoveCardToDiscard(player.PositionID, card);
     }
 
@@ -205,7 +205,7 @@ class Deal
                 Card card = _drawPile.First();
                 _drawPile.RemoveAt(0);
                 hand._cards.Add(card);
-                hud.SetVisibleHand(hand);
+                hud.SetVisibleHand(hand, NonNPCPlayer);
                 return true;
             }
         }

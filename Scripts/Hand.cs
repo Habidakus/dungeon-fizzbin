@@ -11,40 +11,37 @@ class Hand : IComparable<Hand>
     internal HandValue? _bestScore = null;
 
     public int PositionID { get { return _player.PositionID; } }
+    public Player Player { get { return _player; } }
 
     internal Hand(Player player)
     {
         _player = player;
     }
 
-    internal bool IsVisible(Card card)
+    internal bool IsVisible(Card card, Player viewer)
     {
         if (_player.HasRevealed)
         {
             return true;
         }
-        else if (_player.IsNPC)
-        {
-            return false;
-        }
-        else
+
+        if (_player.PositionID == viewer.PositionID)
         {
             return true;
         }
+
+        return false;
     }
 
-    public bool IsEveryCardVisible
+    public bool IsEveryCardVisible(Player viewer)
     {
-        get
+        foreach (Card card in _cards)
         {
-            foreach (Card card in _cards)
-            {
-                if (!IsVisible(card))
-                    return false;
-            }
-
-            return true;
+            if (!IsVisible(card, viewer))
+                return false;
         }
+
+        return true;
     }
 
     internal void AddCard(Card card)

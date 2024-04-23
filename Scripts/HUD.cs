@@ -89,11 +89,11 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void SetVisibleHand(Hand hand)
+    internal void SetVisibleHand(Hand hand, Player nonNPCPlayer)
     {
         if (FindChild($"Hand{hand.PositionID}") is VisibleHand visibleHand)
         {
-            visibleHand.Update(hand);
+            visibleHand.Update(hand, nonNPCPlayer);
         }
     }
 

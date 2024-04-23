@@ -35,7 +35,7 @@ public partial class VisibleHand : Node2D
         }
     }
 
-    internal void Update(Hand hand)
+    internal void Update(Hand hand, Player nonNPCPlayer)
     {
 		if (FindChild("Cards") is Control cards)
 		{
@@ -54,7 +54,7 @@ public partial class VisibleHand : Node2D
 
                         if (visibleCard.GetChild(0) is Label cardLabel)
                         {
-                            cardLabel.Visible = hand.IsVisible(card);
+                            cardLabel.Visible = hand.IsVisible(card, nonNPCPlayer);
                             cardLabel.Text = card.ToString();
                             cardLabel.ResetSize();
                             //cardLabel.Position = Vector2.Zero;
@@ -71,7 +71,7 @@ public partial class VisibleHand : Node2D
 
                         if (visibleCard.GetChild(1) is TextureRect cardBack)
                         {
-                            cardBack.Visible = !hand.IsVisible(card);
+                            cardBack.Visible = !hand.IsVisible(card, nonNPCPlayer);
                             if (cardBack.Visible)
                                 visibleCard.CustomMinimumSize = cardBack.Size + new Vector2(4, 4);
                             //GD.Print($"9Rect={visibleCard.Size} Label={cardLabel.Size}");
