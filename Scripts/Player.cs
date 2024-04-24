@@ -42,8 +42,7 @@ class Player
         hud.SetBetAmount(PositionID, AmountBet, null);
     }
 
-    int round = 0;
-    internal double ForceBetOrFold(HUD hud, Hand hand, double percent, double betFloor, bool canStopTheRoundByMatching)
+    internal double ForceBetOrFold(HUD hud, Hand hand, double percent, double betFloor, bool canStopTheRoundByMatching, int bettingRound)
     {
         AggregateValue agValue = new AggregateValue(this, hand);
         if (agValue._normalizedWealth <= 0)
@@ -79,7 +78,7 @@ class Player
             Bet(hud, betFloor);
             return amountWedHaveToAdd;
         }
-        
+
         if (comfortZoneStartsAt - amountWedHaveToAdd < betFloor)
         {
             GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (not willing to risk it) ${comfortZoneStartsAt - amountWedHaveToAdd:F2} < ${betFloor:F2}");
@@ -87,9 +86,26 @@ class Player
             return amountWedHaveToAdd;
         }
 
+        double raiseAmount = DetermineRaiseAmount(betFloor, willingToGoAsFarAs, bettingRound);
 
-        ++round;
-        int roundsLeft = 10 - round;
+        if (willingToGoAsFarAs < betFloor + raiseAmount)
+        {
+            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (would be a step too far) ${willingToGoAsFarAs:F2} < ${betFloor + raiseAmount:F2}");
+            Bet(hud, betFloor);
+            return amountWedHaveToAdd;
+        }
+        else
+        {
+            // We have a decent hand, and we think we can win
+            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, raises from ${betFloor:F2} to ${betFloor + raiseAmount:F2}: as ${comfortZoneStartsAt:F2} => ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
+            Bet(hud, betFloor + raiseAmount);
+            return amountWedHaveToAdd + raiseAmount;
+        }
+    }
+
+    private static double DetermineRaiseAmount(double betFloor, double willingToGoAsFarAs, int bettingRound)
+    {
+        int roundsLeft = Math.Max(1, 10 - bettingRound);
         double raiseAmount = (willingToGoAsFarAs - betFloor) / (roundsLeft * roundsLeft);
         if (raiseAmount + betFloor < 5)
         {
@@ -126,20 +142,7 @@ class Player
             raiseAmount = Math.Round((betFloor + raiseAmount) / 100) * 100 - (betFloor);
             raiseAmount = Math.Max(raiseAmount, 100);
         }
-        //double raiseAmount = 1;
 
-        if (willingToGoAsFarAs < betFloor + raiseAmount)
-        {
-            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (would be a step too far) ${willingToGoAsFarAs:F2} < ${betFloor + raiseAmount:F2}");
-            Bet(hud, betFloor);
-            return amountWedHaveToAdd;
-        }
-        else
-        {
-            // We have a decent hand, and we think we can win
-            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, raises from ${betFloor:F2} to ${betFloor + raiseAmount:F2}: as ${comfortZoneStartsAt:F2} => ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
-            Bet(hud, betFloor + raiseAmount);
-            return amountWedHaveToAdd + raiseAmount;
-        }
+        return raiseAmount;
     }
 }

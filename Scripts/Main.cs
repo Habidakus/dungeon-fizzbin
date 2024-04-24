@@ -17,6 +17,7 @@ public partial class Main : Node
     internal int InitialBetter { get { return (Dealer + 1) % _players.Count; } }
     internal int CurrentBetter { get; private set; }
     private double currentBetLimit = 1.0;
+    private int BettingRound = 0;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -325,6 +326,7 @@ public partial class Main : Node
             Pot += player.Ante(GetHUD(), anteAmount);
         }
 
+        BettingRound = 0;
         Dealer = 0; // Should advance each round
         CurrentBetter = InitialBetter;
         currentBetLimit = anteAmount + 1;
@@ -428,6 +430,9 @@ public partial class Main : Node
         int consider = _players.Count;
         while (consider > 0)
         {
+            if (CurrentBetter == InitialBetter)
+                ++BettingRound;
+
             if (_players[CurrentBetter].HasFolded)
             {
                 consider -= 1;
@@ -457,7 +462,7 @@ public partial class Main : Node
         if (_deal == null)
             throw new Exception("Can force someone to bet if there is no deal");
 
-        Pot += _deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit);
+        Pot += _deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit, BettingRound);
         if (!_players[CurrentBetter].HasFolded)
             currentBetLimit = _players[CurrentBetter].AmountBet;
 

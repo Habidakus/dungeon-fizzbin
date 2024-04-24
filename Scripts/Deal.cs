@@ -70,7 +70,7 @@ class Deal
         }
     }
 
-    public double ForceBetOrFold(Player player, List<Player> allPlayers, Random rnd, HUD hud, double currentRaise)
+    public double ForceBetOrFold(Player player, List<Player> allPlayers, Random rnd, HUD hud, double currentRaise, int bettingRound)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
@@ -99,7 +99,7 @@ class Deal
         }
 
         double ourChance = 100.0 - maxPercent;
-        return player.ForceBetOrFold(hud, hand, ourChance, currentRaise, canStopTheRoundByMatching);
+        return player.ForceBetOrFold(hud, hand, ourChance, currentRaise, canStopTheRoundByMatching, bettingRound);
     }
 
     private void Test(Random rnd, Player player)
