@@ -1,13 +1,13 @@
 using Godot;
 using System;
-using System.Collections.Generic;
 using System.Text;
-using static Godot.OpenXRInterface;
+
+#nullable enable
 
 public partial class VisibleHand : Node2D
 {
     [Export]
-    public PackedScene _visibleCard = null;
+    public PackedScene? _visibleCard = null;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -47,7 +47,7 @@ public partial class VisibleHand : Node2D
             {
                 foreach (Card card in hand._cards)
                 {
-                    Control visibleCard = _visibleCard.Instantiate() as Control;
+                    Control? visibleCard = _visibleCard.Instantiate() as Control;
                     if (visibleCard != null)
                     {
                         cards.AddChild(visibleCard);

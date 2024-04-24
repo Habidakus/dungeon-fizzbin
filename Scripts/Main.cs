@@ -118,26 +118,6 @@ public partial class Main : Node
                 }
             }
 
-            //List<Tuple<Hand, Card, Card>> sortedList = new List<Tuple<Hand, Card, Card>>();
-            //foreach (Card discardCard in new List<Card>() { cardNine, cardTwo })
-            //{
-            //    foreach (Card replacement in availableCards)
-            //    {
-            //        Hand potentialHand = hand.CloneWithDiscard(discardCard, replacement);
-            //        potentialHand.ComputeBestScore(minRank, maxRank);
-            //        sortedList.Add(Tuple.Create(potentialHand, discardCard, replacement));
-            //    }
-            //}
-
-            //sortedList.Sort((a,b) => {
-            //    return a.Item1.CompareTo(b.Item1);
-            //});
-
-            //foreach (var entry in sortedList)
-            //{
-            //    GD.Print($"Replacing {entry.Item2} for {entry.Item1}: {entry.Item1.GetDesc()}");
-            //}
-
             List<Tuple<AggregateValue, string, TimeSpan>> choices = new List<Tuple<AggregateValue, string, TimeSpan>>();
             foreach (int i in new List<int>(){ 2, 3, 3, 3, 3})
             {
@@ -410,6 +390,7 @@ public partial class Main : Node
 
                 _deal.MoveCardToDiscard(hud, player, playersWhoCanSeeThisDiscard, card);
                 player.Discards.RemoveAt(0);
+                player.DiscardCount += 1;
                 return true;
             }
         }
@@ -462,7 +443,9 @@ public partial class Main : Node
         if (_deal == null)
             throw new Exception("Can force someone to bet if there is no deal");
 
+        DateTime start = DateTime.Now;
         Pot += _deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit, BettingRound);
+        GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");
         if (!_players[CurrentBetter].HasFolded)
             currentBetLimit = _players[CurrentBetter].AmountBet;
 

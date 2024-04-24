@@ -4,11 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+#nullable enable
+
 class DiscardCards
 {
-    internal Card Card { get; set; }
-    internal List<int> PlayersWhoCanSeeThis = new List<int>();
-    internal int PlayerWhoDiscardedThis { get; set; }
+    internal Card Card { get; private set; }
+    internal List<int> PlayersWhoCanSeeThis { get; private set; } = new List<int>();
+    internal int PlayerWhoDiscardedThis { get; private set; }
+    internal DiscardCards(Card card, List<int> playersWhoCanSeeThis, int playerWhoDiscardedThis)
+    {
+        Card = card;
+        PlayersWhoCanSeeThis = playersWhoCanSeeThis;
+        PlayerWhoDiscardedThis = playerWhoDiscardedThis;
+    }
 };
 
 class Deal
@@ -91,7 +99,7 @@ class Deal
                     }
 
                     List<Card> unseenCards = AvailableCardsFromHandsView(hand);
-                    double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(player, hand, unseenCards, rnd);
+                    double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(otherPlayer, hand, unseenCards, rnd);
                     if (percent > maxPercent)
                         maxPercent = percent;
                 }
@@ -281,7 +289,7 @@ class Deal
     {
         Hand hand = GetPlayerHand(player);
         hand._cards.Remove(card);
-        _discards.Add(new DiscardCards() { Card = card, PlayerWhoDiscardedThis = player.PositionID, PlayersWhoCanSeeThis = playersWhoCanSeeThisDiscard });
+        _discards.Add(new DiscardCards(card, playersWhoCanSeeThisDiscard, player.PositionID));
         hud.SetVisibleHand(hand, NonNPCPlayer);
         hud.MoveCardToDiscard(player.PositionID, card, playersWhoCanSeeThisDiscard.Contains(NonNPCPlayer.PositionID));
     }
@@ -312,6 +320,10 @@ class Deal
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         Hand otherHand = GetPlayerHand(otherPlayer);
+        if (otherHand._handValue == null)
+        {
+            throw new Exception("Can't call WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand() with un-evaluated hand");
+        }
 
         int theyWin = 0;
         const int numHandsToCreate = 1000;
@@ -319,10 +331,9 @@ class Deal
         {
             Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd);
             potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
+            HandValue av = potentialHand.ApplyRandomDiscard(otherPlayer.DiscardCount, unseenCards, minRank, maxRank, suitsCount, rnd);
 
-            // #TODO: The hand now needs to discard the same amount that the other player discarded.
-
-            if (ourHand.CompareTo(potentialHand) < 0)
+            if (ourHand._handValue!.CompareTo(av) < 0)
             {
                 theyWin += 1;
             }

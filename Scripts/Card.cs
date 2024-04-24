@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
+#nullable enable
+
 class Card : IComparable<Card> 
 {
     public Rank Rank { get; private set; }

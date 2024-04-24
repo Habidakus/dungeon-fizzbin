@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+#nullable enable
+
 class Hand : IComparable<Hand>
 {
     readonly internal Player _player;
@@ -427,7 +429,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    private Tuple<bool, List<Hand>> GenerateHands(List<int> discardIndices, List<Card> availableCards, Random rnd)
+    private Tuple<bool, List<Hand>> GenerateHands(List<int> discardIndices, List<Card> availableCards, Random rnd, int sampleCutOff)
     {
         if (discardIndices.Count == 0)
             throw new Exception("GenerateHands() with zero discard indicies");
@@ -437,13 +439,13 @@ class Hand : IComparable<Hand>
         for (int i = 0; i < discardIndices.Count; ++i, --multiple)
             count *= multiple;
 
-        if (count < 9000)
+        if (count <= sampleCutOff)
         {
             return Tuple.Create(false, GenerateAllHands(discardIndices, availableCards));
         }
         else
         {
-            return Tuple.Create(true, GenerateSampledHands(discardIndices, availableCards, rnd));
+            return Tuple.Create(true, GenerateSampledHands(discardIndices, availableCards, rnd, sampleCutOff / 2));
         }
     }
 
@@ -465,14 +467,14 @@ class Hand : IComparable<Hand>
         }
     }
 
-    private List<Hand> GenerateSampledHands(List<int> discardIndices, List<Card> availableCards, Random rnd)
+    private List<Hand> GenerateSampledHands(List<int> discardIndices, List<Card> availableCards, Random rnd, int numberOfHandsToGenerate)
     {
         List<Hand> retVal = new List<Hand>();
         List<int> pullIndices = new List<int>();
         for(int k = 0; k < discardIndices.Count; ++k)
             pullIndices.Add(k);
 
-        for (int i = 0; i<5000; ++i)
+        for (int i = 0; i< numberOfHandsToGenerate; ++i)
         {
             GeneratePullIndices(availableCards.Count, discardIndices.Count, rnd, ref pullIndices);
             Hand clone = CloneWithDiscard(_cards[discardIndices[0]], availableCards[pullIndices[0]]);
@@ -511,12 +513,12 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal Tuple<AggregateValue, List<Card>> SelectDiscards(List<int> discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd)
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(List<int> discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd, int sampleCutOff)
     {
         if (discardIndices.Count == 0)
             throw new Exception("SelectDiscards() with zero discard indicies");
 
-        Tuple<bool, List<Hand>> generatedHands = GenerateHands(discardIndices, availableCards, rnd);
+        Tuple<bool, List<Hand>> generatedHands = GenerateHands(discardIndices, availableCards, rnd, sampleCutOff);
         SortedSet<Hand> sortedHands = new SortedSet<Hand>();
         foreach (Hand hand in generatedHands.Item2)
         {
@@ -534,6 +536,75 @@ class Hand : IComparable<Hand>
         aggValue.Add(sortedHands.ToArray(), generatedHands.Item1);
 
         return Tuple.Create(aggValue, discards);
+    }
+
+    internal HandValue ApplyRandomDiscard(int noOfDiscards, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd)
+    {
+        if (noOfDiscards == 0)
+        {
+            if (_handValue == null)
+                throw new Exception("We shouldn't be applying random discard to un-evaluated hand");
+
+            return _handValue;
+        }
+
+        const int iterations = 16;
+        HandValue? retVal = null;
+        if (noOfDiscards == 1)
+        {
+            AggregateValue? bestCardToDiscardValue = null;
+            Card? bestCardToDiscard = null;
+            foreach (Card discardCard in _cards)
+            {
+                AggregateValue aggValue = new AggregateValue(_player);
+                SortedSet<Hand> sortedHands = new SortedSet<Hand>();
+                for (int i = 0; i < iterations; ++i)
+                {
+                    Hand potentialHand = CloneWithDiscard(discardCard, availableCards.ElementAt(rnd.Next() % availableCards.Count));
+                    potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
+                    sortedHands.Add(potentialHand);
+                }
+                aggValue.Add(sortedHands.ToArray(), sampled: true);
+
+                if (bestCardToDiscardValue == null || aggValue.CompareTo(bestCardToDiscardValue) > 0)
+                {
+                    bestCardToDiscardValue = aggValue;
+                    bestCardToDiscard = discardCard;
+                }
+            }
+
+            Hand sampleHand = CloneWithDiscard(bestCardToDiscard!, availableCards.ElementAt(rnd.Next() % availableCards.Count));
+            sampleHand.ComputeBestScore(minRank, maxRank, suitsCount);
+            retVal = sampleHand._handValue;
+        }
+        else
+        {
+            AggregateValue? bestCardsToDiscardValue = null;
+            List<int>? bestCardsToDiscard = null;
+            foreach (List<int> iter in GenerateUniqueDiscardSelections(noOfDiscards, 0, 4))
+            {
+                AggregateValue aggValue = new AggregateValue(_player);
+                SortedSet<Hand> sortedHands = new SortedSet<Hand>();
+                foreach (Hand hand in GenerateSampledHands(iter, availableCards, rnd, iterations))
+                {
+                    hand.ComputeBestScore(minRank, maxRank, suitsCount);
+                    sortedHands.Add(hand);
+                }
+                aggValue.Add(sortedHands.ToArray(), sampled: true);
+
+                if (bestCardsToDiscardValue == null || aggValue.CompareTo(bestCardsToDiscardValue) > 0)
+                {
+                    bestCardsToDiscardValue = aggValue;
+                    bestCardsToDiscard = iter;
+                }
+            }
+
+            Hand sampleHand = GenerateSampledHands(bestCardsToDiscard!, availableCards, rnd, 1).First();
+            sampleHand.ComputeBestScore(minRank, maxRank, suitsCount);
+            retVal = sampleHand._handValue;
+        }
+
+        return retVal!;
     }
 
     internal Tuple<AggregateValue, List<Card>> SelectDiscards(int noOfDiscards, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd)
@@ -572,9 +643,10 @@ class Hand : IComparable<Hand>
         }
         else
         {
+            const int sampleCutOff = 9000;
             foreach (List<int> iter in GenerateUniqueDiscardSelections(noOfDiscards, 0, 4))
             {
-                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, rnd);
+                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, rnd, sampleCutOff);
                 if (best.UpdateIfBetter(subBest.Item1))
                 {
                     retVal = subBest.Item2;
@@ -753,6 +825,7 @@ class AggregateValue : IComparable<AggregateValue>
         {
             throw new Exception($"Aggregate value [{GetDesc()}] doesn't have normalized wealth set");
         }
+
         if (other._normalizedWealth <= 0)
         {
             throw new Exception($"Aggregate value [{other.GetDesc()}] doesn't have normalized wealth set");
@@ -761,6 +834,11 @@ class AggregateValue : IComparable<AggregateValue>
         if (_normalizedWealth != other._normalizedWealth)
         {
             return _normalizedWealth.CompareTo(other._normalizedWealth);
+        }
+
+        if (_hopefulValue == null)
+        {
+            throw new Exception($"Aggregate value [{GetDesc()}] doesn't have computed value");
         }
 
         return _hopefulValue.CompareTo(other._hopefulValue);

@@ -1,6 +1,8 @@
 using Godot;
 using System;
 
+#nullable enable
+
 public partial class HUD : CanvasLayer
 {
 	private Control TitlePage { get { return GetChildControl("TitlePage"); } }

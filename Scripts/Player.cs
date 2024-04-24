@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 class Player
 {
     internal int PositionID { get; private set; }
@@ -11,6 +13,7 @@ class Player
     internal double AmountBet { get; private set; }
     internal bool HasRevealed { get; set; }
     internal List<Card>? Discards { get; set; }
+    internal int DiscardCount { get; set; }
 
     internal Player(int positionID)
     {
@@ -21,6 +24,7 @@ class Player
         HasRevealed = false;
         AmountBet = 0;
         Discards = null;
+        DiscardCount = 0;
     }
 
     internal double Ante(HUD hud, double anteAmount)
@@ -51,10 +55,12 @@ class Player
         }
 
         double willingToGoAsFarAs = 1.75 * Math.Sqrt(agValue._normalizedWealth);
+        double comfortZoneStartsAt = willingToGoAsFarAs * percent / 100.0;
         double amountWedHaveToAdd = betFloor - AmountBet;
 
-        string handTxt = hand._handValue.ToString() ?? "??";
-        if (willingToGoAsFarAs < betFloor)
+        string handTxt = hand._handValue?.ToString() ?? "??";
+        //if (willingToGoAsFarAs < betFloor)
+        if (comfortZoneStartsAt < betFloor)
         {
             if (canStopTheRoundByMatching && amountWedHaveToAdd <= AmountBet)
             {
@@ -65,19 +71,18 @@ class Player
             }
             else
             {
-                GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, Folds as ${willingToGoAsFarAs:F2} < ${betFloor:F2} and ${amountWedHaveToAdd:F2} is too much");
+                GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, Folds as ${comfortZoneStartsAt:F2} < ${betFloor:F2} and ${amountWedHaveToAdd:F2} is too much");
                 Fold(hud);
                 return 0;
             }
         }
 
-        double comfortZoneStartsAt = willingToGoAsFarAs * percent / 100.0;
-        if (comfortZoneStartsAt < betFloor)
-        {
-            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (past our comfort zone) ${comfortZoneStartsAt:F2} < ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
-            Bet(hud, betFloor);
-            return amountWedHaveToAdd;
-        }
+        //if (comfortZoneStartsAt < betFloor)
+        //{
+        //    GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (past our comfort zone) ${comfortZoneStartsAt:F2} < ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
+        //    Bet(hud, betFloor);
+        //    return amountWedHaveToAdd;
+        //}
 
         if (comfortZoneStartsAt - amountWedHaveToAdd < betFloor)
         {
@@ -110,7 +115,7 @@ class Player
         if (raiseAmount + betFloor < 5)
         {
             raiseAmount = Math.Round(raiseAmount * 4) / 4;
-            raiseAmount = Math.Max(raiseAmount, 0.25);
+            raiseAmount = Math.Max(raiseAmount, 0);
         }
         else if (raiseAmount + betFloor < 20)
         {
