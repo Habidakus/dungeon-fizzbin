@@ -12,6 +12,7 @@ public partial class Main : Node
     private List<Player> _players = new List<Player>();
     private Deal? _deal = null;
 
+    internal double Pot { get; private set; }
     internal int Dealer { get; private set; }
     internal int InitialBetter { get { return (Dealer + 1) % _players.Count; } }
     internal int CurrentBetter { get; private set; }
@@ -24,10 +25,6 @@ public partial class Main : Node
         {
             _players.Add(new Player(i));
         }
-
-        Dealer = 0; // Should advance each round
-        CurrentBetter = InitialBetter;
-        currentBetLimit = 1.0; // $1.00
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -316,11 +313,21 @@ public partial class Main : Node
 
     internal void StartFreshDeal()
     {
-
         //Test(rnd);
 
         _deal = new Deal(_players, rnd);
         _deal.UpdateHUD(GetHUD());
+
+        Pot = 0;
+        const double anteAmount = 1;
+        foreach (Player player in  _players)
+        {
+            Pot += player.Ante(GetHUD(), anteAmount);
+        }
+
+        Dealer = 0; // Should advance each round
+        CurrentBetter = InitialBetter;
+        currentBetLimit = anteAmount + 1;
     }
 
     internal HUD GetHUD()
@@ -369,7 +376,6 @@ public partial class Main : Node
                 Hand hand = _deal.GetPlayerHand(_players[j]);
                 _players[j].Discards = hand.SelectDiscards(0, 3, _deal, rnd);
                 _players[j].HasDiscarded = true;
-                //hud.SetHandDiscards(hand);
 
                 GetStateMachine().SwitchState("Play_Animate_Discards");
 
@@ -414,6 +420,11 @@ public partial class Main : Node
 
     public bool SomeoneNeedsToBet()
     {
+        if (1 == _players.Where(a => !a.HasFolded).Count())
+        {
+            return false;
+        }
+
         int consider = _players.Count;
         while (consider > 0)
         {
@@ -446,7 +457,7 @@ public partial class Main : Node
         if (_deal == null)
             throw new Exception("Can force someone to bet if there is no deal");
 
-        _deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit);
+        Pot += _deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit);
         if (!_players[CurrentBetter].HasFolded)
             currentBetLimit = _players[CurrentBetter].AmountBet;
 
@@ -455,6 +466,11 @@ public partial class Main : Node
 
     public bool SomeoneNeedsToReveal()
     {
+        if (1 == _players.Where(a => !a.HasFolded).Count())
+        {
+            return false;
+        }
+
         foreach (Player player in _players)
         {
             if (player.HasFolded)
@@ -510,5 +526,4 @@ public partial class Main : Node
             return;
         }
     }
-
 }

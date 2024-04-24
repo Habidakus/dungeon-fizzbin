@@ -153,6 +153,19 @@ public partial class VisibleHand : Node2D
         }
     }
 
+    internal void Ante(double amountBet)
+    {
+        if (FindChild("Score") is Label scoreLabel)
+        {
+            scoreLabel.Text = (amountBet > 0) ? $"Ante: ${amountBet:F2}" : "Fold";
+            scoreLabel.Show();
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Score");
+        }
+    }
+
     internal void FoldHand(double amountBet)
     {
         if (FindChild("Score") is Label scoreLabel)

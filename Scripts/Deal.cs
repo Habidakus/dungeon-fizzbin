@@ -70,13 +70,14 @@ class Deal
         }
     }
 
-    public void ForceBetOrFold(Player player, List<Player> allPlayers, Random rnd, HUD hud, double currentRaise)
+    public double ForceBetOrFold(Player player, List<Player> allPlayers, Random rnd, HUD hud, double currentRaise)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         Hand hand = GetPlayerHand(player);
         hand.ComputeBestScore(minRank, maxRank, suitsCount);
 
+        bool canStopTheRoundByMatching = true;
         double maxPercent = double.MinValue;
         foreach (Player otherPlayer in allPlayers)
         {
@@ -84,6 +85,11 @@ class Deal
             {
                 if (!otherPlayer.HasFolded)
                 {
+                    if (otherPlayer.AmountBet < currentRaise)
+                    {
+                        canStopTheRoundByMatching = false;
+                    }
+
                     List<Card> unseenCards = AvailableCardsFromHandsView(hand);
                     double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(player, hand, unseenCards, rnd);
                     if (percent > maxPercent)
@@ -93,7 +99,7 @@ class Deal
         }
 
         double ourChance = 100.0 - maxPercent;
-        player.ForceBetOrFold(hud, hand, ourChance, currentRaise);
+        return player.ForceBetOrFold(hud, hand, ourChance, currentRaise, canStopTheRoundByMatching);
     }
 
     private void Test(Random rnd, Player player)
