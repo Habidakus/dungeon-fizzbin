@@ -153,11 +153,11 @@ public partial class VisibleHand : Node2D
         }
     }
 
-    internal void FoldHand()
+    internal void FoldHand(double amountBet)
     {
         if (FindChild("Score") is Label scoreLabel)
         {
-            scoreLabel.Text = "Fold";
+            scoreLabel.Text = (amountBet > 0) ? $"Fold: ${amountBet:F2}": "Fold";
             scoreLabel.Show();
         }
         else

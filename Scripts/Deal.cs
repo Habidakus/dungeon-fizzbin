@@ -70,6 +70,32 @@ class Deal
         }
     }
 
+    public void ForceBetOrFold(Player player, List<Player> allPlayers, Random rnd, HUD hud, double currentRaise)
+    {
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+
+        Hand hand = GetPlayerHand(player);
+        hand.ComputeBestScore(minRank, maxRank, suitsCount);
+
+        double maxPercent = double.MinValue;
+        foreach (Player otherPlayer in allPlayers)
+        {
+            if (otherPlayer.PositionID != hand.PositionID)
+            {
+                if (!otherPlayer.HasFolded)
+                {
+                    List<Card> unseenCards = AvailableCardsFromHandsView(hand);
+                    double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(player, hand, unseenCards, rnd);
+                    if (percent > maxPercent)
+                        maxPercent = percent;
+                }
+            }
+        }
+
+        double ourChance = 100.0 - maxPercent;
+        player.ForceBetOrFold(hud, hand, ourChance, currentRaise);
+    }
+
     private void Test(Random rnd, Player player)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);

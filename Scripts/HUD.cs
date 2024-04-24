@@ -105,11 +105,11 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    public void FoldHand(int positionID)
+    public void FoldHand(int positionID, double amountBet)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
-            visibleHand.FoldHand();
+            visibleHand.FoldHand(amountBet);
         }
     }
 

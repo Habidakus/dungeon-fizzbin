@@ -8,7 +8,7 @@ class Hand : IComparable<Hand>
 {
     readonly internal Player _player;
     internal List<Card> _cards = new List<Card>();
-    internal HandValue? _bestScore = null;
+    internal HandValue? _handValue = null;
 
     public int PositionID { get { return _player.PositionID; } }
     public Player Player { get { return _player; } }
@@ -143,7 +143,7 @@ class Hand : IComparable<Hand>
     {
         List<Card> cardsSortedHighestToLowest = _cards.OrderByDescending(a => a).ToList();
         Card highCard = cardsSortedHighestToLowest.First();
-        _bestScore = new HandValue(cardsSortedHighestToLowest);
+        _handValue = new HandValue(cardsSortedHighestToLowest);
         bool isStraight = IsStraight(minRank, maxRank);
         bool isFlush = IsFlush;
         bool isMinorHouse = suitsCount > 4 ? IsMinorHouse : false;
@@ -153,22 +153,22 @@ class Hand : IComparable<Hand>
             {
                 Card lowCard = _cards.OrderBy(a => a).First();
                 if (lowCard.Rank.IsTenOrHigher())
-                    _bestScore = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                    _handValue = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
                 else
-                    _bestScore = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                    _handValue = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
             }
             else if (isMinorHouse)
             {
-                _bestScore = new HandValue(HandValue.HandRanking.Castle, cardsSortedHighestToLowest);
+                _handValue = new HandValue(HandValue.HandRanking.Castle, cardsSortedHighestToLowest);
             }
             else
             {
-                _bestScore = new HandValue(HandValue.HandRanking.Straight, cardsSortedHighestToLowest);
+                _handValue = new HandValue(HandValue.HandRanking.Straight, cardsSortedHighestToLowest);
             }
         }
         else if (isFlush)
         {
-            _bestScore = new HandValue(HandValue.HandRanking.Flush, cardsSortedHighestToLowest);
+            _handValue = new HandValue(HandValue.HandRanking.Flush, cardsSortedHighestToLowest);
         }
 
         ExtractOfAKind(_cards, out List<Card> ofAKind, out List<Card> remainder);
@@ -229,13 +229,13 @@ class Hand : IComparable<Hand>
 
             if (possiblyBetter != null)
             {
-                if (possiblyBetter.CompareTo(_bestScore) > 0)
+                if (possiblyBetter.CompareTo(_handValue) > 0)
                 {
-                    _bestScore = possiblyBetter;
+                    _handValue = possiblyBetter;
                 }
                 else
                 {
-                    if (_bestScore._handRanking == HandValue.HandRanking.HighCard)
+                    if (_handValue._handRanking == HandValue.HandRanking.HighCard)
                     {
                         GD.Print($"HighCard better than {possiblyBetter._handRanking}?");
                     }
@@ -248,7 +248,7 @@ class Hand : IComparable<Hand>
     {
         StringBuilder sb = new StringBuilder();
         sb.Append(_player);
-        if (_bestScore != null)
+        if (_handValue != null)
             sb.Append($": ({ScoreAsString()})");
         else
             sb.Append(':');
@@ -259,8 +259,8 @@ class Hand : IComparable<Hand>
 
     internal string ScoreAsString()
     {
-        if (_bestScore != null)
-            return $"{_bestScore}";
+        if (_handValue != null)
+            return $"{_handValue}";
         else
             return "???";
     }
@@ -282,10 +282,10 @@ class Hand : IComparable<Hand>
         if (other == null)
             throw new Exception("Comparing to null hand");
 
-        if (_bestScore == null || other._bestScore == null)
+        if (_handValue == null || other._handValue == null)
             throw new Exception("Best Score not computed");
 
-        return _bestScore.CompareTo(other._bestScore);
+        return _handValue.CompareTo(other._handValue);
     }
 
 
@@ -555,7 +555,7 @@ class Hand : IComparable<Hand>
                 {
                     Hand potentialHand = CloneWithDiscard(discardCard, replacement);
                     potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
-                    scoreList.Add(potentialHand._bestScore!);
+                    scoreList.Add(potentialHand._handValue!);
                 }
 
                 if (scoreList.Count > 0)
@@ -628,12 +628,12 @@ class AggregateValue : IComparable<AggregateValue>
     public AggregateValue(Player player, Hand hand)
     {
         _player = player;
-        SetHopefulValue(hand._bestScore);
+        SetHopefulValue(hand._handValue);
 
         _normalizedWealth = 0;
-        if (hand._bestScore == null)
+        if (hand._handValue == null)
             throw new Exception("Initializing with scoreless hand");
-        AddAggreageWorth(hand._bestScore, 1);
+        AddAggreageWorth(hand._handValue, 1);
     }
 
     internal AggregateValue(Player player)
@@ -678,7 +678,7 @@ class AggregateValue : IComparable<AggregateValue>
 
         // Best values are at the back
         int i = sortedHands.Length * 11 / 12;
-        SetHopefulValue(sortedHands.ElementAt(i)._bestScore);
+        SetHopefulValue(sortedHands.ElementAt(i)._handValue);
 
         // If we're reading sampled values then we can poison the results by having some bad edge cases.
         int maxReads = sortedHands.Length;
@@ -689,7 +689,7 @@ class AggregateValue : IComparable<AggregateValue>
 
         for (i = 0; i < maxReads; ++i)
         {
-            AddAggreageWorth(sortedHands.ElementAt(i)._bestScore, maxReads);
+            AddAggreageWorth(sortedHands.ElementAt(i)._handValue, maxReads);
         }
     }
 

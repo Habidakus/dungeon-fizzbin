@@ -415,7 +415,6 @@ public partial class Main : Node
     public bool SomeoneNeedsToBet()
     {
         int consider = _players.Count;
-
         while (consider > 0)
         {
             if (_players[CurrentBetter].HasFolded)
@@ -425,17 +424,18 @@ public partial class Main : Node
                 continue;
             }
 
-            if (_players[CurrentBetter].AmountBet == currentBetLimit)
+            if (_players[CurrentBetter].AmountBet < currentBetLimit)
             {
-                consider -= 1;
-                CurrentBetter = (CurrentBetter + 1) % _players.Count;
-                continue;
+                return true;
             }
-
-            if (_players[CurrentBetter].AmountBet > currentBetLimit)
+            else if (_players[CurrentBetter].AmountBet == currentBetLimit)
+            {
+                return false;
+            }
+            else
+            {
                 throw new Exception($"Why is player #{CurrentBetter} got more bet ({_players[CurrentBetter].AmountBet}) than the current bet limit ({currentBetLimit})?");
-
-            return true;
+            }
         }
 
         return false;
@@ -446,40 +446,11 @@ public partial class Main : Node
         if (_deal == null)
             throw new Exception("Can force someone to bet if there is no deal");
 
-        _deal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+        _deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit);
+        if (!_players[CurrentBetter].HasFolded)
+            currentBetLimit = _players[CurrentBetter].AmountBet;
 
-        Hand hand = _deal.GetPlayerHand(_players[CurrentBetter]);
-        hand.ComputeBestScore(minRank, maxRank, suitsCount);
-
-        double maxPercent = double.MinValue;
-        foreach (Player player in _players)
-        {
-            if (player.PositionID != hand.PositionID)
-            {
-                if (!player.HasFolded)
-                {
-                    List<Card> unseenCards = _deal.AvailableCardsFromHandsView(hand);
-                    double percent = _deal.WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(player, hand, unseenCards, rnd);
-                    if (percent > maxPercent)
-                        maxPercent = percent;
-                }
-            }
-        }
-
-        GD.Print($"Player #{_players[CurrentBetter].PositionID} believes they have {100.0 - maxPercent:F2}% chance of winning");
-
-        if (maxPercent > 75)
-        {
-            _players[CurrentBetter].Fold(GetHUD());
-        }
-        else
-        {
-            double howMuchToBet = 3.0 - (maxPercent / 25.0);
-            howMuchToBet = 10.0 * howMuchToBet * howMuchToBet / 9.0;
-            _players[CurrentBetter].Bet(GetHUD(), howMuchToBet, currentBetLimit);
-            if (!_players[CurrentBetter].HasFolded)
-                currentBetLimit = _players[CurrentBetter].AmountBet;
-        }
+        CurrentBetter = (CurrentBetter + 1) % _players.Count;
     }
 
     public bool SomeoneNeedsToReveal()
