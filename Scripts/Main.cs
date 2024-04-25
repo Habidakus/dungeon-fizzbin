@@ -19,12 +19,14 @@ public partial class Main : Node
     private double currentBetLimit = 1.0;
     private int BettingRound = 0;
 
+    public static int HandNumber { get; private set; }
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
         for (int i = 0; i < 5; ++i)
         {
-            _players.Add(new Player(i));
+            _players.Add(new Player(i, rnd));
         }
     }
 
@@ -35,7 +37,7 @@ public partial class Main : Node
 
     private void Test(Random rnd)
     {
-        Player player = new Player(0);
+        Player player = new Player(0, rnd);
         
         Suit suitA = Suit.DefaultSuits[0];
         Suit suitB = Suit.DefaultSuits[1];
@@ -153,7 +155,7 @@ public partial class Main : Node
 
     private void Test1()
     {
-        Player player = new Player(0);
+        Player player = new Player(0, rnd);
         List<Hand> hands = new List<Hand>();
         Suit suitA = Suit.DefaultSuits[0];
         Suit suitB = Suit.DefaultSuits[1];
@@ -301,8 +303,9 @@ public partial class Main : Node
 
         Pot = 0;
         const double anteAmount = 1;
-        foreach (Player player in  _players)
+        foreach (Player player in _players)
         {
+            player.InitHud(GetHUD());
             Pot += player.Ante(GetHUD(), anteAmount);
         }
 

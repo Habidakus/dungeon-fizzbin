@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Xml.Linq;
 
 #nullable enable
 
@@ -104,6 +105,14 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.AddDiscard(card, isVisibileToNonNPC);
+        }
+    }
+
+    internal void SetPlayerInfo(Player player)
+    {
+        if (FindChild($"Hand{player.PositionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.SetPlayerInfo(player.Name, player.Species);
         }
     }
 

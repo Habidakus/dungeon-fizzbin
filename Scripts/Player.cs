@@ -14,17 +14,38 @@ class Player
     internal bool HasRevealed { get; set; }
     internal List<Card>? Discards { get; set; }
     internal int DiscardCount { get; set; }
+    internal Species Species { get; private set; }
+    internal string Name { get; private set; }
 
-    internal Player(int positionID)
+    internal Player(int positionID, Random rng)
     {
         PositionID = positionID;
-        IsNPC = positionID > 0;
         HasDiscarded = false;
         HasFolded = false;
         HasRevealed = false;
         AmountBet = 0;
         Discards = null;
         DiscardCount = 0;
+        if (PositionID == 0)
+        {
+            IsNPC = false;
+            Species = Species.Human;
+            if (PositionID == 0 && OS.HasEnvironment("USERNAME"))
+                Name = OS.GetEnvironment("USERNAME");
+            else
+                Name = "Player";
+        }
+        else
+        {
+            IsNPC = true;
+            Species = Species.PickSpecies(rng);
+            Name = Species.GenerateRandomName(rng, PositionID);
+        }
+    }
+
+    internal void InitHud(HUD hud)
+    {
+        hud.SetPlayerInfo(this);
     }
 
     internal double Ante(HUD hud, double anteAmount)

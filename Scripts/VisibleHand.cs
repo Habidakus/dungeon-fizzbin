@@ -131,7 +131,34 @@ public partial class VisibleHand : Node2D
         }
         else
         {
-            throw new Exception($"{Name} does not have a child Score");
+            throw new Exception($"{Name} does not have a child Discards");
+        }
+    }
+
+    internal void SetPlayerInfo(string name, Species species)
+    {
+        if (FindChild("PlayerInfo") is BoxContainer infoBox)
+        {
+            if (infoBox.GetChildCount() == 0)
+            {
+                Label nameText = new Label();
+                nameText.Text = name;
+                nameText.HorizontalAlignment = HorizontalAlignment.Left;
+                nameText.VerticalAlignment = VerticalAlignment.Bottom;
+                nameText.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+                infoBox.AddChild(nameText);
+
+                Label speciesText = new Label();
+                speciesText.Text = species.Name;
+                speciesText.HorizontalAlignment = HorizontalAlignment.Right;
+                speciesText.VerticalAlignment = VerticalAlignment.Bottom;
+                speciesText.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+                infoBox.AddChild(speciesText);
+            }
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child PlayerInfo");
         }
     }
 
