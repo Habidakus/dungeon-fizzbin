@@ -35,6 +35,42 @@ public partial class VisibleHand : Node2D
         }
     }
 
+    private void AddCardToControl(Control visibleCard, bool exposed, Card card)
+    {
+        if (visibleCard == null)
+            return;
+
+        if (visibleCard.GetChild(0) is Label cardLabel)
+        {
+            cardLabel.Visible = exposed;
+            cardLabel.Text = card.ToString();
+            cardLabel.ResetSize();
+            if (cardLabel.Visible)
+            {
+                visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
+                //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
+            }
+        }
+        else
+        {
+            throw new Exception($"VisibleCard {visibleCard} has no child label");
+        }
+
+        if (visibleCard.GetChild(1) is TextureRect cardBack)
+        {
+            cardBack.Visible = !exposed;
+            if (cardBack.Visible)
+                visibleCard.CustomMinimumSize = cardBack.Size + new Vector2(4, 4);
+        }
+        else
+        {
+            throw new Exception($"VisibleCard {visibleCard} has no child label");
+        }
+
+        visibleCard.UpdateMinimumSize();
+        visibleCard.ResetSize();
+    }
+
     internal void Update(Hand hand, Player nonNPCPlayer)
     {
 		if (FindChild("Cards") is Control cards)
@@ -47,42 +83,11 @@ public partial class VisibleHand : Node2D
             {
                 foreach (Card card in hand._cards)
                 {
-                    Control? visibleCard = _visibleCard.Instantiate() as Control;
-                    if (visibleCard != null)
+                    if (_visibleCard.Instantiate() is Control visibleCard)
                     {
+                        visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
-
-                        if (visibleCard.GetChild(0) is Label cardLabel)
-                        {
-                            cardLabel.Visible = hand.IsVisible(card, nonNPCPlayer);
-                            cardLabel.Text = card.ToString();
-                            cardLabel.ResetSize();
-                            //cardLabel.Position = Vector2.Zero;
-                            if (cardLabel.Visible)
-                            {
-                                visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
-                                //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception($"VisibleCard {visibleCard} has no child label");
-                        }
-
-                        if (visibleCard.GetChild(1) is TextureRect cardBack)
-                        {
-                            cardBack.Visible = !hand.IsVisible(card, nonNPCPlayer);
-                            if (cardBack.Visible)
-                                visibleCard.CustomMinimumSize = cardBack.Size + new Vector2(4, 4);
-                            //GD.Print($"9Rect={visibleCard.Size} Label={cardLabel.Size}");
-                        }
-                        else
-                        {
-                            throw new Exception($"VisibleCard {visibleCard} has no child label");
-                        }
-
-                        visibleCard.UpdateMinimumSize();
-                        visibleCard.ResetSize();
+                        AddCardToControl(visibleCard, hand.IsVisible(card, nonNPCPlayer), card);
                     }
                 }
             }
@@ -90,62 +95,39 @@ public partial class VisibleHand : Node2D
             {
                 throw new Exception("No visible card defined for visible hand");
             }
-            //cardsLabel.Text = hand.CardsAsString();
 		}
 		else
 		{
 			throw new Exception($"{Name} does not have a child Cards");
         }
-
-        //if (FindChild("Score") is Label scoreLabel)
-        //{
-        //    if (hand.IsEveryCardVisible)
-        //    {
-        //        scoreLabel.Text = hand.ScoreAsString();
-        //        scoreLabel.Show();
-        //    }
-        //    else
-        //    {
-        //        scoreLabel.Hide();
-        //    }
-        //}
-        //else
-        //{
-        //    throw new Exception($"{Name} does not have a child Score");
-        //}
-
-        //if (FindChild("Discards") is Label discardLabel)
-        //{
-        //    discardLabel.Text = "";
-        //}
-        //else
-        //{
-        //    throw new Exception($"{Name} does not have a child Score");
-        //}
     }
 
     internal void AddDiscard(Card discard, bool isVisibleToNonNPC)
     {
-        if (FindChild("Discards") is Label discardLabel)
+        if (FindChild("Discards") is BoxContainer discardBox)
         {
-            StringBuilder sb = new StringBuilder();
-
-            if (discardLabel.Text.Length == 0)
-                sb.Append("Discard:");
-            else
-                sb.Append(discardLabel.Text);
-
-            sb.Append(' ');
-            if (isVisibleToNonNPC)
+            if (_visibleCard != null)
             {
-                sb.Append(discard);
+                if (discardBox.GetChildCount() == 0)
+                {
+                    Label discardtext = new Label();
+                    discardtext.Text = "Discard: ";
+                    discardtext.HorizontalAlignment = HorizontalAlignment.Right;
+                    discardtext.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+                    discardBox.AddChild(discardtext);
+                }
+                
+                if (_visibleCard.Instantiate() is Control visibleCard)
+                {
+                    visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+                    discardBox.AddChild(visibleCard);
+                    AddCardToControl(visibleCard, isVisibleToNonNPC, discard);
+                }
             }
             else
             {
-                sb.Append('?');
+                throw new Exception("No visible card defined for visible hand");
             }
-
-            discardLabel.Text = sb.ToString();
         }
         else
         {

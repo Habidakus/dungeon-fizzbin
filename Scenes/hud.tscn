@@ -74,19 +74,19 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Hand0" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(576, 486)
+position = Vector2(576, 510)
 
 [node name="Hand1" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(230, 324)
+position = Vector2(240, 324)
 
 [node name="Hand2" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(288, 162)
+position = Vector2(302, 144)
 
 [node name="Hand3" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(864, 162)
+position = Vector2(850, 144)
 
 [node name="Hand4" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(922, 324)
+position = Vector2(912, 324)
 
 [node name="MenuPage" type="Control" parent="."]
 visible = false
