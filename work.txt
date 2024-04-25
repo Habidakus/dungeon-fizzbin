@@ -4,7 +4,7 @@
 19th (half) aggregate worth
 22nd fix sample prediction, card art, expanded state machine
 23rd Card visibility based on viewer, discard logic, added Castle & Prison hand ranks
-24th Worked on betting sequence
+24th Worked on betting sequence, added the Ante, made discard use card graphics
 
 felt green #277714
 card red #f03a17
