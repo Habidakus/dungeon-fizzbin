@@ -413,6 +413,28 @@ public partial class Main : Node
         return false;
     }
 
+    internal bool HasPostDiscard()
+    {
+        if (_deal == null)
+            throw new Exception("Can't check post-discord with no deal");
+
+        return _deal.RevealRightNeighborsHighestCards > 0;
+    }
+
+    internal void PerformPostDiscord()
+    {
+        if (_deal == null)
+            throw new Exception("Can't perform post-discord with no deal");
+
+        foreach (Hand hand in _deal._hands)
+        {
+            int leftNeighbor = (hand.PositionID + 1 + _players.Count) % _players.Count;
+            hand.RevealHighestCardsToOtherPlayer(GetHUD(), _deal.RevealRightNeighborsHighestCards, _players[leftNeighbor]);
+        }
+
+        _deal.RevealRightNeighborsHighestCards = 0;
+    }
+
     public bool SomeoneNeedsToBet()
     {
         if (1 == _players.Where(a => !a.HasFolded).Count())

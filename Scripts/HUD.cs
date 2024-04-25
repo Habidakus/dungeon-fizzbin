@@ -48,6 +48,7 @@ public partial class HUD : CanvasLayer
             case "Play_Someone_Bets":
             case "Play_Someone_Reveals":
             case "Play_Declare_Winner":
+            case "Play_Post_Discard":
                 PlayPage.Show();
                 break;
             default:
@@ -72,6 +73,7 @@ public partial class HUD : CanvasLayer
             case "Play_Someone_Bets":
             case "Play_Someone_Reveals":
             case "Play_Declare_Winner":
+            case "Play_Post_Discard":
                 PlayPage.Hide();
                 break;
             default:
@@ -145,6 +147,17 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.SetFeltToLost();
+        }
+    }
+
+    internal void ExposeCardToOtherPlayer(int positionID, Card card, Player viewingPlayer)
+    {
+        if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
+        {
+            if (viewingPlayer.IsNPC)
+                visibleHand.ExposeNonNPCCardToNPC(card);
+            else
+                visibleHand.ExposeCardToNonNPC(card);
         }
     }
 }

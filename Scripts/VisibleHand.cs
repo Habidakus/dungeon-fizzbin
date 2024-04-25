@@ -71,6 +71,76 @@ public partial class VisibleHand : Node2D
         visibleCard.ResetSize();
     }
 
+    internal void ExposeNonNPCCardToNPC(Card card)
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                if (child is Control visibleCard)
+                {
+                    if (visibleCard.GetChild(0) is Label cardLabel)
+                    {
+                        if (cardLabel.Text == card.ToString() && cardLabel.Visible == true)
+                        {
+                            if (visibleCard.GetChild(2) is Control seenByOthers)
+                            {
+                                //seenByOthers.Position = visibleCard.Position;
+                                seenByOthers.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+                                seenByOthers.SizeFlagsVertical = Control.SizeFlags.Fill;
+                                seenByOthers.UpdateMinimumSize();
+                                seenByOthers.Show();
+                            }
+                            //cardLabel.TextDirection = Control.TextDirection.Rtl;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Cards");
+        }
+    }
+
+    internal void ExposeCardToNonNPC(Card card)
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                if (child is Control visibleCard)
+                {
+                    if (visibleCard.GetChild(0) is Label cardLabel)
+                    {
+                        if (cardLabel.Text == card.ToString() && cardLabel.Visible == false)
+                        {
+                            if (visibleCard.GetChild(1) is TextureRect cardBack)
+                            {
+                                //cardLabel.Visible = true;
+                                //cardBack.Visible = false;
+                                cardBack.Hide();
+                                cardLabel.Show();
+                                cardLabel.ResetSize();
+                                if (cardLabel.Visible)
+                                {
+                                    visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
+                                    //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Cards");
+        }
+    }
+
     internal void Update(Hand hand, Player nonNPCPlayer)
     {
 		if (FindChild("Cards") is Control cards)
@@ -78,7 +148,7 @@ public partial class VisibleHand : Node2D
             Godot.Collections.Array<Node> children = cards.GetChildren();
             foreach (Node child in children)
                 cards.RemoveChild(child);
-
+            
             if (_visibleCard != null)
             {
                 foreach (Card card in hand._cards)
@@ -88,6 +158,17 @@ public partial class VisibleHand : Node2D
                         visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
                         AddCardToControl(visibleCard, hand.IsVisible(card, nonNPCPlayer), card);
+                    }
+                }
+
+                if (hand.PositionID == nonNPCPlayer.PositionID)
+                {
+                    foreach (Card card in hand._cards)
+                    {
+                        if (hand.IsVisibleToAnyoneElse(card, nonNPCPlayer.PositionID))
+                        {
+                            ExposeNonNPCCardToNPC(card);
+                        }
                     }
                 }
             }

@@ -50,3 +50,13 @@ offset_bottom = 22.5
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_rrf1p")
+
+[node name="SeenByOthers" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0784314, 0.466667, 0.329412, 0.501961)

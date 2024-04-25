@@ -27,6 +27,7 @@ class Deal
     internal List<Hand> _hands = new List<Hand>();
     internal List<DiscardCards> _discards = new List<DiscardCards> ();
     internal int DiscardsToReveal { get; private set; }
+    internal int RevealRightNeighborsHighestCards { get; set; }
 
     public Player NonNPCPlayer {
         get
@@ -38,6 +39,7 @@ class Deal
     internal Deal(List<Player> players, Random rnd)
     {
         DiscardsToReveal = 0;
+        RevealRightNeighborsHighestCards = 0;
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
 
@@ -434,7 +436,7 @@ class Deal
 
     internal void IncreaseObserveNeighborHighCard()
     {
-        throw new NotImplementedException();
+        RevealRightNeighborsHighestCards += 1;
     }
 
     internal void AddPassToNeighbor()

@@ -5,6 +5,7 @@
 22nd fix sample prediction, card art, expanded state machine
 23rd Card visibility based on viewer, discard logic, added Castle & Prison hand ranks
 24th Worked on betting sequence, added the Ante, made discard use card graphics
+25th Added initial species rules
 
 felt green #277714
 card red #f03a17

@@ -15,6 +15,10 @@ public partial class sms_play_loop : state_machine_state
         {
             GetStateMachine().SwitchState("play_someone_discards");
         }
+        else if (GetMainNode().HasPostDiscard())
+        {
+            GetStateMachine().SwitchState("play_post_discard");
+        }
         else if (GetMainNode().SomeoneNeedsToBet())
         {
             GetStateMachine().SwitchState("play_someone_bets");

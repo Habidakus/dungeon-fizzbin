@@ -11,6 +11,7 @@ class Hand : IComparable<Hand>
     readonly internal Player _player;
     internal List<Card> _cards = new List<Card>();
     internal HandValue? _handValue = null;
+    internal Dictionary<Card, List<int>> _exposedCards = new Dictionary<Card, List<int>>();
 
     public int PositionID { get { return _player.PositionID; } }
     public Player Player { get { return _player; } }
@@ -30,6 +31,27 @@ class Hand : IComparable<Hand>
         if (_player.PositionID == viewer.PositionID)
         {
             return true;
+        }
+
+        if (_exposedCards.TryGetValue(card, out List<int>? playersWhoCanView))
+        {
+            if (playersWhoCanView.Contains(viewer.PositionID))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal bool IsVisibleToAnyoneElse(Card card, int viewerID)
+    {
+        if (_exposedCards.TryGetValue(card, out List<int>? playersWhoCanView))
+        {
+            if (playersWhoCanView.Where(a => a != viewerID).Any())
+            {
+                return true;
+            }
         }
 
         return false;
@@ -686,6 +708,25 @@ class Hand : IComparable<Hand>
         }
 
         return retVal;
+    }
+
+    internal void RevealHighestCardsToOtherPlayer(HUD hud, int revealRightNeighborsHighestCards, Player viewingPlayer)
+    {
+        List<Card> cardsToReveal = _cards.OrderBy(x => x).TakeLast(revealRightNeighborsHighestCards).ToList();
+        foreach(Card card in cardsToReveal)
+        {
+            if (_exposedCards.TryGetValue(card, out List<int>? playersWhoCanSeeThisCard))
+            {
+                playersWhoCanSeeThisCard.Add(viewingPlayer.PositionID);
+                _exposedCards[card] = playersWhoCanSeeThisCard;
+            }
+            else
+            {
+                _exposedCards[card] = new List<int>() { viewingPlayer.PositionID };
+            }
+
+            hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer);
+        }
     }
 }
 
