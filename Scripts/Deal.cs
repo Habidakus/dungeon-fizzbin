@@ -26,6 +26,7 @@ class Deal
     internal List<Card> _drawPile = new List<Card>();
     internal List<Hand> _hands = new List<Hand>();
     internal List<DiscardCards> _discards = new List<DiscardCards> ();
+    internal int DiscardsToReveal { get; private set; }
 
     public Player NonNPCPlayer {
         get
@@ -36,18 +37,14 @@ class Deal
 
     internal Deal(List<Player> players, Random rnd)
     {
+        DiscardsToReveal = 0;
         _suits.AddRange(Suit.DefaultSuits);
-
-        //_suits.RemoveAll(suit => suit._color != Suit.SuitColor.Red);
-        //_suits.Add(Suit.Skull);
-        //_suits.Add(Suit.Swords);
-
         _ranks.AddRange(Rank.DefaultRanks);
 
-        //_ranks.Add(Rank.Sadness);
-        //_ranks.Add(Rank.Ankh);
-        //_ranks.Add(Rank.Saturn);
-        //_ranks.Add(Rank.Jupiter);
+        foreach(Player player in players)
+        {
+            player.Species.ApplyDealComponent(this);
+        }
 
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
@@ -340,6 +337,109 @@ class Deal
         }
 
         return 100.0 * theyWin / numHandsToCreate;
+    }
+
+    internal void AddSuit()
+    {
+        //_suits.RemoveAll(suit => suit._color != Suit.SuitColor.Red);
+
+        if (!_suits.Contains(Suit.Skull))
+        {
+            _suits.Add(Suit.Skull);
+            return;
+        }
+
+        if (!_suits.Contains(Suit.Swords))
+        {
+            _suits.Add(Suit.Swords);
+            return;
+        }
+
+        throw new Exception("Asked to add third suit to deal");
+    }
+
+    internal void RemoveSuit(Suit.SuitColor color)
+    {
+        List<Suit> suitsThatCanBeRemoved = _suits.Where(a => a._color == color).ToList();
+        if (suitsThatCanBeRemoved.Count > 0)
+        {
+            Suit suitToRemove = suitsThatCanBeRemoved.First();
+            _suits.Remove(suitToRemove);
+            return;
+        }
+
+        throw new Exception($"No more suits to remove of color {color}");
+    }
+
+    internal void AddRank(bool addToLowEnd)
+    {
+        if (addToLowEnd)
+        {
+            if (!_ranks.Contains(Rank.Ankh))
+            {
+                _ranks.Add(Rank.Ankh);
+                return;
+            }
+
+            if (!_ranks.Contains(Rank.Sadness))
+            {
+                _ranks.Add(Rank.Sadness);
+                return;
+            }
+        }
+        else
+        {
+            if (!_ranks.Contains(Rank.Saturn))
+            {
+                _ranks.Add(Rank.Saturn);
+                return;
+            }
+
+            if (!_ranks.Contains(Rank.Jupiter))
+            {
+                _ranks.Add(Rank.Jupiter);
+                return;
+            }
+        }
+
+        throw new Exception($"Failed to add rank to lowEnd={addToLowEnd} end");
+    }
+    
+    internal void RemoveRank(int first, int second)
+    {
+        if (_ranks.Where(a => a._strength == first).Count() > 0)
+        {
+            _ranks.RemoveAll(a => a._strength == first);
+            return;
+        }
+
+        if (_ranks.Where(a => a._strength == second).Count() > 0)
+        {
+            _ranks.RemoveAll(a => a._strength == second);
+            return;
+        }
+
+        throw new Exception($"Both ranks ({first}, {second}) already removed");
+    }
+
+    internal void IncreaseDiscardReveal()
+    {
+        DiscardsToReveal += 1;
+    }
+
+    internal void IncreaseRiver()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal void IncreaseObserveNeighborHighCard()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal void AddPassToNeighbor()
+    {
+        throw new NotImplementedException();
     }
 }
 

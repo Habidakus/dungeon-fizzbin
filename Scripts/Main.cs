@@ -20,7 +20,7 @@ public partial class Main : Node
     private int BettingRound = 0;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
-    public static int HandNumber { get; private set; }
+    public static int HandNumber { get; private set; } = 100; // TODO: Update me
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -383,18 +383,25 @@ public partial class Main : Node
         {
             if (player.Discards != null && player.Discards.Count > 0)
             {
-                Card card = player.Discards.First();
+                Card? card = player.Discards.Min();
+                if (card == null)
+                {
+                    throw new Exception("Why is no card min?");
+                }
+
+                bool exposeDiscard = player.ExposedDiscardCount < _deal.DiscardsToReveal;
                 List<int> playersWhoCanSeeThisDiscard = new List<int>();
                 foreach (Player viewingPlayer in _players)
                 {
-                    if (_deal.GetPlayerHand(player).IsVisible(card, viewingPlayer))
+                    if (exposeDiscard || _deal.GetPlayerHand(player).IsVisible(card, viewingPlayer))
                     {
                         playersWhoCanSeeThisDiscard.Add(viewingPlayer.PositionID);
                     }
                 }
 
+                player.ExposedDiscardCount += 1;
                 _deal.MoveCardToDiscard(hud, player, playersWhoCanSeeThisDiscard, card);
-                player.Discards.RemoveAt(0);
+                player.Discards.Remove(card);
                 player.DiscardCount += 1;
                 return true;
             }

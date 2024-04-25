@@ -16,6 +16,7 @@ class Player
     internal int DiscardCount { get; set; }
     internal Species Species { get; private set; }
     internal string Name { get; private set; }
+    internal int ExposedDiscardCount { get; set; }
 
     internal Player(int positionID, Random rng, List<Species> speciesAlreadyAtTable)
     {
@@ -26,6 +27,7 @@ class Player
         AmountBet = 0;
         Discards = null;
         DiscardCount = 0;
+        ExposedDiscardCount = 0;
         if (PositionID == 0)
         {
             IsNPC = false;
