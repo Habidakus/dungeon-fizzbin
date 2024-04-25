@@ -62,17 +62,28 @@ class Species
         }
     }
 
-    static public Species PickSpecies(Random rnd)
+    private double CalculateSelectionWeight(List<Species> speciesAlreadyAtTable)
+    {
+        int count = speciesAlreadyAtTable.Where(a => a == this).Count();
+        if (count > 1)
+            return 0;
+        else if (count == 1)
+            return Weight / 2.0;
+        else
+            return Weight;
+    }
+
+    static public Species PickSpecies(Random rnd, List<Species> speciesAlreadyAtTable)
     {
         if (AllSpecies == null)
         {
             InitSpeciesList();
         }
 
-        double index = rnd.NextDouble() * AllSpecies!.Sum(a => a.Weight);
+        double index = rnd.NextDouble() * AllSpecies!.Sum(a => a.CalculateSelectionWeight(speciesAlreadyAtTable));
         foreach(Species species in AllSpecies!)
         {
-            index -= species.Weight;
+            index -= species.CalculateSelectionWeight(speciesAlreadyAtTable);
             if (index <= 0)
                 return species;
         }

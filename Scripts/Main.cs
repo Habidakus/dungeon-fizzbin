@@ -18,6 +18,7 @@ public partial class Main : Node
     internal int CurrentBetter { get; private set; }
     private double currentBetLimit = 1.0;
     private int BettingRound = 0;
+    internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
     public static int HandNumber { get; private set; }
 
@@ -26,7 +27,8 @@ public partial class Main : Node
     {
         for (int i = 0; i < 5; ++i)
         {
-            _players.Add(new Player(i, rnd));
+            Player player = new Player(i, rnd, SpeciesAtTable);
+            _players.Add(player);
         }
     }
 
@@ -37,7 +39,7 @@ public partial class Main : Node
 
     private void Test(Random rnd)
     {
-        Player player = new Player(0, rnd);
+        Player player = new Player(0, rnd, SpeciesAtTable);
         
         Suit suitA = Suit.DefaultSuits[0];
         Suit suitB = Suit.DefaultSuits[1];
@@ -155,7 +157,7 @@ public partial class Main : Node
 
     private void Test1()
     {
-        Player player = new Player(0, rnd);
+        Player player = new Player(0, rnd, SpeciesAtTable);
         List<Hand> hands = new List<Hand>();
         Suit suitA = Suit.DefaultSuits[0];
         Suit suitB = Suit.DefaultSuits[1];
