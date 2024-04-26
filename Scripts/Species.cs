@@ -240,7 +240,7 @@ class Species
     }
     static internal void DealComponent_Goblin(Deal deal)
     {
-        deal.RemoveRank(8, 7);
+        deal.RemoveRank(7, 6);
     }
     static internal bool CanAdd_Goblin(Deal deal)
     {
@@ -265,7 +265,7 @@ class Species
     }
     static internal void DealComponent_Orc(Deal deal)
     {
-        deal.RemoveRank(2, 3);
+        deal.RemoveRank(8, 9);
     }
     static internal bool CanAdd_Orc(Deal deal)
     {

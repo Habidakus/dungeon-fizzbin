@@ -369,7 +369,6 @@ class Deal
         int cardCount = (_ranks.Count + deltaRank) * (_suits.Count + deltaSuit);
         const int cardsNeeded = maxRiver + maxPlayerCount * (maxHandSize + maxDiscard);
         bool canAdd = cardCount >= cardsNeeded;
-        GD.Print($"Can add troll: {canAdd} ({cardCount} >= {cardsNeeded})");
         return canAdd;
     }
 
