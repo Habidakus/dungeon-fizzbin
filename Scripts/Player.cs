@@ -138,32 +138,32 @@ class Player
         if (raiseAmount + betFloor < 5)
         {
             raiseAmount = Math.Round(raiseAmount * 4) / 4;
-            raiseAmount = Math.Max(raiseAmount, 0);
+            raiseAmount = Math.Clamp(raiseAmount, 0, 1);
         }
         else if (raiseAmount + betFloor < 20)
         {
             raiseAmount = Math.Round(betFloor + raiseAmount) - (betFloor);
-            raiseAmount = Math.Max(raiseAmount, 1);
+            raiseAmount = Math.Clamp(raiseAmount, 1, 5);
         }
         else if (raiseAmount + betFloor < 100)
         {
             raiseAmount = Math.Round((betFloor + raiseAmount) / 5) * 5 - (betFloor);
-            raiseAmount = Math.Max(raiseAmount, 5);
+            raiseAmount = Math.Clamp(raiseAmount, 5, 25);
         }
         else if (raiseAmount + betFloor < 250)
         {
             raiseAmount = Math.Round((betFloor + raiseAmount) / 10) * 10 - (betFloor);
-            raiseAmount = Math.Max(raiseAmount, 10);
+            raiseAmount = Math.Clamp(raiseAmount, 10, 50);
         }
         else if (raiseAmount + betFloor < 500)
         {
             raiseAmount = Math.Round((betFloor + raiseAmount) / 25) * 25 - (betFloor);
-            raiseAmount = Math.Max(raiseAmount, 25);
+            raiseAmount = Math.Clamp(raiseAmount, 25, 100);
         }
         else if (raiseAmount + betFloor < 1000)
         {
             raiseAmount = Math.Round((betFloor + raiseAmount) / 50) * 50 - (betFloor);
-            raiseAmount = Math.Max(raiseAmount, 50);
+            raiseAmount = Math.Clamp(raiseAmount, 50, 250);
         }
         else
         {
