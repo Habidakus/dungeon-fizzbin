@@ -18,7 +18,7 @@ class Player
     internal string Name { get; private set; }
     internal int ExposedDiscardCount { get; set; }
 
-    internal Player(int positionID, Random rng, List<Species> speciesAlreadyAtTable)
+    internal Player(int positionID, Random rng, List<Species> speciesAlreadyAtTable, Deal deal)
     {
         PositionID = positionID;
         HasDiscarded = false;
@@ -40,7 +40,7 @@ class Player
         else
         {
             IsNPC = true;
-            Species = Species.PickSpecies(rng, speciesAlreadyAtTable);
+            Species = Species.PickSpecies(rng, speciesAlreadyAtTable, deal);
             Name = Species.GenerateRandomName(rng, PositionID);
         }
     }

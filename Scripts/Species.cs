@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Godot;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +9,7 @@ class Species
 {
     private delegate void DealComponent(Deal deal);
     private delegate string SpeciesNameGenerator(Random rnd);
+    private delegate bool SpeciesAllowed(Deal deal);
 
     private int _introHand = 0;
     private double _weight = 1;
@@ -15,14 +17,16 @@ class Species
     public String Name { get; private set; }
     private SpeciesNameGenerator? _nameGenerator;
     private readonly DealComponent _dealComponent;
+    private readonly SpeciesAllowed? _allowed;
 
-    private Species(String name, double weight, int introHand, DealComponent dealComponent, SpeciesNameGenerator? sng = null)
+    private Species(String name, double weight, int introHand, DealComponent dealComponent, SpeciesNameGenerator? sng = null, SpeciesAllowed? allowed = null)
     {
         Name = name;
         _weight = weight;
         _introHand = introHand;
         _nameGenerator = sng;
         _dealComponent = dealComponent;
+        _allowed = allowed;
     }
 
     static private List<Species>? AllSpecies = null;
@@ -32,11 +36,11 @@ class Species
             new Species("Human", 1, 0, DealComponent_Human, NameGenerator_Human),
             new Species("Elf", 0.5, 0, DealComponent_Elf, NameGenerator_Elf),
             //new Species("Dwarf", 1, 0, DealComponent_Dwarf, NameGenerator_Dwarf),
-            new Species("Goblin", 0.5, 5, DealComponent_Goblin, NameGenerator_Goblin),
-            new Species("Dragonkin", 0.5, 10, DealComponent_Dragonkin),
-            new Species("Troll", 0.5, 10, DealComponent_Troll),
-            new Species("Lizardman", 100.5, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
-            new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc),
+            new Species("Goblin", 0.5, 5, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin),
+            new Species("Dragonkin", 0.5, 10, DealComponent_Dragonkin, NameGenerator_Dragonkin),
+            new Species("Troll", 0.5, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
+            new Species("Lizardman", 0.5, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
+            new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
             //new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
@@ -45,7 +49,7 @@ class Species
             //new Species("Elf", 1, 15),
             //new Species("Giant", 1, 15),
             //new Species("Birdman", 1, 15),
-            new Species("Firbolg", 1, 30, DealComponent_Firbolg),
+            new Species("Firbolg", 1, 30, DealComponent_Firbolg, NameGenerator_Firbolg),
             //new Species("Golem", 1, 30),
             //new Species("Lich", 0.25, 30),
             //new Species("Vampire", 0.5, 30),
@@ -70,8 +74,10 @@ class Species
         _dealComponent(deal);
     }
 
-    private double CalculateSelectionWeight(List<Species> speciesAlreadyAtTable)
+    private double CalculateSelectionWeight(List<Species> speciesAlreadyAtTable, Deal deal)
     {
+        if (_allowed != null && !_allowed(deal))
+            return 0;
         int count = speciesAlreadyAtTable.Where(a => a == this).Count();
         if (count > 1)
             return 0;
@@ -81,17 +87,17 @@ class Species
             return Weight;
     }
 
-    static public Species PickSpecies(Random rnd, List<Species> speciesAlreadyAtTable)
+    static public Species PickSpecies(Random rnd, List<Species> speciesAlreadyAtTable, Deal deal)
     {
         if (AllSpecies == null)
         {
             InitSpeciesList();
         }
 
-        double index = rnd.NextDouble() * AllSpecies!.Sum(a => a.CalculateSelectionWeight(speciesAlreadyAtTable));
+        double index = rnd.NextDouble() * AllSpecies!.Sum(a => a.CalculateSelectionWeight(speciesAlreadyAtTable, deal));
         foreach(Species species in AllSpecies!)
         {
-            index -= species.CalculateSelectionWeight(speciesAlreadyAtTable);
+            index -= species.CalculateSelectionWeight(speciesAlreadyAtTable, deal);
             if (index <= 0)
                 return species;
         }
@@ -236,6 +242,10 @@ class Species
     {
         deal.RemoveRank(8, 7);
     }
+    static internal bool CanAdd_Goblin(Deal deal)
+    {
+        return deal.MeetsMinCards(-2, 0);
+    }
 
     // -------------------------------- ORC --------------------------------
 
@@ -257,23 +267,77 @@ class Species
     {
         deal.RemoveRank(2, 3);
     }
+    static internal bool CanAdd_Orc(Deal deal)
+    {
+        return deal.MeetsMinCards(-2, 0);
+    }
+
+    // -------------------------------- Troll --------------------------------
+    static private List<string> TROLL_MID = new List<string>()
+    {
+        "a", "u", "o", "i", "uu", "oo", "au",
+    };
+    internal static string NameGenerator_Troll(Random rng)
+    {
+        string a = ORC_START[rng.Next() % ORC_START.Count];
+        string b = TROLL_MID[rng.Next() % TROLL_MID.Count];
+        string c = ORC_END[rng.Next() % ORC_END.Count];
+        return $"{a}{b}{c}";
+    }
+    static internal void DealComponent_Troll(Deal deal)
+    {
+        deal.RemoveSuit(Suit.SuitColor.Black);
+    }
+    static internal bool CanAdd_Troll(Deal deal)
+    {
+        bool canAdd = deal.MeetsMinCards(0, -1);
+        return canAdd;
+    }
 
     // -------------------------------- Dragonkin --------------------------------
-
+    static private List<string> DRAGONKIN_FRONT = new List<string>() {
+        "Sm", "Dr", "Gh", "F", "T", "N", "Or",
+    };
+    static private List<string> DRAGONKIN_MIDDLE = new List<string>() {
+        "au", "a", "ido", "afni", "iama", "alko", "idho", "o",
+    };
+    static private List<string> DRAGONKIN_END = new List<string>() {
+        "g", "co", "ra", "r", "t", "kr", "gg", "chi",
+    };
+    static private List<string> DRAGONKIN_ADJ = new List<string>() {
+        "Gold", "Silver", "Bronze", "Fierce", "Iron", "Wise", "Old", "Pale", "Vile", "Foul", "Doombringer",
+    };
+    internal static string NameGenerator_Dragonkin(Random rng)
+    {
+        int a = rng.Next() % DRAGONKIN_FRONT.Count;
+        int b = rng.Next() % DRAGONKIN_MIDDLE.Count;
+        int c = rng.Next() % DRAGONKIN_END.Count;
+        int d = rng.Next() % DRAGONKIN_ADJ.Count;
+        return $"{DRAGONKIN_FRONT[a]}{DRAGONKIN_MIDDLE[b]}{DRAGONKIN_END[c]} the {DRAGONKIN_ADJ[d]}";
+    }
     static internal void DealComponent_Dragonkin(Deal deal)
     {
         deal.AddSuit();
     }
 
-    // -------------------------------- Troll --------------------------------
-
-    static internal void DealComponent_Troll(Deal deal)
-    {
-        deal.RemoveSuit(Suit.SuitColor.Black);
-    }
-
     // -------------------------------- Firbolg --------------------------------
 
+    static private List<string> FIRBOLG_FRONT = new List<string>() {
+        "T", "Galg", "M", "Orv", "Raey", "V",
+    };
+    static private List<string> FIRBOLG_MIDDLE = new List<string>() {
+        "av", "ad", "ort", "orv", "adf", "and",
+    };
+    static private List<string> FIRBOLG_END = new List<string>() {
+        "is", "ayle", "en", "al", "ourne", "er",
+    };
+    internal static string NameGenerator_Firbolg(Random rng)
+    {
+        int a = rng.Next() % FIRBOLG_FRONT.Count;
+        int b = rng.Next() % FIRBOLG_MIDDLE.Count;
+        int c = rng.Next() % FIRBOLG_END.Count;
+        return $"{FIRBOLG_FRONT[a]}{FIRBOLG_MIDDLE[b]}{FIRBOLG_END[c]}";
+    }
     static internal void DealComponent_Firbolg(Deal deal)
     {
         deal.AddRank(addToLowEnd: true);

@@ -36,18 +36,21 @@ class Deal
         }
     }
 
-    internal Deal(List<Player> players, Random rnd)
+    internal Deal()
     {
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
+    }
 
-        foreach(Player player in players)
-        {
-            player.Species.ApplyDealComponent(this);
-        }
-
+    internal void AddPlayer(Player player)
+    {
+        player.Species.ApplyDealComponent(this);
+    }
+    
+    internal void Shuffle(List<Player> players, Random rnd)
+    {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         foreach (Suit suit in _suits)
@@ -99,8 +102,12 @@ class Deal
 
                     List<Card> unseenCards = AvailableCardsFromHandsView(hand);
                     double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(otherPlayer, hand, unseenCards, rnd);
+                    //string visibleCards = GetPlayerHand(otherPlayer).HasVisibleCards(player) ? " VISIBLE CARDS" : "";
+                    //GD.Print($"{otherPlayer.Name} beats {player.Name} with new={percent:F2}% %{visibleCards}");
                     if (percent > maxPercent)
+                    {
                         maxPercent = percent;
+                    }
                 }
             }
         }
@@ -266,13 +273,24 @@ class Deal
         foreach (Hand hand in _hands)
         {
             if (hand == viewHand)
+            {
                 continue;
+            }
+
             foreach (Card card in hand._cards)
             {
                 if (!hand.IsVisible(card, viewHand.Player))
                 {
                     retVal.Add(card);
                 }
+            }
+        }
+
+        foreach (DiscardCards discard in _discards)
+        {
+            if (!discard.PlayersWhoCanSeeThis.Contains(viewHand.PositionID))
+            {
+                retVal.Add(discard.Card);
             }
         }
 
@@ -328,9 +346,9 @@ class Deal
         const int numHandsToCreate = 1000;
         for (int i = 0; i < numHandsToCreate; ++i)
         {
-            Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd);
+            Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd, ourHand._player);
             potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
-            HandValue av = potentialHand.ApplyRandomDiscard(otherPlayer.DiscardCount, unseenCards, minRank, maxRank, suitsCount, rnd);
+            HandValue av = potentialHand.ApplyRandomDiscard(otherPlayer.DiscardCount, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
 
             if (ourHand._handValue!.CompareTo(av) < 0)
             {
@@ -339,6 +357,20 @@ class Deal
         }
 
         return 100.0 * theyWin / numHandsToCreate;
+    }
+
+    public bool MeetsMinCards(int deltaRank, int deltaSuit)
+    {
+        const int maxRiver = 4;
+        const int maxHandSize = 5;
+        const int maxDiscard = 3;
+        const int maxPlayerCount = 5;
+
+        int cardCount = (_ranks.Count + deltaRank) * (_suits.Count + deltaSuit);
+        const int cardsNeeded = maxRiver + maxPlayerCount * (maxHandSize + maxDiscard);
+        bool canAdd = cardCount >= cardsNeeded;
+        GD.Print($"Can add troll: {canAdd} ({cardCount} >= {cardsNeeded})");
+        return canAdd;
     }
 
     internal void AddSuit()

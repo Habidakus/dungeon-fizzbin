@@ -25,11 +25,6 @@ public partial class Main : Node
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        for (int i = 0; i < 5; ++i)
-        {
-            Player player = new Player(i, rnd, SpeciesAtTable);
-            _players.Add(player);
-        }
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -39,7 +34,7 @@ public partial class Main : Node
 
     private void Test(Random rnd)
     {
-        Player player = new Player(0, rnd, SpeciesAtTable);
+        Player player = new Player(0, rnd, SpeciesAtTable, _deal!);
         
         Suit suitA = Suit.DefaultSuits[0];
         Suit suitB = Suit.DefaultSuits[1];
@@ -157,7 +152,7 @@ public partial class Main : Node
 
     private void Test1()
     {
-        Player player = new Player(0, rnd, SpeciesAtTable);
+        Player player = new Player(0, rnd, SpeciesAtTable, _deal!);
         List<Hand> hands = new List<Hand>();
         Suit suitA = Suit.DefaultSuits[0];
         Suit suitB = Suit.DefaultSuits[1];
@@ -300,7 +295,16 @@ public partial class Main : Node
     {
         //Test(rnd);
 
-        _deal = new Deal(_players, rnd);
+        _deal = new Deal();
+
+        for (int i = 0; i < 5; ++i)
+        {
+            Player player = new Player(i, rnd, SpeciesAtTable, _deal);
+            _players.Add(player);
+            _deal.AddPlayer(player);
+        }
+
+        _deal.Shuffle(_players, rnd);
         _deal.UpdateHUD(GetHUD());
 
         Pot = 0;
