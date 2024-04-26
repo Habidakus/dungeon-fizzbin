@@ -28,6 +28,7 @@ class Deal
     internal List<DiscardCards> _discards = new List<DiscardCards> ();
     internal int DiscardsToReveal { get; private set; }
     internal int RevealRightNeighborsHighestCards { get; set; }
+    internal int PassCardsToLeftNeighbor { get; set; }
 
     public Player NonNPCPlayer {
         get
@@ -40,6 +41,7 @@ class Deal
     {
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
+        PassCardsToLeftNeighbor = 0;
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
     }
@@ -302,6 +304,63 @@ class Deal
         return _hands.First(a => a._player == player);
     }
 
+    internal bool NeedsToProcessPassedCards()
+    {
+        foreach (Hand hand in _hands)
+        {
+            if (HasPassedCards(hand.PositionID))
+            {
+                GD.Print($"We need to process passed cards because {hand._player.Name} still has {hand.PassedCardsCount} cards that need to be handed out.");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal bool HasPassedCards(int positionId)
+    {
+        return _hands[positionId].PassedCardsCount > 0;
+    }
+
+    internal void DeterminePassCards(HUD hud, Player player, Random rng)
+    {
+        Hand hand = GetPlayerHand(player);
+        hand.SetAsidePassCards(PassCardsToLeftNeighbor, this, rng);
+        hud.SetVisibleHand(hand, NonNPCPlayer);
+    }
+
+    internal void ResolvePassAndRiver(HUD hud)
+    {
+        // TODO: We should animate all this passing
+
+        foreach (Hand hand in _hands)
+        {
+            int getFromPositionID = (hand.PositionID + _hands.Count - 1) % _hands.Count;
+            Hand passingHand = _hands[getFromPositionID];
+            if (passingHand._passingCards != null)
+            {
+                foreach (Card card in passingHand._passingCards)
+                {
+                    hand.AddCard(card);
+                    hand._exposedCards.Add(card: card, seer: getFromPositionID, canDiscard: true);
+                }
+
+                GD.Print($"{passingHand._player.Name} passed {string.Join(',', passingHand._passingCards)} to {hand._player.Name}");
+
+                passingHand._passingCards = null;
+                hud.SetVisibleHand(hand, NonNPCPlayer);
+            }
+            else
+            {
+                GD.Print($"{passingHand._player.Name}'s hand hasn't any passed cards");
+                throw new Exception($"{passingHand._player.Name}'s hand hasn't any passed cards");
+            }
+        }
+
+        PassCardsToLeftNeighbor = 0;
+    }
+
     internal void MoveCardToDiscard(HUD hud, Player player, List<int> playersWhoCanSeeThisDiscard, Card card)
     {
         Hand hand = GetPlayerHand(player);
@@ -408,23 +467,23 @@ class Deal
     {
         if (addToLowEnd)
         {
-            if (!_ranks.Contains(Rank.Ankh))
+            if (!_ranks.Contains(Rank.Lead))
             {
-                _ranks.Add(Rank.Ankh);
+                _ranks.Add(Rank.Lead);
                 return;
             }
 
-            if (!_ranks.Contains(Rank.Sadness))
+            if (!_ranks.Contains(Rank.Anhk))
             {
-                _ranks.Add(Rank.Sadness);
+                _ranks.Add(Rank.Anhk);
                 return;
             }
         }
         else
         {
-            if (!_ranks.Contains(Rank.Saturn))
+            if (!_ranks.Contains(Rank.Empress))
             {
-                _ranks.Add(Rank.Saturn);
+                _ranks.Add(Rank.Empress);
                 return;
             }
 
@@ -460,17 +519,17 @@ class Deal
         DiscardsToReveal += 1;
     }
 
-    internal void IncreaseRiver()
-    {
-        throw new NotImplementedException();
-    }
-
     internal void IncreaseObserveNeighborHighCard()
     {
         RevealRightNeighborsHighestCards += 1;
     }
 
     internal void AddPassToNeighbor()
+    {
+        PassCardsToLeftNeighbor += 1;
+    }
+
+    internal void IncreaseRiver()
     {
         throw new NotImplementedException();
     }

@@ -41,7 +41,7 @@ class Species
             new Species("Troll", 0.5, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
             new Species("Lizardman", 0.5, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
-            //new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
+            new Species("Halfling", 101, 15, DealComponent_Halfling, NameGenerator_Halfling),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
             //new Species("Centaur", 1, 15),
@@ -170,13 +170,37 @@ class Species
     // -------------------------------- HALFLING --------------------------------
 
     static private List<string> HALFLING_FIRST_NAMES = new List<string>() {
-        "Cheery", "Petal", "Smiley", "Doc", "Honest", "Chuckle", "Bunny", "Flower", "Glow", "Dawn", "Musky", "Hope", "Spanky", "Curly", "Batty", "Sunny", 
+        "Bunny", "Batty",
+        "Cheery", "Chuckle", "Candy", "Curly",
+        "Doc", "Dawn",
+        "Flower",
+        "Honest", "Happy", "Hope",
+        "Musky",
+        "Petal",
+        "Smiley", "Spanky", "Sunny",
     };
     static private List<string> HALFLING_LAST_A_NAMES = new List<string>() {
-        "Pickle", "Tickle", "Squeak", "Whisper", "Dirty", "Oil", "Rose", "Wicked", "Fuzzy", "Blush", "Bright", "Moist", "Dank", "Onion", "Stink", "Sweet", "Tart", "Funny",
+        "Blush", "Bright",
+        "Dank", "Dirty",
+        "Funny", "Fuzzy",
+        "Moist",
+        "Oil", "Onion",
+        "Pickle",
+        "Rose",
+        "Shine", "Squeak", "Stink", "Sweet",
+        "Tart", "Tickle",
+        "Whisper", "Wicked", "Wonder",
     };
     static private List<string> HALFLING_LAST_B_NAMES = new List<string>() {
-        "Bottom", "Foot", "Feet", "Navel", "Belly", "Barrel", "Hole", "Toe", "Finger", "Button", "Palm", "Tooth", "Smoke", "Thighs", "Leaf", "Pants", "Stockings", "Tummy",
+        "barrel", "belly", "bottom", "button",
+        "cheek",
+        "feet", "finger", "foot", "farm",
+        "hole",
+        "leaf",
+        "navel",
+        "palm", "pants",
+        "sausage", "smoke", "stockings",
+        "tater", "thighs", "toe", "tooth", "tummy",
     };
     internal static string NameGenerator_Halfling(Random rng)
     {

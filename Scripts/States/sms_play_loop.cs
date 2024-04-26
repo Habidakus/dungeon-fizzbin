@@ -11,7 +11,15 @@ public partial class sms_play_loop : state_machine_state
 
     public override void Update(double delta)
     {
-        if (GetMainNode().SomeoneNeedsToDiscard())
+        if (GetMainNode().SomeoneNeedsToPass())
+        {
+            GetStateMachine().SwitchState("play_someone_passes");
+        }
+        else if (GetMainNode().NeedsToResolvePassAndRiver())
+        {
+            GetStateMachine().SwitchState("play_resolve_passandriver");
+        }
+        else if (GetMainNode().SomeoneNeedsToDiscard())
         {
             GetStateMachine().SwitchState("play_someone_discards");
         }

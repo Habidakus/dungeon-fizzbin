@@ -114,9 +114,10 @@ class Rank : IComparable<Rank>
         return _strength >= 10;
     }
 
-    internal static Rank Sadness = new Rank('\u2639', 0);
-    internal static Rank Ankh = new Rank('\u2625', 1);
-    internal static Rank Saturn = new Rank('\u2644', 14);
+    // frowny face = '\u2639'
+    internal static Rank Anhk = new Rank('\u2625', 0); 
+    internal static Rank Lead = new Rank('\u2644', 1);
+    internal static Rank Empress = new Rank('E', 14);
     internal static Rank Jupiter = new Rank('\u2643', 15);
 
     internal bool Wraps { get; private set; }

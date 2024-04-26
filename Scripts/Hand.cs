@@ -6,15 +6,142 @@ using System.Text;
 
 #nullable enable
 
+class ExposedCard
+{
+    internal bool CanBeDiscarded { get; private set; }
+    internal List<int> PlayersWhoCanSee { get; private set; } = new List<int>();
+    internal bool CanSee(int positionID) { return PlayersWhoCanSee.Contains(positionID); }
+    internal bool CanAnyoneElseSee(int viewerID) { return PlayersWhoCanSee.Where(a => a != viewerID).Any(); }
+    internal ExposedCard(int seer, bool canBeDiscarded)
+    {
+        CanBeDiscarded = canBeDiscarded;
+        PlayersWhoCanSee.Add(seer);
+    }
+    internal ExposedCard(ExposedCard other)
+    {
+        CanBeDiscarded = other.CanBeDiscarded;
+        PlayersWhoCanSee = new List<int>(other.PlayersWhoCanSee);
+    }
+    internal void Add(int seer, bool canBeDiscarded)
+    {
+        CanBeDiscarded &= canBeDiscarded;
+        if (!CanSee(seer))
+        {
+
+            PlayersWhoCanSee.Add(seer);
+        }
+    }
+
+    internal void Add(ExposedCard otherCard)
+    {
+        CanBeDiscarded &= otherCard.CanBeDiscarded;
+        foreach (int seer in otherCard.PlayersWhoCanSee)
+        {
+            if (!CanSee(seer))
+            {
+                PlayersWhoCanSee.Add(seer);
+            }
+        }
+    }
+}
+
+class ExposedCardHandler
+{
+    Dictionary<Card, ExposedCard>? _exposedCards = null;
+
+    internal void CopyFrom(ExposedCardHandler otherHandler)
+    {
+        _exposedCards = otherHandler._exposedCards == null
+            ? null
+            : new Dictionary<Card, ExposedCard>(otherHandler._exposedCards);
+    }
+
+    internal void CopyCardFrom(ExposedCardHandler otherHandler, Card card)
+    {
+        if (otherHandler._exposedCards != null && otherHandler._exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            Add(card, exposedCard);
+        }
+    }
+
+    internal void Add(Card card, ExposedCard otherCard)
+    {
+        if (_exposedCards == null)
+        {
+            _exposedCards = new Dictionary<Card, ExposedCard>();
+        }
+
+        if (_exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            exposedCard.Add(otherCard);
+            _exposedCards[card] = exposedCard;
+        }
+        else
+        {
+            _exposedCards[card] = new ExposedCard(otherCard);
+        }
+    }
+
+    internal void Add(Card card, int seer, bool canDiscard)
+    {
+        if (_exposedCards == null)
+        {
+            _exposedCards = new Dictionary<Card, ExposedCard>();
+        }
+
+        if (_exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            exposedCard.Add(seer, canDiscard);
+            _exposedCards[card] = exposedCard;
+        }
+        else
+        {
+            _exposedCards[card] = new ExposedCard(seer, canDiscard);
+        }
+    }
+
+    internal bool CanSee(Card card, int positionID)
+    {
+        if (_exposedCards != null && _exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            return exposedCard.CanSee(positionID);
+        }
+
+        return false;
+    }
+
+    internal bool IsVisibleToAnyoneElse(Card card, int viewerID)
+    {
+        if (_exposedCards != null && _exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            return exposedCard.CanAnyoneElseSee(viewerID);
+        }
+
+        return false;
+    }
+
+    internal bool BlocksDiscard(Card card)
+    {
+        if (_exposedCards != null && _exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            return !exposedCard.CanBeDiscarded;
+        }
+
+        return false;
+    }
+}
+
 class Hand : IComparable<Hand>
 {
     readonly internal Player _player;
     internal List<Card> _cards = new List<Card>();
+    internal List<Card>? _passingCards = null;
     internal HandValue? _handValue = null;
-    internal Dictionary<Card, List<int>> _exposedCards = new Dictionary<Card, List<int>>();
+    internal ExposedCardHandler _exposedCards = new ExposedCardHandler();
 
     public int PositionID { get { return _player.PositionID; } }
     public Player Player { get { return _player; } }
+    public int PassedCardsCount { get { return _passingCards == null ? 0 : _passingCards.Count; } }
 
     internal Hand(Player player)
     {
@@ -33,12 +160,9 @@ class Hand : IComparable<Hand>
             return true;
         }
 
-        if (_exposedCards.TryGetValue(card, out List<int>? playersWhoCanView))
+        if (_exposedCards.CanSee(card, viewer.PositionID))
         {
-            if (playersWhoCanView.Contains(viewer.PositionID))
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -51,15 +175,7 @@ class Hand : IComparable<Hand>
 
     internal bool IsVisibleToAnyoneElse(Card card, int viewerID)
     {
-        if (_exposedCards.TryGetValue(card, out List<int>? playersWhoCanView))
-        {
-            if (playersWhoCanView.Where(a => a != viewerID).Any())
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return _exposedCards.IsVisibleToAnyoneElse(card, viewerID);
     }
 
     public bool IsEveryCardVisible(Player viewer)
@@ -408,12 +524,12 @@ class Hand : IComparable<Hand>
     internal Hand CloneWithDiscard(Card discardCard, Card replacementCard)
     {
         Hand retVal = new Hand(_player);
-        retVal._exposedCards = new Dictionary<Card, List<int>>(_exposedCards);
+        retVal._exposedCards.CopyFrom(_exposedCards);
         foreach (Card card in _cards)
         {
             if (card == discardCard)
             {
-                if (_exposedCards.ContainsKey(card))
+                if (_exposedCards.BlocksDiscard(card))
                 {
                     throw new Exception("Cannot discard card observed by others");
                 }
@@ -437,10 +553,7 @@ class Hand : IComparable<Hand>
             if (observer != null && IsVisible(card, observer))
             {
                 retVal.AddCard(card);
-                if (_exposedCards.TryGetValue(card, out List<int>? exposure))
-                {
-                    retVal._exposedCards[card] = new List<int>(exposure);
-                }
+                retVal._exposedCards.CopyCardFrom(_exposedCards, card);
             }
         }
 
@@ -565,7 +678,7 @@ class Hand : IComparable<Hand>
             Hand clone = CloneWithDiscard(_cards[discardIndices[0]], availableCards[pullIndices[0]]);
             for (int j = 1; j < discardIndices.Count; ++j)
             {
-                if (_exposedCards.ContainsKey(_cards[discardIndices[j]]))
+                if (_exposedCards.BlocksDiscard(_cards[discardIndices[j]]))
                 {
                     throw new Exception("Cannot discard card observed by others");
                 }
@@ -776,6 +889,18 @@ class Hand : IComparable<Hand>
         return Tuple.Create(best!, retVal);
     }
 
+    public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd)
+    {
+        _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
+        GD.Print($"{_player.Name} passing {string.Join(',', _passingCards)}");
+        foreach (Card card in _passingCards)
+        {
+            _cards.Remove(card);
+        }
+
+        GD.Print($"{_player.Name} keeps {string.Join(',', _cards)}");
+    }
+
     internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)
     {
         actualDeal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
@@ -791,21 +916,21 @@ class Hand : IComparable<Hand>
             }
         }
 
-        if (best._hopefulValue != null)
-        {
-            StringBuilder cardsToText = new StringBuilder();
-            foreach (Card card in retVal)
-            {
-                if (cardsToText.Length > 0)
-                {
-                    cardsToText.Append(" ");
-                }
+        //if (best._hopefulValue != null)
+        //{
+        //    StringBuilder cardsToText = new StringBuilder();
+        //    foreach (Card card in retVal)
+        //    {
+        //        if (cardsToText.Length > 0)
+        //        {
+        //            cardsToText.Append(" ");
+        //        }
 
-                cardsToText.Append(card.ToString());
-            }
+        //        cardsToText.Append(card.ToString());
+        //    }
 
-            GD.Print($"Player {_player.PositionID} replaces {cardsToText} trying for {best.GetDesc()}");
-        }
+        //    GD.Print($"Player {_player.PositionID} replaces {cardsToText} trying for {best.GetDesc()}");
+        //}
 
         return retVal;
     }
@@ -815,16 +940,7 @@ class Hand : IComparable<Hand>
         List<Card> cardsToReveal = _cards.OrderBy(x => x).TakeLast(revealRightNeighborsHighestCards).ToList();
         foreach(Card card in cardsToReveal)
         {
-            if (_exposedCards.TryGetValue(card, out List<int>? playersWhoCanSeeThisCard))
-            {
-                playersWhoCanSeeThisCard.Add(viewingPlayer.PositionID);
-                _exposedCards[card] = playersWhoCanSeeThisCard;
-            }
-            else
-            {
-                _exposedCards[card] = new List<int>() { viewingPlayer.PositionID };
-            }
-
+            _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);
             hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer);
         }
     }

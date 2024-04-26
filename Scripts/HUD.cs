@@ -43,6 +43,8 @@ public partial class HUD : CanvasLayer
                 break;
             case "Play_Deal":
             case "Play_Loop":
+            case "Play_Someone_Passes":
+            case "Play_Resolve_PassAndRiver":
             case "Play_Someone_Discards":
             case "Play_Animate_Discards":
             case "Play_Someone_Bets":
@@ -68,6 +70,8 @@ public partial class HUD : CanvasLayer
                 break;
             case "Play_Deal":
             case "Play_Loop":
+            case "Play_Someone_Passes":
+            case "Play_Resolve_PassAndRiver":
             case "Play_Someone_Discards":
             case "Play_Animate_Discards":
             case "Play_Someone_Bets":

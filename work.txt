@@ -6,6 +6,10 @@
 23rd Card visibility based on viewer, discard logic, added Castle & Prison hand ranks
 24th Worked on betting sequence, added the Ante, made discard use card graphics
 25th Added initial species rules, and names for many species
+26th Work on halfling rule
+
+TODO:
+- Name selection should work off prime progression rather than pure RND, requires save game file
 
 felt green #277714
 card red #f03a17
