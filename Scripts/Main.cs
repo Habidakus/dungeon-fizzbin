@@ -33,7 +33,7 @@ public partial class Main : Node
     private int TableSize = 5;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
-    public static int HandNumber { get; private set; } = 20; // TODO: Update me
+    public static int HandNumber { get; private set; } = 0; // TODO: Update me
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -68,6 +68,8 @@ public partial class Main : Node
             player.InitHud(GetHUD());
             Pot += player.Ante(GetHUD(), anteAmount);
         }
+
+        GetHUD().SetPot(Pot);
 
         BettingRound = 0;
         Dealer = 0; // Should advance each round
@@ -272,6 +274,8 @@ public partial class Main : Node
         DateTime start = DateTime.Now;
         Pot += Deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit, BettingRound);
         GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");
+
+        GetHUD().SetPot(Pot);
         if (!_players[CurrentBetter].HasFolded)
             currentBetLimit = _players[CurrentBetter].AmountBet;
 

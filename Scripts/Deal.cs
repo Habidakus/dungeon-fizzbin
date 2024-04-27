@@ -25,6 +25,7 @@ class Deal
     internal List<Rank> _ranks = new List<Rank>();
     internal List<Card> _drawPile = new List<Card>();
     internal List<Hand> _hands = new List<Hand>();
+    internal List<Card> _river = new List<Card> ();
     internal List<DiscardCards> _discards = new List<DiscardCards> ();
     internal int DiscardsToReveal { get; private set; }
     internal int RevealRightNeighborsHighestCards { get; set; }
@@ -59,7 +60,7 @@ class Deal
     {
         player.Species.ApplyDealComponent(this);
     }
-    
+
     internal void Shuffle(List<Player> players, Random rnd)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
@@ -88,6 +89,12 @@ class Deal
             hand.ComputeBestScore(minRank, maxRank, suitsCount);
 
             _hands.Add(hand);
+        }
+
+        for (int i = 0; i < RiverSize; ++i)
+        {
+            _river.Add(_drawPile.First());
+            _drawPile.RemoveAt(0);
         }
     }
 
@@ -141,6 +148,16 @@ class Deal
         foreach (Hand hand in _hands)
         {
             hud.SetVisibleHand(hand, NonNPCPlayer);
+        }
+
+        if (RiverSize == 0)
+        {
+            hud.HideRiver();
+        }
+        else
+        {
+
+            hud.ShowRiver(_river);
         }
     }
 

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 #nullable enable
@@ -82,6 +83,32 @@ public partial class HUD : CanvasLayer
                 break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
+        }
+    }
+
+    internal void HideRiver()
+    {
+        if (PlayPage.FindChild("River") is VisibleHand river)
+        {
+            river.Hide();
+        }
+    }
+
+    internal void ShowRiver(List<Card> cards)
+    {
+        if (PlayPage.FindChild("River") is VisibleHand river)
+        {
+            river.UpdateRiver(cards);
+            river.Show();
+        }
+    }
+
+    internal void SetPot(double amount)
+    {
+        if (PlayPage.FindChild("River") is VisibleHand river)
+        {
+            river.SetPot(amount);
+            river.Show();
         }
     }
 

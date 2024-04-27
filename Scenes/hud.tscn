@@ -88,6 +88,9 @@ position = Vector2(850, 144)
 [node name="Hand4" parent="PlayPage" instance=ExtResource("2_ihxo0")]
 position = Vector2(912, 324)
 
+[node name="River" parent="PlayPage" instance=ExtResource("2_ihxo0")]
+position = Vector2(576, 324)
+
 [node name="MenuPage" type="Control" parent="."]
 visible = false
 layout_mode = 3
