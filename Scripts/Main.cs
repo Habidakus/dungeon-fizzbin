@@ -33,7 +33,7 @@ public partial class Main : Node
     private int TableSize = 5;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
-    public static int HandNumber { get; private set; } = 0; // TODO: Update me
+    public static int HandNumber { get; private set; } = 20; // TODO: Update me
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()

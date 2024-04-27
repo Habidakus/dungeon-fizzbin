@@ -197,17 +197,17 @@ class Hand : IComparable<Hand>
         _cards.Add(card);
     }
 
-    internal bool IsStraight(int minRank, int maxRank)
+    internal static bool IsStraight(List<Card> fiveCards, int minRank, int maxRank, bool pixieCompare)
     {
         if (minRank >= maxRank)
         {
             throw new Exception("Min and Max rank not accurately calculated");
         }
 
-        if (_cards.Count < 5)
+        if (fiveCards.Count < 5)
             return false;
 
-        List<Card> cardsInOrder = _cards.OrderBy(a => a, Comparer<Card>.Create((a,b) => a.PixieCompareTo(b, PixieCompare))).ToList();
+        List<Card> cardsInOrder = fiveCards.OrderBy(a => a, Comparer<Card>.Create((a,b) => a.PixieCompareTo(b, pixieCompare))).ToList();
         bool retVal = true;
         for (int i = 1; retVal && i < cardsInOrder.Count; ++i)
         {
@@ -239,117 +239,141 @@ class Hand : IComparable<Hand>
         }
     }
 
-    internal bool IsFlush
+    internal static bool IsFlush(List<Card> fiveCards)
     {
-        get
+        if (fiveCards.Count < 5)
         {
-            if (_cards.Count < 5)
+            return false;
+        }
+
+        Suit? suit = null;
+        foreach (Card card in fiveCards)
+        {
+            if (suit == null)
+            {
+                suit = card.Suit;
+            }
+            else if (suit != card.Suit)
             {
                 return false;
             }
 
-            Suit? suit = null;
-            foreach (Card card in _cards)
-            {
-                if (suit == null)
-                {
-                    suit = card.Suit;
-                }
-                else if (suit != card.Suit)
-                {
-                    return false;
-                }
-
-            }
-
-            return true;
         }
+
+        return true;
     }
 
-    internal bool IsMinorHouse
+    internal static bool IsMinorHouse(List<Card> fiveCards)
     {
-        get
+        Suit? primary = null;
+        int pCount = 0;
+        Suit? secondary = null;
+        int sCount = 0;
+        foreach (Card card in fiveCards)
         {
-            Suit? primary = null;
-            int pCount = 0;
-            Suit? secondary = null;
-            int sCount = 0;
-            foreach (Card card in _cards)
+            if (primary == null)
             {
-                if (primary == null)
-                {
-                    primary = card.Suit;
-                    pCount = 1;
-                }
-                else if (card.Suit == primary)
-                {
-                    ++pCount;
-                }
-                else if (secondary == null)
-                {
-                    secondary = card.Suit;
-                    sCount = 1;
-                }
-                else if (secondary == card.Suit)
-                {
-                    ++sCount;
-                }
-                else
-                {
-                    return false;
-                }
+                primary = card.Suit;
+                pCount = 1;
+            }
+            else if (card.Suit == primary)
+            {
+                ++pCount;
+            }
+            else if (secondary == null)
+            {
+                secondary = card.Suit;
+                sCount = 1;
+            }
+            else if (secondary == card.Suit)
+            {
+                ++sCount;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return (pCount + 1 == sCount) || (sCount + 1 == pCount);
+    }
+
+    internal void ComputeBestScore(int minRank, int maxRank, int suitsCount, List<Card> river)
+    {
+        List<int> availableSlots = new List<int>();
+        for (int i = 0; i<_cards.Count; ++i)
+        {
+            availableSlots.Add(i);
+        }
+        if (river != null)
+        {
+            for (int i = 0; i < river.Count; ++i)
+                availableSlots.Add(_cards.Count + i);
+        }
+
+        _handValue = null;
+        foreach(List<int> combinations in AllCombinationsOfAvailableSlotsChoseY(5, availableSlots))
+        {
+            List<Card> fiveCards = new List<Card>();
+            foreach (int i in combinations)
+            {
+                fiveCards.Add(i < _cards.Count ? _cards[i] : river![i - _cards.Count]);
             }
 
-            return (pCount + 1 == sCount) || (sCount + 1 == pCount);
+            HandValue hv = ComputeBestScore(fiveCards, minRank, maxRank, suitsCount, PixieCompare);
+            if (_handValue == null || hv.PixieCompareTo(_handValue, PixieCompare) > 0)
+            {
+                _handValue = hv;
+            }
         }
     }
 
-    internal void ComputeBestScore(int minRank, int maxRank, int suitsCount)
+    internal static HandValue ComputeBestScore(List<Card> fiveCards, int minRank, int maxRank, int suitsCount, bool pixieCompare)
     {
-        List<Card> cardsSortedHighestToLowest = _cards.OrderByDescending(a => a, Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare))).ToList();
+        List<Card> cardsSortedHighestToLowest = fiveCards.OrderByDescending(a => a, Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, pixieCompare))).ToList();
         Card highCard = cardsSortedHighestToLowest.First();
-        _handValue = new HandValue(cardsSortedHighestToLowest);
-        bool isStraight = IsStraight(minRank, maxRank);
-        bool isFlush = IsFlush;
-        bool isMinorHouse = suitsCount > 4 ? IsMinorHouse : false;
+        HandValue retVal = new HandValue(cardsSortedHighestToLowest);
+        bool isStraight = IsStraight(fiveCards, minRank, maxRank, pixieCompare);
+        bool isFlush = IsFlush(fiveCards);
+        bool isMinorHouse = suitsCount > 4 ? IsMinorHouse(fiveCards) : false;
         if (isStraight)
         {
             if (isFlush)
             {
-                Card lowCard = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))).First();
-                if (PixieCompare)
+                Card lowCard = fiveCards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).First();
+                if (pixieCompare)
                 {
                     if (lowCard.Rank.IsSixOrLower)
-                        _handValue = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                        retVal = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
                     else
-                        _handValue = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                        retVal = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
                 }
                 else
                 {
                     if (lowCard.Rank.IsTenOrHigher)
-                        _handValue = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                        retVal = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
                     else
-                        _handValue = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                        retVal = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
                 }
             }
             else if (isMinorHouse)
             {
-                _handValue = new HandValue(HandValue.HandRanking.Castle, cardsSortedHighestToLowest);
+                retVal = new HandValue(HandValue.HandRanking.Castle, cardsSortedHighestToLowest);
             }
             else
             {
-                _handValue = new HandValue(HandValue.HandRanking.Straight, cardsSortedHighestToLowest);
+                retVal = new HandValue(HandValue.HandRanking.Straight, cardsSortedHighestToLowest);
             }
         }
         else if (isFlush)
         {
-            _handValue = new HandValue(HandValue.HandRanking.Flush, cardsSortedHighestToLowest);
+            retVal = new HandValue(HandValue.HandRanking.Flush, cardsSortedHighestToLowest);
         }
 
-        ExtractOfAKind(_cards, PixieCompare, out List<Card> ofAKind, out List<Card> remainder);
+        ExtractOfAKind(fiveCards, pixieCompare, out List<Card> ofAKind, out List<Card> remainder);
         if (ofAKind.Count > 0)
         {
-            ofAKind.Sort(Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare)));
+            ofAKind.Sort(Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, pixieCompare)));
             ofAKind.Reverse();
             HandValue? possiblyBetter = null;
             if (ofAKind.Count == 5)
@@ -359,15 +383,15 @@ class Hand : IComparable<Hand>
             else if (ofAKind.Count == 4)
             {
                 List<Card> orderOfImportance = new List<Card>(ofAKind);
-                orderOfImportance.AddRange(remainder.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))).ToList());
+                orderOfImportance.AddRange(remainder.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).ToList());
                 possiblyBetter = new HandValue(HandValue.HandRanking.FourOfAKind, orderOfImportance);
             }
             else
             {
                 List<Card> orderOfImportance = new List<Card>(ofAKind);
-                ExtractOfAKind(remainder, PixieCompare, out List<Card> secondOfAKind, out List<Card> remainderRemainder);
-                orderOfImportance.AddRange(secondOfAKind.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))));
-                orderOfImportance.AddRange(remainderRemainder.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))));
+                ExtractOfAKind(remainder, pixieCompare, out List<Card> secondOfAKind, out List<Card> remainderRemainder);
+                orderOfImportance.AddRange(secondOfAKind.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))));
+                orderOfImportance.AddRange(remainderRemainder.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))));
 
                 if (ofAKind.Count == 3)
                 {
@@ -399,19 +423,21 @@ class Hand : IComparable<Hand>
 
             if (possiblyBetter != null)
             {
-                if (possiblyBetter.PixieCompareTo(_handValue, PixieCompare) > 0)
+                if (possiblyBetter.PixieCompareTo(retVal, pixieCompare) > 0)
                 {
-                    _handValue = possiblyBetter;
+                    retVal = possiblyBetter;
                 }
                 else
                 {
-                    if (_handValue._handRanking == HandValue.HandRanking.HighCard)
+                    if (retVal._handRanking == HandValue.HandRanking.HighCard)
                     {
                         GD.Print($"HighCard better than {possiblyBetter._handRanking}?");
                     }
                 }
             }
         }
+
+        return retVal;
     }
 
     public override string ToString()
@@ -471,24 +497,23 @@ class Hand : IComparable<Hand>
         return _handValue.PixieCompareTo(other._handValue, PixieCompare);
     }
 
-
-    internal void CountTypes(int minRank, int maxRank, out bool isFlush, out bool isStraight, out bool isMinorHouse, out int primaryOfAKind, out int secondaryOfAKind)
-    {
-        isFlush = IsFlush;
-        isStraight = IsStraight(minRank, maxRank);
-        isMinorHouse = IsMinorHouse;
-        ExtractOfAKind(_cards, PixieCompare, out List<Card> ofAKind, out List<Card> remainder);
-        primaryOfAKind = ofAKind.Count;
-        if (primaryOfAKind > 0)
-        {
-            ExtractOfAKind(remainder, PixieCompare, out List<Card> secondarySet, out List<Card> _);
-            secondaryOfAKind = secondarySet.Count;
-        }
-        else
-        {
-            secondaryOfAKind = 0;
-        }
-    }
+    //internal void CountTypes(int minRank, int maxRank, out bool isFlush, out bool isStraight, out bool isMinorHouse, out int primaryOfAKind, out int secondaryOfAKind)
+    //{
+    //    isFlush = IsFlush;
+    //    isStraight = IsStraight(minRank, maxRank);
+    //    isMinorHouse = IsMinorHouse;
+    //    ExtractOfAKind(_cards, PixieCompare, out List<Card> ofAKind, out List<Card> remainder);
+    //    primaryOfAKind = ofAKind.Count;
+    //    if (primaryOfAKind > 0)
+    //    {
+    //        ExtractOfAKind(remainder, PixieCompare, out List<Card> secondarySet, out List<Card> _);
+    //        secondaryOfAKind = secondarySet.Count;
+    //    }
+    //    else
+    //    {
+    //        secondaryOfAKind = 0;
+    //    }
+    //}
 
     private static void ExtractOfAKind(List<Card> cards, bool pixieCompare, out List<Card> ofAKind, out List<Card> remainder)
     {
@@ -594,34 +619,41 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal static List<List<int>> GenerateUniqueDiscardSelections(int discards, List<int> viableSlots)
+    internal static List<List<int>> AllCombinationsOfAvailableSlotsChoseY(int choseY, List<int> availableSlots)
     {
-        if (discards == 0)
+        if (choseY == 0)
         {
-            throw new Exception("Why are we GenerateUniqueDiscardSelections() with zero discards?");
+            throw new Exception("Why are we AllCombinationsOfAvailableSlotsChoseY() with zero discards?");
         }
 
-        if (discards > viableSlots.Count)
+        if (choseY > availableSlots.Count)
         {
-            throw new Exception($"Asking for more discards than is available (slots={viableSlots.Count}, discards={discards})");
+            throw new Exception($"Asking for more discards than is available (slots={availableSlots.Count}, discards={choseY})");
         }
 
         List<List<int>> retVal = new List<List<int>>();
-        if (discards == 1)
+
+        if (choseY == availableSlots.Count)
         {
-            foreach(int slot in viableSlots)
+            retVal.Add(availableSlots);
+            return retVal;
+        }
+
+        if (choseY == 1)
+        {
+            foreach(int slot in availableSlots)
             {
                 retVal.Add(new List<int>() { slot });
             }
         }
         else
         {
-            foreach (int slot in viableSlots)
+            foreach (int slot in availableSlots)
             {
-                List<int> subSlots = viableSlots.Where(x => x > slot).ToList();
-                if (subSlots.Count >= discards - 1)
+                List<int> subSlots = availableSlots.Where(x => x > slot).ToList();
+                if (subSlots.Count >= choseY - 1)
                 {
-                    foreach (List<int> subIter in GenerateUniqueDiscardSelections(discards - 1, subSlots))
+                    foreach (List<int> subIter in AllCombinationsOfAvailableSlotsChoseY(choseY - 1, subSlots))
                     {
                         var a = new List<int>() { slot };
                         a.AddRange(subIter);
@@ -742,7 +774,7 @@ class Hand : IComparable<Hand>
         SortedSet<Hand> sortedHands = new SortedSet<Hand>();
         foreach (Hand hand in generatedHands.Item2)
         {
-            hand.ComputeBestScore(minRank, maxRank, suitsCount);
+            hand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
             sortedHands.Add(hand);
         }
 
@@ -800,7 +832,7 @@ class Hand : IComparable<Hand>
                 for (int i = 0; i < iterations; ++i)
                 {
                     Hand potentialHand = CloneWithDiscard(discardCard, availableCards.ElementAt(rnd.Next() % availableCards.Count));
-                    potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
+                    potentialHand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
                     sortedHands.Add(potentialHand);
                 }
             
@@ -814,7 +846,7 @@ class Hand : IComparable<Hand>
             }
 
             Hand sampleHand = CloneWithDiscard(bestCardToDiscard!, availableCards.ElementAt(rnd.Next() % availableCards.Count));
-            sampleHand.ComputeBestScore(minRank, maxRank, suitsCount);
+            sampleHand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
             retVal = sampleHand._handValue;
         }
         else
@@ -822,7 +854,7 @@ class Hand : IComparable<Hand>
             AggregateValue? bestCardsToDiscardValue = null;
             List<int>? bestCardsToDiscard = null;
             List<int> viableSlots = GetViableDiscardSlots(observingPlayer);
-            List<List<int>> iterList = GenerateUniqueDiscardSelections(noOfDiscards, viableSlots);
+            List<List<int>> iterList = AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots);
             if (iterList.Count == 0)
                 throw new Exception($"GenerateUniqueDiscardSelections(discards={noOfDiscards} slots={string.Join(',', viableSlots)}) found no valid combos");
             foreach (List<int> iter in iterList)
@@ -832,7 +864,7 @@ class Hand : IComparable<Hand>
                 List<Hand> hands = GenerateSampledHands(iter, availableCards, rnd, iterations);
                 foreach (Hand hand in hands)
                 {
-                    hand.ComputeBestScore(minRank, maxRank, suitsCount);
+                    hand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
                     sortedHands.Add(hand);
                 }
                 
@@ -846,7 +878,7 @@ class Hand : IComparable<Hand>
             }
 
             Hand sampleHand = GenerateSampledHands(bestCardsToDiscard!, availableCards, rnd, 1).First();
-            sampleHand.ComputeBestScore(minRank, maxRank, suitsCount);
+            sampleHand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
             retVal = sampleHand._handValue;
         }
 
@@ -871,7 +903,7 @@ class Hand : IComparable<Hand>
                 foreach (Card replacement in availableCards)
                 {
                     Hand potentialHand = CloneWithDiscard(discardCard, replacement);
-                    potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
+                    potentialHand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
                     scoreList.Add(potentialHand._handValue!);
                 }
 
@@ -891,7 +923,7 @@ class Hand : IComparable<Hand>
         {
             const int sampleCutOff = 9000;
             List<int> viableSlots = GetViableDiscardSlots(null);
-            foreach (List<int> iter in GenerateUniqueDiscardSelections(noOfDiscards, viableSlots))
+            foreach (List<int> iter in AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots))
             {
                 Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, rnd, sampleCutOff);
                 if (best.UpdateIfBetter(subBest.Item1))
@@ -942,10 +974,8 @@ class Hand : IComparable<Hand>
         //        {
         //            cardsToText.Append(" ");
         //        }
-
         //        cardsToText.Append(card.ToString());
         //    }
-
         //    GD.Print($"Player {_player.PositionID} replaces {cardsToText} trying for {best.GetDesc()}");
         //}
 

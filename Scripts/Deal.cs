@@ -76,6 +76,12 @@ class Deal
 
         _drawPile = _drawPile.Shuffle(rnd).ToList();
 
+        for (int i = 0; i < RiverSize; ++i)
+        {
+            _river.Add(_drawPile.First());
+            _drawPile.RemoveAt(0);
+        }
+
         //Test(rnd, players[0]);
         foreach (Player player in players)
         {
@@ -86,15 +92,9 @@ class Deal
                 _drawPile.RemoveAt(0);
             }
 
-            hand.ComputeBestScore(minRank, maxRank, suitsCount);
+            hand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
 
             _hands.Add(hand);
-        }
-
-        for (int i = 0; i < RiverSize; ++i)
-        {
-            _river.Add(_drawPile.First());
-            _drawPile.RemoveAt(0);
         }
     }
 
@@ -103,7 +103,7 @@ class Deal
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         Hand hand = GetPlayerHand(player);
-        hand.ComputeBestScore(minRank, maxRank, suitsCount);
+        hand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
 
         bool canStopTheRoundByMatching = true;
         double maxPercent = double.MinValue;
@@ -306,7 +306,7 @@ class Deal
         for (int i = 0; i < numHandsToCreate; ++i)
         {
             Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd, ourHand._player);
-            potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
+            potentialHand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
             HandValue av = potentialHand.ApplyRandomDiscard(otherPlayer.DiscardCount, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
 
             if (ourHand._handValue!.PixieCompareTo(av, PixieCompare) < 0)

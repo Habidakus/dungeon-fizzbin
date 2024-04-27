@@ -33,13 +33,13 @@ class Species
     private static void InitSpeciesList()
     {
         AllSpecies = new List<Species>() {
-            new Species("Human", 1, 0, DealComponent_Human, NameGenerator_Human),
-            new Species("Elf", 0.5, 0, DealComponent_Elf, NameGenerator_Elf),
-            new Species("Dwarf", 1, 0, DealComponent_Dwarf, NameGenerator_Dwarf),
-            new Species("Goblin", 0.5, 5, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin),
-            new Species("Dragonkin", 0.5, 10, DealComponent_Dragonkin, NameGenerator_Dragonkin),
-            new Species("Troll", 0.5, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
-            new Species("Lizardman", 0.5, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
+            new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human),
+            new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf),
+            new Species("Dwarf", 0.5, 0, DealComponent_Dwarf, NameGenerator_Dwarf),
+            new Species("Goblin", 1, 5, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin),
+            new Species("Dragonkin", 1, 10, DealComponent_Dragonkin, NameGenerator_Dragonkin),
+            new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
+            new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
             //new Species("Ghoul", 1, 15),
