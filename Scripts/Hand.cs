@@ -6,6 +6,148 @@ using System.Text;
 
 #nullable enable
 
+class Bits
+{
+    internal int Count;
+    internal uint Value;
+
+    public Bits()
+    {
+        Count = 0;
+        Value = 0;
+    }
+
+    public Bits(int min, int maxNonInclusive)
+    {
+        Count = maxNonInclusive - min;
+        for (int i = min; i < maxNonInclusive; ++i)
+        {
+            Value |= (uint)0x1 << (int)i;
+        }
+    }
+
+    public int FirstInt
+    {
+        get
+        {
+            if (Count == 0)
+            {
+                throw new Exception("Bad bit collection, no first bit");
+            }
+
+            int retVal = 0;
+            uint v = Value;
+            while ((v & 0x00000001) != 0x00000001)
+            {
+                ++retVal;
+                v >>= 1;
+            }
+
+            return retVal;
+        }
+    }
+
+    public IEnumerable<Bits> EachBit
+    {
+        get
+        {
+            int c = Count;
+            uint v = 0x1;
+            while (c > 0)
+            {
+                if ((Value & v) == v)
+                {
+                    yield return new Bits() { Count = 1, Value = v };
+                    --c;
+                }
+
+                v <<= 1;
+            }
+
+            yield break;
+        }
+    }
+
+    public IEnumerable<int> EachInt
+    {
+        get
+        {
+            int c = Count;
+            uint v = 0x1;
+            int retVal = 0;
+            while (c > 0)
+            {
+                if ((Value & v) == v)
+                {
+                    yield return retVal;
+                    --c;
+                }
+
+                v <<= 1;
+                ++retVal;
+            }
+
+            yield break;
+        }
+    }
+
+    internal Bits OnlyBitsGreaterThan(int slot)
+    {
+        int cRead = Count;
+        int cWrite = 0;
+        uint v = 0x1;
+        uint vIndex = 0;
+        uint vWrite = 0;
+        while (cRead > 0)
+        {
+            if ((Value & v) == v)
+            {
+                --cRead;
+
+                if (vIndex > slot)
+                {
+                    ++cWrite;
+                    vWrite |= v;
+                }
+            }
+
+            ++vIndex;
+            v <<= 1;
+        }
+
+        return new Bits() { Count = cWrite, Value = vWrite };
+    }
+
+    internal Bits With(int slot)
+    {
+        uint b = (uint)0x1 << slot;
+        if ((Value & b) == b)
+        {
+            throw new Exception("Bit already set");
+        }
+
+        return new Bits() { Count = this.Count + 1, Value = this.Value | b };
+    }
+
+    internal void Set(int slot)
+    {
+        uint b = (uint)0x1 << slot;
+        if ((Value & b) == b)
+        {
+            throw new Exception("Bit already set");
+        }
+
+        Count += 1;
+        Value |= b;
+    }
+
+    internal void Split(out int firstInt, out Bits remainingBits)
+    {
+        firstInt = FirstInt;
+        remainingBits = new Bits() { Count = this.Count - 1, Value = (this.Value & ~((uint)0x1 << firstInt)) };
+    }
+}
+
 class ExposedCard
 {
     internal bool CanBeDiscarded { get; private set; }
@@ -300,22 +442,13 @@ class Hand : IComparable<Hand>
 
     internal void ComputeBestScore(int minRank, int maxRank, int suitsCount, List<Card> river)
     {
-        List<int> availableSlots = new List<int>();
-        for (int i = 0; i<_cards.Count; ++i)
-        {
-            availableSlots.Add(i);
-        }
-        if (river != null)
-        {
-            for (int i = 0; i < river.Count; ++i)
-                availableSlots.Add(_cards.Count + i);
-        }
+        Bits availableSlots = new Bits(0, _cards.Count + river.Count);
 
         _handValue = null;
-        foreach(List<int> combinations in AllCombinationsOfAvailableSlotsChoseY(5, availableSlots))
+        foreach(Bits combinations in AllCombinationsOfAvailableSlotsChoseY(5, availableSlots))
         {
             List<Card> fiveCards = new List<Card>();
-            foreach (int i in combinations)
+            foreach (int i in combinations.EachInt)
             {
                 fiveCards.Add(i < _cards.Count ? _cards[i] : river![i - _cards.Count]);
             }
@@ -619,7 +752,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal static List<List<int>> AllCombinationsOfAvailableSlotsChoseY(int choseY, List<int> availableSlots)
+    internal static List<Bits> AllCombinationsOfAvailableSlotsChoseY(int choseY, Bits availableSlots)
     {
         if (choseY == 0)
         {
@@ -631,7 +764,7 @@ class Hand : IComparable<Hand>
             throw new Exception($"Asking for more discards than is available (slots={availableSlots.Count}, discards={choseY})");
         }
 
-        List<List<int>> retVal = new List<List<int>>();
+        List<Bits> retVal = new List<Bits>();
 
         if (choseY == availableSlots.Count)
         {
@@ -641,23 +774,18 @@ class Hand : IComparable<Hand>
 
         if (choseY == 1)
         {
-            foreach(int slot in availableSlots)
-            {
-                retVal.Add(new List<int>() { slot });
-            }
+            retVal.AddRange(availableSlots.EachBit);
         }
         else
         {
-            foreach (int slot in availableSlots)
+            foreach (int slot in availableSlots.EachInt)
             {
-                List<int> subSlots = availableSlots.Where(x => x > slot).ToList();
+                Bits subSlots = availableSlots.OnlyBitsGreaterThan(slot);
                 if (subSlots.Count >= choseY - 1)
                 {
-                    foreach (List<int> subIter in AllCombinationsOfAvailableSlotsChoseY(choseY - 1, subSlots))
+                    foreach (Bits subIter in AllCombinationsOfAvailableSlotsChoseY(choseY - 1, subSlots))
                     {
-                        var a = new List<int>() { slot };
-                        a.AddRange(subIter);
-                        retVal.Add(a);
+                        retVal.Add(subIter.With(slot));
                     }
                 }
             }
@@ -666,7 +794,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    private Tuple<bool, List<Hand>> GenerateHands(List<int> discardIndices, List<Card> availableCards, Random rnd, int sampleCutOff)
+    private Tuple<bool, List<Hand>> GenerateHands(Bits discardIndices, List<Card> availableCards, Random rnd, int sampleCutOff)
     {
         if (discardIndices.Count == 0)
         {
@@ -710,7 +838,7 @@ class Hand : IComparable<Hand>
         }
     }
 
-    private List<Hand> GenerateSampledHands(List<int> discardIndices, List<Card> availableCards, Random rnd, int numberOfHandsToGenerate)
+    private List<Hand> GenerateSampledHands(Bits discardIndices, List<Card> availableCards, Random rnd, int numberOfHandsToGenerate)
     {
         List<Hand> retVal = new List<Hand>();
         List<int> pullIndices = new List<int>();
@@ -719,18 +847,22 @@ class Hand : IComparable<Hand>
             pullIndices.Add(k);
         }
 
+        discardIndices.Split(out int firstDiscardIndex, out Bits remainingIndicies);
+
         for (int i = 0; i< numberOfHandsToGenerate; ++i)
         {
             GeneratePullIndices(availableCards.Count, discardIndices.Count, rnd, ref pullIndices);
-            Hand clone = CloneWithDiscard(_cards[discardIndices[0]], availableCards[pullIndices[0]]);
-            for (int j = 1; j < discardIndices.Count; ++j)
+            int pullIndex = 0;
+            Hand clone = CloneWithDiscard(_cards[firstDiscardIndex], availableCards[pullIndices[pullIndex]]);
+            foreach (int discardIndex in remainingIndicies.EachInt)
             {
-                if (_exposedCards.BlocksDiscard(_cards[discardIndices[j]]))
+                if (_exposedCards.BlocksDiscard(_cards[discardIndex]))
                 {
                     throw new Exception("Cannot discard card observed by others");
                 }
 
-                clone._cards[discardIndices[j]] = availableCards[pullIndices[j]];
+                ++pullIndex;
+                clone._cards[discardIndex] = availableCards[pullIndices[pullIndex]];
             }
 
             retVal.Add(clone);
@@ -739,22 +871,22 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    private List<Hand> GenerateAllHands(List<int> discardIndices, List<Card> availableCards)
+    private List<Hand> GenerateAllHands(Bits discardIndices, List<Card> availableCards)
     {
         List<Hand> retVal = new List<Hand>();
         if (discardIndices.Count == 1)
         {
             foreach (Card card in availableCards)
             {
-                retVal.Add(CloneWithDiscard(_cards[discardIndices[0]], card));
+                retVal.Add(CloneWithDiscard(_cards[discardIndices.FirstInt], card));
             }
         }
         else
         {
-            List<int> subIndicies = discardIndices.GetRange(1, discardIndices.Count - 1);
+            discardIndices.Split(out int initialDiscard, out Bits subIndicies);
             foreach (Card card in availableCards)
             {
-                Hand subHand = CloneWithDiscard(_cards[discardIndices[0]], card);
+                Hand subHand = CloneWithDiscard(_cards[initialDiscard], card);
                 List<Card> remainingCards = availableCards.Where(a => a != card).ToList();
                 retVal.AddRange(subHand.GenerateAllHands(subIndicies, remainingCards));
             }
@@ -763,7 +895,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal Tuple<AggregateValue, List<Card>> SelectDiscards(List<int> discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd, int sampleCutOff)
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(Bits discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd, int sampleCutOff)
     {
         if (discardIndices.Count == 0)
         {
@@ -779,7 +911,7 @@ class Hand : IComparable<Hand>
         }
 
         List<Card> discards = new List<Card>();
-        foreach(int index in discardIndices)
+        foreach(int index in discardIndices.EachInt)
         {
             discards.Add(_cards[index]);
         }
@@ -790,14 +922,14 @@ class Hand : IComparable<Hand>
         return Tuple.Create(aggValue, discards);
     }
 
-    internal List<int> GetViableDiscardSlots(Player? observingPlayer)
+    internal Bits GetViableDiscardSlots(Player? observingPlayer)
     {
-        List<int> retVal = new List<int>();
+        Bits retVal = new Bits();
         for (int i = 0; i<_cards.Count; ++i)
         {
             if (observingPlayer == null || !IsVisible(_cards[i], observingPlayer))
             {
-                retVal.Add(i);
+                retVal.Set(i);
             }
         }
 
@@ -852,12 +984,12 @@ class Hand : IComparable<Hand>
         else
         {
             AggregateValue? bestCardsToDiscardValue = null;
-            List<int>? bestCardsToDiscard = null;
-            List<int> viableSlots = GetViableDiscardSlots(observingPlayer);
-            List<List<int>> iterList = AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots);
+            Bits? bestCardsToDiscard = null;
+            Bits viableSlots = GetViableDiscardSlots(observingPlayer);
+            List<Bits> iterList = AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots);
             if (iterList.Count == 0)
                 throw new Exception($"GenerateUniqueDiscardSelections(discards={noOfDiscards} slots={string.Join(',', viableSlots)}) found no valid combos");
-            foreach (List<int> iter in iterList)
+            foreach (Bits iter in iterList)
             {
                 AggregateValue aggValue = new AggregateValue(_player);
                 SortedSet<Hand> sortedHands = new SortedSet<Hand>();
@@ -922,8 +1054,8 @@ class Hand : IComparable<Hand>
         else
         {
             const int sampleCutOff = 9000;
-            List<int> viableSlots = GetViableDiscardSlots(null);
-            foreach (List<int> iter in AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots))
+            Bits viableSlots = GetViableDiscardSlots(null);
+            foreach (Bits iter in AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots))
             {
                 Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, rnd, sampleCutOff);
                 if (best.UpdateIfBetter(subBest.Item1))
