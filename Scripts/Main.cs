@@ -30,9 +30,10 @@ public partial class Main : Node
     internal int CurrentBetter { get; private set; }
     private double currentBetLimit = 1.0;
     private int BettingRound = 0;
+    private int TableSize = 5;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
-    public static int HandNumber { get; private set; } = 100; // TODO: Update me
+    public static int HandNumber { get; private set; } = 0; // TODO: Update me
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -50,7 +51,7 @@ public partial class Main : Node
 
         _deal = new Deal();
 
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < TableSize; ++i)
         {
             Player player = new Player(i, rnd, SpeciesAtTable, _deal);
             _players.Add(player);
@@ -162,7 +163,7 @@ public partial class Main : Node
             if (!_players[j].HasDiscarded)
             {
                 Hand hand = Deal.GetPlayerHand(_players[j]);
-                _players[j].Discards = hand.SelectDiscards(0, 3, Deal, rnd);
+                _players[j].Discards = hand.SelectDiscards(0, Deal.MaxDiscard, Deal, rnd);
                 _players[j].HasDiscarded = true;
 
                 GetStateMachine().SwitchState("Play_Animate_Discards");

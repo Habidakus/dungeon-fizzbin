@@ -29,6 +29,9 @@ class Deal
     internal int DiscardsToReveal { get; private set; }
     internal int RevealRightNeighborsHighestCards { get; set; }
     internal int PassCardsToLeftNeighbor { get; set; }
+    internal int RiverSize { get; private set; }
+    internal int HandSize { get; private set; }
+    internal int MaxDiscard { get; private set; }
 
     public Player NonNPCPlayer {
         get
@@ -42,6 +45,10 @@ class Deal
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
         PassCardsToLeftNeighbor = 0;
+        HandSize = 5;
+        RiverSize = 0;
+        MaxDiscard = 3;
+
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
     }
@@ -70,7 +77,7 @@ class Deal
         foreach (Player player in players)
         {
             Hand hand = new Hand(player);
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < HandSize; ++i)
             {
                 hand.AddCard(_drawPile.First());
                 _drawPile.RemoveAt(0);
@@ -116,128 +123,6 @@ class Deal
 
         double ourChance = 100.0 - maxPercent;
         return player.ForceBetOrFold(hud, hand, ourChance, currentRaise, canStopTheRoundByMatching, bettingRound);
-    }
-
-    private void Test(Random rnd, Player player)
-    {
-        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
-        const int flushIndex = 1;
-        const int straightIndex = 2;
-        const int minorHouseIndex = 4; 
-        Dictionary<Tuple<int, int, int>, int> kindCount = new Dictionary<Tuple<int, int, int>, int>();
-        for (int i = 0; i < 2500000; ++i)
-        {
-            var newPile = _drawPile.Shuffle(rnd).ToList();
-            Hand hand = new Hand(player);
-            for (int j = 0; j < 5; ++j)
-            {
-                hand.AddCard(newPile[j]);
-            }
-
-            hand.CountTypes(minRank, maxRank, out bool isFlush, out bool isStraight, out bool isMinorHouse, out int primaryOfAKind, out int secondaryOfAKind);
-            int index = 0;
-            if (isFlush)
-                index += flushIndex;
-            if (isStraight)
-                index += straightIndex;
-            if (isMinorHouse)
-                index += minorHouseIndex;
-            var key = Tuple.Create(index, primaryOfAKind, secondaryOfAKind);
-            if (kindCount.TryGetValue(key, out int count))
-            {
-                kindCount[key] = count + 1;
-            }
-            else
-            {
-                kindCount[key] = 1;
-            }
-        }
-
-        foreach (var entry in kindCount)
-        {
-            StringBuilder sb = new StringBuilder();
-            int key = entry.Key.Item1;
-            if ((key & flushIndex) == flushIndex)
-            {
-                sb.Append(" Flush");
-                key -= flushIndex;
-            }
-            if ((key & straightIndex) == straightIndex)
-            {
-                sb.Append(" Straight");
-                key -= straightIndex;
-            }
-            if ((key & minorHouseIndex) == minorHouseIndex)
-            {
-                sb.Append(" MinorHouse");
-                key -= minorHouseIndex;
-            }
-            if (key != 0)
-            {
-                if (sb.Length == 0)
-                    sb.Append(" Highcard");
-                else
-                    sb.Append($" 0x{key}");
-            }
-            if (entry.Key.Item3 == 0)
-            {
-                switch (entry.Key.Item2)
-                {
-                    case 5: sb.Append(" FiveOfAKind"); break;
-                    case 4: sb.Append(" FourOfAKind"); break;
-                    case 3: sb.Append(" ThreeOfAKind"); break;
-                    case 2: sb.Append(" Pair"); break;
-                    case 0: sb.Append(" Highcard"); break;
-                    default:
-                        sb.Append($" ?{entry.Key.Item2}0");
-                        break;
-                }
-            }
-            else if (entry.Key.Item3 == 2)
-            {
-                if (entry.Key.Item2 == 3)
-                    sb.Append(" FullHouse");
-                else if (entry.Key.Item2 == 2)
-                    sb.Append(" TwoPair");
-                else
-                    sb.Append($" ?{entry.Key.Item2}2");
-            }
-            else
-            {
-                sb.Append($" ?{entry.Key.Item2}{entry.Key.Item3}");
-            }
-
-            GD.Print($"{entry.Value} {sb}");
-        }
-    }
-
-    private void Test2(Random rnd, Player player)
-    {
-        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
-        Hand? bestHand = null;
-        Hand? worstHand = null;
-        for (int i = 0; i < 25000; ++i)
-        {
-            var newPile = _drawPile.Shuffle(rnd).ToList();
-            Hand hand = new Hand(player);
-            for (int j = 0; j < 5; ++j)
-            {
-                hand.AddCard(newPile[j]);
-            }
-
-            hand.ComputeBestScore(minRank, maxRank, suitsCount);
-            if (bestHand == null || hand.CompareTo(bestHand) > 0)
-            {
-                bestHand = hand;
-            }
-            if (worstHand == null || hand.CompareTo(worstHand) < 0)
-            {
-                worstHand = hand;
-            }
-        }
-
-        GD.Print($"Best Hand: {bestHand}");
-        GD.Print($"Worst Hand: {worstHand}");
     }
 
     public void Dump()
@@ -374,7 +259,7 @@ class Deal
     {
         foreach (Hand hand in _hands)
         {
-            if (hand._cards.Count < 5)
+            if (hand._cards.Count < HandSize)
             {
                 Card card = _drawPile.First();
                 _drawPile.RemoveAt(0);
@@ -420,13 +305,10 @@ class Deal
 
     public bool MeetsMinCards(int deltaRank, int deltaSuit)
     {
-        const int maxRiver = 4;
-        const int maxHandSize = 5;
-        const int maxDiscard = 3;
         const int maxPlayerCount = 5;
 
         int cardCount = (_ranks.Count + deltaRank) * (_suits.Count + deltaSuit);
-        const int cardsNeeded = maxRiver + maxPlayerCount * (maxHandSize + maxDiscard);
+        int cardsNeeded = RiverSize + maxPlayerCount * (HandSize + MaxDiscard);
         bool canAdd = cardCount >= cardsNeeded;
         return canAdd;
     }
@@ -531,7 +413,9 @@ class Deal
 
     internal void IncreaseRiver()
     {
-        throw new NotImplementedException();
+        RiverSize += 2;
+        HandSize -= 1;
+        MaxDiscard -= 1;
     }
 }
 
@@ -542,3 +426,127 @@ public static class ExtensionMethods
         return source.Select(a => Tuple.Create(rnd.Next(), a)).ToList().OrderBy(a => a.Item1).Select(a => a.Item2);
     }
 }
+
+
+
+//private void Test(Random rnd, Player player)
+//{
+//    ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+//    const int flushIndex = 1;
+//    const int straightIndex = 2;
+//    const int minorHouseIndex = 4;
+//    Dictionary<Tuple<int, int, int>, int> kindCount = new Dictionary<Tuple<int, int, int>, int>();
+//    for (int i = 0; i < 2500000; ++i)
+//    {
+//        var newPile = _drawPile.Shuffle(rnd).ToList();
+//        Hand hand = new Hand(player);
+//        for (int j = 0; j < HandSize; ++j)
+//        {
+//            hand.AddCard(newPile[j]);
+//        }
+
+//        hand.CountTypes(minRank, maxRank, out bool isFlush, out bool isStraight, out bool isMinorHouse, out int primaryOfAKind, out int secondaryOfAKind);
+//        int index = 0;
+//        if (isFlush)
+//            index += flushIndex;
+//        if (isStraight)
+//            index += straightIndex;
+//        if (isMinorHouse)
+//            index += minorHouseIndex;
+//        var key = Tuple.Create(index, primaryOfAKind, secondaryOfAKind);
+//        if (kindCount.TryGetValue(key, out int count))
+//        {
+//            kindCount[key] = count + 1;
+//        }
+//        else
+//        {
+//            kindCount[key] = 1;
+//        }
+//    }
+
+//    foreach (var entry in kindCount)
+//    {
+//        StringBuilder sb = new StringBuilder();
+//        int key = entry.Key.Item1;
+//        if ((key & flushIndex) == flushIndex)
+//        {
+//            sb.Append(" Flush");
+//            key -= flushIndex;
+//        }
+//        if ((key & straightIndex) == straightIndex)
+//        {
+//            sb.Append(" Straight");
+//            key -= straightIndex;
+//        }
+//        if ((key & minorHouseIndex) == minorHouseIndex)
+//        {
+//            sb.Append(" MinorHouse");
+//            key -= minorHouseIndex;
+//        }
+//        if (key != 0)
+//        {
+//            if (sb.Length == 0)
+//                sb.Append(" Highcard");
+//            else
+//                sb.Append($" 0x{key}");
+//        }
+//        if (entry.Key.Item3 == 0)
+//        {
+//            switch (entry.Key.Item2)
+//            {
+//                case 5: sb.Append(" FiveOfAKind"); break;
+//                case 4: sb.Append(" FourOfAKind"); break;
+//                case 3: sb.Append(" ThreeOfAKind"); break;
+//                case 2: sb.Append(" Pair"); break;
+//                case 0: sb.Append(" Highcard"); break;
+//                default:
+//                    sb.Append($" ?{entry.Key.Item2}0");
+//                    break;
+//            }
+//        }
+//        else if (entry.Key.Item3 == 2)
+//        {
+//            if (entry.Key.Item2 == 3)
+//                sb.Append(" FullHouse");
+//            else if (entry.Key.Item2 == 2)
+//                sb.Append(" TwoPair");
+//            else
+//                sb.Append($" ?{entry.Key.Item2}2");
+//        }
+//        else
+//        {
+//            sb.Append($" ?{entry.Key.Item2}{entry.Key.Item3}");
+//        }
+
+//        GD.Print($"{entry.Value} {sb}");
+//    }
+//}
+
+//private void Test2(Random rnd, Player player)
+//{
+//    ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+//    Hand? bestHand = null;
+//    Hand? worstHand = null;
+//    for (int i = 0; i < 25000; ++i)
+//    {
+//        var newPile = _drawPile.Shuffle(rnd).ToList();
+//        Hand hand = new Hand(player);
+//        for (int j = 0; j < 5; ++j)
+//        {
+//            hand.AddCard(newPile[j]);
+//        }
+
+//        hand.ComputeBestScore(minRank, maxRank, suitsCount);
+//        if (bestHand == null || hand.CompareTo(bestHand) > 0)
+//        {
+//            bestHand = hand;
+//        }
+//        if (worstHand == null || hand.CompareTo(worstHand) < 0)
+//        {
+//            worstHand = hand;
+//        }
+//    }
+
+//    GD.Print($"Best Hand: {bestHand}");
+//    GD.Print($"Worst Hand: {worstHand}");
+//}

@@ -203,6 +203,9 @@ class Hand : IComparable<Hand>
             throw new Exception("Min and Max rank not accurately calculated");
         }
 
+        if (_cards.Count < 5)
+            return false;
+
         List<Card> cardsInOrder = _cards.OrderBy(a => a).ToList();
         bool retVal = true;
         for (int i = 1; retVal && i < cardsInOrder.Count; ++i)
@@ -239,6 +242,11 @@ class Hand : IComparable<Hand>
     {
         get
         {
+            if (_cards.Count < 5)
+            {
+                return false;
+            }
+
             Suit? suit = null;
             foreach (Card card in _cards)
             {
@@ -250,6 +258,7 @@ class Hand : IComparable<Hand>
                 {
                     return false;
                 }
+
             }
 
             return true;
@@ -353,12 +362,10 @@ class Hand : IComparable<Hand>
                 {
                     if (secondOfAKind.Count > 0)
                     {
-                        Card remainderHighCard = secondOfAKind.OrderByDescending(a => a).First();
                         possiblyBetter = new HandValue(HandValue.HandRanking.FullHouse, orderOfImportance);
                     }
                     else
                     {
-                        Card remainderHighCard = remainder.OrderByDescending(a => a).First();
                         possiblyBetter = new HandValue(HandValue.HandRanking.ThreeOfAKind, orderOfImportance);
                     }
                 }
@@ -366,17 +373,14 @@ class Hand : IComparable<Hand>
                 {
                     if (isMinorHouse)
                     {
-                        // Minor House ignores single & double pairs: "No pairs in a prison"
                         possiblyBetter = new HandValue(HandValue.HandRanking.Prison, cardsSortedHighestToLowest);
                     }
                     else if (secondOfAKind.Count > 0)
                     {
-                        Card remainderHighCard = secondOfAKind.OrderByDescending(a => a).First();
                         possiblyBetter = new HandValue(HandValue.HandRanking.TwoPairs, orderOfImportance);
                     }
                     else
                     {
-                        Card remainderHighCard = remainder.OrderByDescending(a => a).First();
                         possiblyBetter = new HandValue(HandValue.HandRanking.TwoOfAKind, orderOfImportance);
                     }
                 }
@@ -557,7 +561,7 @@ class Hand : IComparable<Hand>
             }
         }
 
-        while (retVal._cards.Count < 5)
+        while (retVal._cards.Count < _cards.Count)
         {
             int cardIndex = rnd.Next() % unseenCards.Count;
             Card card = unseenCards.ElementAt(cardIndex);
