@@ -17,6 +17,12 @@ class Player
     internal Species Species { get; private set; }
     internal string Name { get; private set; }
     internal int ExposedDiscardCount { get; set; }
+    internal Deal Deal { get; private set; }
+
+    public override string ToString()
+    {
+        return $"{PositionID}: {Name} {Species.Name}";
+    }
 
     internal Player(int positionID, Random rng, List<Species> speciesAlreadyAtTable, Deal deal)
     {
@@ -28,6 +34,7 @@ class Player
         Discards = null;
         DiscardCount = 0;
         ExposedDiscardCount = 0;
+        Deal = deal;
         if (PositionID == 0)
         {
             IsNPC = false;

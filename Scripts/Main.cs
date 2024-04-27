@@ -33,7 +33,7 @@ public partial class Main : Node
     private int TableSize = 5;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
-    public static int HandNumber { get; private set; } = 0; // TODO: Update me
+    public static int HandNumber { get; private set; } = 20; // TODO: Update me
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -73,6 +73,8 @@ public partial class Main : Node
         Dealer = 0; // Should advance each round
         CurrentBetter = InitialBetter;
         currentBetLimit = anteAmount + 1;
+
+        Deal.Dump();
     }
 
     internal HUD GetHUD()
@@ -103,10 +105,10 @@ public partial class Main : Node
             {
                 for (int i = 0; i < _players.Count; ++i)
                 {
-                    int positionId = (InitialBetter + i) % _players.Count;
-                    if (!Deal.HasPassedCards(positionId))
+                    bool hasPassingCards = Deal.HasPassingCards(Deal.GetPlayerHand(_players[i]));
+                    if (!hasPassingCards)
                     {
-                        return _players[positionId];
+                        return _players[i];
                     }
                 }
             }
@@ -182,7 +184,7 @@ public partial class Main : Node
         {
             if (player.Discards != null && player.Discards.Count > 0)
             {
-                Card? card = player.Discards.Min();
+                Card? card = player.Discards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, Deal.PixieCompare))).First();
                 if (card == null)
                 {
                     throw new Exception("Why is no card min?");
@@ -222,7 +224,7 @@ public partial class Main : Node
         foreach (Hand hand in Deal._hands)
         {
             int leftNeighbor = (hand.PositionID + 1 + _players.Count) % _players.Count;
-            hand.RevealHighestCardsToOtherPlayer(GetHUD(), Deal.RevealRightNeighborsHighestCards, _players[leftNeighbor]);
+            hand.RevealHighestCardsToOtherPlayer(GetHUD(), Deal.RevealRightNeighborsHighestCards, _players[leftNeighbor], Deal.PixieCompare);
         }
 
         Deal.RevealRightNeighborsHighestCards = 0;
@@ -299,6 +301,8 @@ public partial class Main : Node
 
     public void RevealHand()
     {
+        Deal.Dump();
+
         for (int i = 0;i < _players.Count; ++i)
         {
             int position = (InitialBetter + i) % _players.Count;

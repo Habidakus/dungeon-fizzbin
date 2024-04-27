@@ -141,7 +141,8 @@ class Hand : IComparable<Hand>
 
     public int PositionID { get { return _player.PositionID; } }
     public Player Player { get { return _player; } }
-    public int PassedCardsCount { get { return _passingCards == null ? 0 : _passingCards.Count; } }
+    public bool HasPassingCards { get { return _passingCards != null && _passingCards.Count > 0; } }
+    public bool PixieCompare { get { return _player.Deal.PixieCompare; } }
 
     internal Hand(Player player)
     {
@@ -206,7 +207,7 @@ class Hand : IComparable<Hand>
         if (_cards.Count < 5)
             return false;
 
-        List<Card> cardsInOrder = _cards.OrderBy(a => a).ToList();
+        List<Card> cardsInOrder = _cards.OrderBy(a => a, Comparer<Card>.Create((a,b) => a.PixieCompareTo(b, PixieCompare))).ToList();
         bool retVal = true;
         for (int i = 1; retVal && i < cardsInOrder.Count; ++i)
         {
@@ -305,7 +306,7 @@ class Hand : IComparable<Hand>
 
     internal void ComputeBestScore(int minRank, int maxRank, int suitsCount)
     {
-        List<Card> cardsSortedHighestToLowest = _cards.OrderByDescending(a => a).ToList();
+        List<Card> cardsSortedHighestToLowest = _cards.OrderByDescending(a => a, Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare))).ToList();
         Card highCard = cardsSortedHighestToLowest.First();
         _handValue = new HandValue(cardsSortedHighestToLowest);
         bool isStraight = IsStraight(minRank, maxRank);
@@ -315,11 +316,21 @@ class Hand : IComparable<Hand>
         {
             if (isFlush)
             {
-                Card lowCard = _cards.OrderBy(a => a).First();
-                if (lowCard.Rank.IsTenOrHigher())
-                    _handValue = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                Card lowCard = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))).First();
+                if (PixieCompare)
+                {
+                    if (lowCard.Rank.IsSixOrLower)
+                        _handValue = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                    else
+                        _handValue = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                }
                 else
-                    _handValue = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                {
+                    if (lowCard.Rank.IsTenOrHigher)
+                        _handValue = new HandValue(HandValue.HandRanking.RoyalFlush, cardsSortedHighestToLowest);
+                    else
+                        _handValue = new HandValue(HandValue.HandRanking.StraightFlush, cardsSortedHighestToLowest);
+                }
             }
             else if (isMinorHouse)
             {
@@ -335,10 +346,10 @@ class Hand : IComparable<Hand>
             _handValue = new HandValue(HandValue.HandRanking.Flush, cardsSortedHighestToLowest);
         }
 
-        ExtractOfAKind(_cards, out List<Card> ofAKind, out List<Card> remainder);
+        ExtractOfAKind(_cards, PixieCompare, out List<Card> ofAKind, out List<Card> remainder);
         if (ofAKind.Count > 0)
         {
-            ofAKind.Sort();
+            ofAKind.Sort(Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare)));
             ofAKind.Reverse();
             HandValue? possiblyBetter = null;
             if (ofAKind.Count == 5)
@@ -348,15 +359,15 @@ class Hand : IComparable<Hand>
             else if (ofAKind.Count == 4)
             {
                 List<Card> orderOfImportance = new List<Card>(ofAKind);
-                orderOfImportance.AddRange(remainder.OrderByDescending(a => a).ToList());
+                orderOfImportance.AddRange(remainder.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))).ToList());
                 possiblyBetter = new HandValue(HandValue.HandRanking.FourOfAKind, orderOfImportance);
             }
             else
             {
                 List<Card> orderOfImportance = new List<Card>(ofAKind);
-                ExtractOfAKind(remainder, out List<Card> secondOfAKind, out List<Card> remainderRemainder);
-                orderOfImportance.AddRange(secondOfAKind.OrderByDescending(a => a));
-                orderOfImportance.AddRange(remainderRemainder.OrderByDescending(a => a));
+                ExtractOfAKind(remainder, PixieCompare, out List<Card> secondOfAKind, out List<Card> remainderRemainder);
+                orderOfImportance.AddRange(secondOfAKind.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))));
+                orderOfImportance.AddRange(remainderRemainder.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))));
 
                 if (ofAKind.Count == 3)
                 {
@@ -388,7 +399,7 @@ class Hand : IComparable<Hand>
 
             if (possiblyBetter != null)
             {
-                if (possiblyBetter.CompareTo(_handValue) > 0)
+                if (possiblyBetter.PixieCompareTo(_handValue, PixieCompare) > 0)
                 {
                     _handValue = possiblyBetter;
                 }
@@ -406,7 +417,7 @@ class Hand : IComparable<Hand>
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();
-        sb.Append(_player);
+        sb.Append(_player.ToString());
         if (_handValue != null)
         {
             sb.Append($": ({ScoreAsString()})");
@@ -436,7 +447,7 @@ class Hand : IComparable<Hand>
     internal string CardsAsString()
     {
         StringBuilder sb = new StringBuilder();
-        foreach (Card card in _cards.OrderByDescending(a => a))
+        foreach (Card card in _cards.OrderByDescending(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, PixieCompare))))
         {
             sb.Append(" ");
             sb.Append(card.ToString());
@@ -457,7 +468,7 @@ class Hand : IComparable<Hand>
             throw new Exception("Best Score not computed");
         }
 
-        return _handValue.CompareTo(other._handValue);
+        return _handValue.PixieCompareTo(other._handValue, PixieCompare);
     }
 
 
@@ -466,11 +477,11 @@ class Hand : IComparable<Hand>
         isFlush = IsFlush;
         isStraight = IsStraight(minRank, maxRank);
         isMinorHouse = IsMinorHouse;
-        ExtractOfAKind(_cards, out List<Card> ofAKind, out List<Card> remainder);
+        ExtractOfAKind(_cards, PixieCompare, out List<Card> ofAKind, out List<Card> remainder);
         primaryOfAKind = ofAKind.Count;
         if (primaryOfAKind > 0)
         {
-            ExtractOfAKind(remainder, out List<Card> secondarySet, out List<Card> _);
+            ExtractOfAKind(remainder, PixieCompare, out List<Card> secondarySet, out List<Card> _);
             secondaryOfAKind = secondarySet.Count;
         }
         else
@@ -479,7 +490,7 @@ class Hand : IComparable<Hand>
         }
     }
 
-    private static void ExtractOfAKind(List<Card> cards, out List<Card> ofAKind, out List<Card> remainder)
+    private static void ExtractOfAKind(List<Card> cards, bool pixieCompare, out List<Card> ofAKind, out List<Card> remainder)
     {
         Rank? bestRank = null;
         int bestCount = 0;
@@ -495,7 +506,7 @@ class Hand : IComparable<Hand>
                     bestCount = cardsOfThisRank.Count;
                     bestRank = card.Rank;
                 }
-                else if (cardsOfThisRank.Count == bestCount && card.Rank.CompareTo(bestRank) > 0)
+                else if (cardsOfThisRank.Count == bestCount && card.Rank.PixieCompareTo(bestRank, pixieCompare) > 0)
                 {
                     bestRank = card.Rank;
                 }
@@ -856,7 +867,7 @@ class Hand : IComparable<Hand>
         {
             foreach(Card discardCard in _cards)
             {
-                SortedSet<HandValue> scoreList = new SortedSet<HandValue>();
+                SortedSet<HandValue> scoreList = new SortedSet<HandValue>(Comparer<HandValue>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare)));
                 foreach (Card replacement in availableCards)
                 {
                     Hand potentialHand = CloneWithDiscard(discardCard, replacement);
@@ -895,14 +906,16 @@ class Hand : IComparable<Hand>
 
     public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd)
     {
+        if (_passingCards != null && _passingCards.Count > 0)
+        {
+            throw new Exception($"Why is {_player.Name} passing again? HasPassingCards={HasPassingCards}");
+        }
+
         _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
-        GD.Print($"{_player.Name} passing {string.Join(',', _passingCards)}");
         foreach (Card card in _passingCards)
         {
             _cards.Remove(card);
         }
-
-        GD.Print($"{_player.Name} keeps {string.Join(',', _cards)}");
     }
 
     internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)
@@ -939,9 +952,9 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal void RevealHighestCardsToOtherPlayer(HUD hud, int revealRightNeighborsHighestCards, Player viewingPlayer)
+    internal void RevealHighestCardsToOtherPlayer(HUD hud, int revealRightNeighborsHighestCards, Player viewingPlayer, bool pixieCompare)
     {
-        List<Card> cardsToReveal = _cards.OrderBy(x => x).TakeLast(revealRightNeighborsHighestCards).ToList();
+        List<Card> cardsToReveal = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).TakeLast(revealRightNeighborsHighestCards).ToList();
         foreach(Card card in cardsToReveal)
         {
             _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);
@@ -956,6 +969,7 @@ class AggregateValue : IComparable<AggregateValue>
     readonly Player _player;
     internal HandValue? _hopefulValue = null;
     internal double _normalizedWealth = -1;
+    private bool PixieCompare { get { return _player.Deal.PixieCompare; } }
     internal Dictionary<HandValue.HandRanking, Tuple<double, int>> _normalizedByRank = new Dictionary<HandValue.HandRanking, Tuple<double, int>>();
 
     public AggregateValue(Player player, Hand hand)
@@ -1122,7 +1136,7 @@ class AggregateValue : IComparable<AggregateValue>
             throw new Exception($"Aggregate value [{GetDesc()}] doesn't have computed value");
         }
 
-        return _hopefulValue.CompareTo(other._hopefulValue);
+        return _hopefulValue.PixieCompareTo(other._hopefulValue, PixieCompare);
     }
 
     internal bool UpdateIfBetter(AggregateValue other)
@@ -1139,7 +1153,7 @@ class AggregateValue : IComparable<AggregateValue>
     }
 }
 
-class HandValue : IComparable<HandValue>
+class HandValue /*: IComparable<HandValue>*/
 {
     internal enum HandRanking
     {
@@ -1221,7 +1235,7 @@ class HandValue : IComparable<HandValue>
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public int CompareTo(HandValue? other)
+    public int PixieCompareTo(HandValue? other, bool pixieCompare)
     {
         if (other == null)
         {
@@ -1233,7 +1247,7 @@ class HandValue : IComparable<HandValue>
             return (_handRanking > other._handRanking) ? 1 : -1;
         }
 
-        int comp = _highCard.CompareTo(other._highCard);
+        int comp = _highCard.PixieCompareTo(other._highCard, pixieCompare);
         if (comp != 0)
         {
             return comp;

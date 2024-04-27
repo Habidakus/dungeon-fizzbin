@@ -4,7 +4,7 @@ using System.Text;
 
 #nullable enable
 
-class Card : IComparable<Card> 
+class Card /*: IComparable<Card> */
 {
     public Rank Rank { get; private set; }
     public Suit Suit { get; private set; }
@@ -23,16 +23,21 @@ class Card : IComparable<Card>
         return $"{Rank._unicode}{Suit._unicode}";
     }
 
-    public int CompareTo(Card? other)
+    public int PixieCompareTo(Card? other, bool pixieCompare)
     {
         if (other == null)
             return -1;
 
-        int comp = Rank.CompareTo(other.Rank);
+        int comp = Rank.PixieCompareTo(other.Rank, pixieCompare);
         if (comp != 0)
             return comp;
         else
             return Suit.CompareTo(other.Suit);
+    }
+
+    internal int PixieCompareTo(Card b, object pixieCompare)
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -89,7 +94,7 @@ class Suit : IComparable<Suit>
     }
 }
 
-class Rank : IComparable<Rank>
+class Rank /*: IComparable<Rank>*/
 {
     internal static List<Rank> DefaultRanks = new List<Rank>() {
         new Rank('2', 2),
@@ -109,10 +114,8 @@ class Rank : IComparable<Rank>
 
     internal bool FaceCard { get { return _strength > 10; } }
 
-    internal bool IsTenOrHigher()
-    {
-        return _strength >= 10;
-    }
+    internal bool IsTenOrHigher { get { return _strength >= 10; } }
+    internal bool IsSixOrLower { get { return _strength >= 10; } }
 
     // frowny face = '\u2639'
     internal static Rank Anhk = new Rank('\u2625', 0); 
@@ -152,7 +155,7 @@ class Rank : IComparable<Rank>
         _strength = strength;
     }
 
-    public int CompareTo(Rank? other)
+    public int PixieCompareTo(Rank? other, bool pixieCompare)
     {
         if (other == null)
             return -1;
@@ -162,7 +165,14 @@ class Rank : IComparable<Rank>
             return Wraps ? 1 : -1;
         }
 
-        return _strength.CompareTo(other._strength);
+        if (pixieCompare)
+        {
+            return other._strength.CompareTo(_strength);
+        }
+        else
+        {
+            return _strength.CompareTo(other._strength);
+        }
     }
 
     internal bool IsNeighborTo(Rank other, int min, int max)

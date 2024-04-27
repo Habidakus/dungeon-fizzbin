@@ -45,7 +45,7 @@ class Species
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
             //new Species("Centaur", 1, 15),
-            //new Species("Pixie", 1, 15),
+            new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             //new Species("Elf", 1, 15),
             //new Species("Giant", 1, 15),
             //new Species("Birdman", 1, 15),
@@ -365,5 +365,29 @@ class Species
     static internal void DealComponent_Firbolg(Deal deal)
     {
         deal.AddRank(addToLowEnd: true);
+    }
+
+
+    // -------------------------------- Pixie --------------------------------
+
+    static private List<string> PIXIE_FRONT = new List<string>() {
+        "Tinker", "Plum", "Petal", "Star", "Moon", "Honey", "Sugar", "Chime",
+    };
+    static private List<string> PIXIE_END = new List<string>() {
+        "bell", "blossom", "flower", "shine", "dust", "flicker", "beam",
+    };
+    internal static string NameGenerator_Pixie(Random rng)
+    {
+        int a = rng.Next() % PIXIE_FRONT.Count;
+        int b = rng.Next() % PIXIE_END.Count;
+        return $"{PIXIE_FRONT[a]}{PIXIE_END[b]}";
+    }
+    static internal void DealComponent_Pixie(Deal deal)
+    {
+        deal.SetPixieCompare();
+    }
+    static internal bool CanAdd_Pixie(Deal deal)
+    {
+        return deal.PixieCompare == false;
     }
 }

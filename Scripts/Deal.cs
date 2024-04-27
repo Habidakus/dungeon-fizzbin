@@ -32,6 +32,7 @@ class Deal
     internal int RiverSize { get; private set; }
     internal int HandSize { get; private set; }
     internal int MaxDiscard { get; private set; }
+    internal bool PixieCompare { get; private set; }
 
     public Player NonNPCPlayer {
         get
@@ -48,6 +49,7 @@ class Deal
         HandSize = 5;
         RiverSize = 0;
         MaxDiscard = 3;
+        PixieCompare = false;
 
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
@@ -127,12 +129,8 @@ class Deal
 
     public void Dump()
     {
-        GD.Print("Sorted hands:");
-
-        _hands.Sort();
-        _hands.Reverse();
-
-        foreach(Hand hand in _hands)
+        GD.Print($"Sorted hands (pixie={PixieCompare}):");
+        foreach(Hand hand in _hands.OrderBy(a => a).Reverse())
         {
             GD.Print(hand);
         }
@@ -193,9 +191,9 @@ class Deal
     {
         foreach (Hand hand in _hands)
         {
-            if (HasPassedCards(hand.PositionID))
+            if (HasPassingCards(hand))
             {
-                GD.Print($"We need to process passed cards because {hand._player.Name} still has {hand.PassedCardsCount} cards that need to be handed out.");
+                GD.Print($"We need to process passed cards because {hand._player.Name} still has cards that need to be handed out.");
                 return true;
             }
         }
@@ -203,9 +201,9 @@ class Deal
         return false;
     }
 
-    internal bool HasPassedCards(int positionId)
+    internal bool HasPassingCards(Hand hand)
     {
-        return _hands[positionId].PassedCardsCount > 0;
+        return hand.HasPassingCards;
     }
 
     internal void DeterminePassCards(HUD hud, Player player, Random rng)
@@ -294,7 +292,7 @@ class Deal
             potentialHand.ComputeBestScore(minRank, maxRank, suitsCount);
             HandValue av = potentialHand.ApplyRandomDiscard(otherPlayer.DiscardCount, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
 
-            if (ourHand._handValue!.CompareTo(av) < 0)
+            if (ourHand._handValue!.PixieCompareTo(av, PixieCompare) < 0)
             {
                 theyWin += 1;
             }
@@ -416,6 +414,11 @@ class Deal
         RiverSize += 2;
         HandSize -= 1;
         MaxDiscard -= 1;
+    }
+
+    internal void SetPixieCompare()
+    {
+        PixieCompare = true;
     }
 }
 
