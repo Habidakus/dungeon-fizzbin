@@ -34,6 +34,8 @@ class Deal
     internal int HandSize { get; private set; }
     internal int MaxDiscard { get; private set; }
     internal bool PixieCompare { get; private set; }
+    internal double PendingCostPerDiscard { get; private set; }
+    internal double CostPerDiscard { get; private set; }
 
     public Player NonNPCPlayer {
         get
@@ -51,6 +53,8 @@ class Deal
         RiverSize = 0;
         MaxDiscard = 3;
         PixieCompare = false;
+        CostPerDiscard = 0;
+        PendingCostPerDiscard = 0;
 
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
@@ -197,6 +201,16 @@ class Deal
         }
 
         return retVal;
+    }
+
+    internal void ApplyDiscardCost()
+    {
+        CostPerDiscard = PendingCostPerDiscard;
+    }
+
+    internal void ReleaseDiscardCost()
+    {
+        CostPerDiscard = 0;
     }
 
     internal Hand GetPlayerHand(Player player)
@@ -436,6 +450,11 @@ class Deal
     internal void SetPixieCompare()
     {
         PixieCompare = true;
+    }
+
+    internal void IncreaseCostPerDiscard()
+    {
+        PendingCostPerDiscard += 0.5;
     }
 }
 

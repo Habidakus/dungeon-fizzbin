@@ -44,7 +44,7 @@ class Species
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
-            //new Species("Centaur", 1, 15),
+            new Species("Centaur", 111, 15, DealComponent_Centaur, NameGenerator_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             //new Species("Elf", 1, 15),
             //new Species("Giant", 1, 15),
@@ -367,7 +367,6 @@ class Species
         deal.AddRank(addToLowEnd: true);
     }
 
-
     // -------------------------------- Pixie --------------------------------
 
     static private List<string> PIXIE_FRONT = new List<string>() {
@@ -389,5 +388,25 @@ class Species
     static internal bool CanAdd_Pixie(Deal deal)
     {
         return deal.PixieCompare == false;
+    }
+
+    // -------------------------------- Centaur --------------------------------
+
+    static private List<string> CENTAUR_FRONT = new List<string>() {
+        "Swift", "Thunder", "Arrow", "Untrammeled", "Far", "Black", "Flame", "Ginger", "Wild", "Shadow", "Snow", "Sun", 
+    };
+    static private List<string> CENTAUR_END = new List<string>() {
+        "hoof", "legs", "mane", "wind", "breeze", "cloud", "heart", "fire", 
+    };
+    private static string NameGenerator_Centaur(Random rng)
+    {
+        int a = rng.Next() % CENTAUR_FRONT.Count;
+        int b = rng.Next() % CENTAUR_END.Count;
+        return $"{CENTAUR_FRONT[a]}{CENTAUR_END[b]}";
+    }
+
+    private static void DealComponent_Centaur(Deal deal)
+    {
+        deal.IncreaseCostPerDiscard();
     }
 }

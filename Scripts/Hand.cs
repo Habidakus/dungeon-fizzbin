@@ -895,7 +895,7 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal Tuple<AggregateValue, List<Card>> SelectDiscards(Bits discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd, int sampleCutOff)
+    internal Tuple<AggregateValue, List<Card>> SelectDiscards(Bits discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, double costToDiscard, Random rnd, int sampleCutOff)
     {
         if (discardIndices.Count == 0)
         {
@@ -916,7 +916,7 @@ class Hand : IComparable<Hand>
             discards.Add(_cards[index]);
         }
 
-        AggregateValue aggValue = new AggregateValue(_player);
+        AggregateValue aggValue = new AggregateValue(_player, costToDiscard);
         aggValue.Add(sortedHands.ToArray(), generatedHands.Item1);
 
         return Tuple.Create(aggValue, discards);
@@ -959,7 +959,7 @@ class Hand : IComparable<Hand>
                 if (observingPlayer != null && IsVisible(discardCard, observingPlayer))
                     continue;
 
-                AggregateValue aggValue = new AggregateValue(_player);
+                AggregateValue aggValue = new AggregateValue(_player, noOfDiscards * _player.Deal.CostPerDiscard);
                 SortedSet<Hand> sortedHands = new SortedSet<Hand>();
                 for (int i = 0; i < iterations; ++i)
                 {
@@ -991,7 +991,7 @@ class Hand : IComparable<Hand>
                 throw new Exception($"GenerateUniqueDiscardSelections(discards={noOfDiscards} slots={string.Join(',', viableSlots)}) found no valid combos");
             foreach (Bits iter in iterList)
             {
-                AggregateValue aggValue = new AggregateValue(_player);
+                AggregateValue aggValue = new AggregateValue(_player, noOfDiscards * _player.Deal.CostPerDiscard);
                 SortedSet<Hand> sortedHands = new SortedSet<Hand>();
                 List<Hand> hands = GenerateSampledHands(iter, availableCards, rnd, iterations);
                 foreach (Hand hand in hands)
@@ -1021,15 +1021,15 @@ class Hand : IComparable<Hand>
     {
         if (noOfDiscards == 0)
         {
-            return Tuple.Create(new AggregateValue(_player, this), new List<Card>());
+            return Tuple.Create(new AggregateValue(_player, this, 0), new List<Card>());
         }
 
         List<Card> retVal = new List<Card>();
-        AggregateValue best = new AggregateValue(_player);
 
         if (noOfDiscards == 1)
         {
-            foreach(Card discardCard in _cards)
+            AggregateValue best = new AggregateValue(_player, 0 * _player.Deal.CostPerDiscard);
+            foreach (Card discardCard in _cards)
             {
                 SortedSet<HandValue> scoreList = new SortedSet<HandValue>(Comparer<HandValue>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare)));
                 foreach (Card replacement in availableCards)
@@ -1041,7 +1041,7 @@ class Hand : IComparable<Hand>
 
                 if (scoreList.Count > 0)
                 {
-                    AggregateValue aggValue = new AggregateValue(_player);
+                    AggregateValue aggValue = new AggregateValue(_player, 1 * _player.Deal.CostPerDiscard);
                     aggValue.Add(scoreList.ToArray(), false);
 
                     if (best.UpdateIfBetter(aggValue))
@@ -1050,26 +1050,35 @@ class Hand : IComparable<Hand>
                     }
                 }
             }
+
+            return Tuple.Create(best, retVal);
         }
         else
         {
+            AggregateValue best = new AggregateValue(_player, 0);
             const int sampleCutOff = 9000;
             Bits viableSlots = GetViableDiscardSlots(null);
+            double costToDiscard = noOfDiscards * _player.Deal.CostPerDiscard;
             foreach (Bits iter in AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots))
             {
-                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, rnd, sampleCutOff);
+                Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(iter, availableCards, minRank, maxRank, suitsCount, costToDiscard, rnd, sampleCutOff);
                 if (best.UpdateIfBetter(subBest.Item1))
                 {
                     retVal = subBest.Item2;
                 }
             }
-        }
 
-        return Tuple.Create(best!, retVal);
+            return Tuple.Create(best, retVal);
+        }
     }
 
     public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd)
     {
+        if (actualDeal.CostPerDiscard != 0)
+        {
+            throw new Exception("We should have no cost per discard while passing");
+        }
+
         if (_passingCards != null && _passingCards.Count > 0)
         {
             throw new Exception($"Why is {_player.Name} passing again? HasPassingCards={HasPassingCards}");
@@ -1087,13 +1096,13 @@ class Hand : IComparable<Hand>
         actualDeal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         List<Card> availableCards = actualDeal.AvailableCardsFromHandsView(this);
         List<Card> retVal = new List<Card>();
-        AggregateValue best = new AggregateValue(_player);
+        AggregateValue best = new AggregateValue(_player, actualDeal.CostPerDiscard * 0.0);
         for (int discards = minDiscards; discards <= maxDiscards; ++discards)
         {
-            Tuple<AggregateValue, List<Card>> subBest = SelectDiscards(discards, availableCards, minRank, maxRank, suitsCount, rnd);
-            if (best.UpdateIfBetter(subBest.Item1))
+            (AggregateValue bestScoreWithThisDiscardCount, List<Card> cardsToDiscard) = SelectDiscards(discards, availableCards, minRank, maxRank, suitsCount, rnd);
+            if (best.UpdateIfBetter(bestScoreWithThisDiscardCount))
             {
-                retVal = subBest.Item2;
+                retVal = cardsToDiscard;
             }
         }
 
@@ -1129,17 +1138,19 @@ class Hand : IComparable<Hand>
 class AggregateValue : IComparable<AggregateValue>
 {
     readonly Player _player;
-    internal HandValue? _hopefulValue = null;
-    internal double _normalizedWealth = -1;
+    private HandValue? _hopefulValue = null;
+    internal double _normalizedWealth;
+    internal double DiscardCost { get; private set; } = 0;
     private bool PixieCompare { get { return _player.Deal.PixieCompare; } }
     internal Dictionary<HandValue.HandRanking, Tuple<double, int>> _normalizedByRank = new Dictionary<HandValue.HandRanking, Tuple<double, int>>();
 
-    public AggregateValue(Player player, Hand hand)
+    public AggregateValue(Player player, Hand hand, double discardCost)
     {
         _player = player;
         SetHopefulValue(hand._handValue);
 
         _normalizedWealth = 0;
+        DiscardCost = discardCost;
         if (hand._handValue == null)
         {
             throw new Exception("Initializing with scoreless hand");
@@ -1148,10 +1159,11 @@ class AggregateValue : IComparable<AggregateValue>
         AddAggreageWorth(hand._handValue, 1);
     }
 
-    internal AggregateValue(Player player)
+    internal AggregateValue(Player player, double discardCost)
     {
         _player = player;
-        _normalizedWealth = -2;
+        _normalizedWealth = 0;
+        DiscardCost = discardCost;
     }
 
     internal string DictText
@@ -1169,7 +1181,7 @@ class AggregateValue : IComparable<AggregateValue>
                 }
 
                 first = false;
-                sb.Append($"{pair.Key} {pair.Value.Item1:F2} {pair.Value.Item2}");
+                sb.Append($"{pair.Key} ${pair.Value.Item1 - DiscardCost:F2} {pair.Value.Item2}");
             }
             sb.Append("]");
             return sb.ToString();
@@ -1180,21 +1192,16 @@ class AggregateValue : IComparable<AggregateValue>
     {
         if (_hopefulValue != null)
         {
-            return $"{_hopefulValue.GetDesc()} ${_normalizedWealth:F2} {DictText}";
+            return $"{_hopefulValue.GetDesc()} ${_normalizedWealth - DiscardCost:F2} {DictText}";
         }
         else
         {
-            return $"() ${_normalizedWealth:F2} {DictText}";
+            return $"() ${_normalizedWealth - DiscardCost:F2} {DictText}";
         }
     }
 
     internal void Add(Hand[] sortedHands, bool sampled)
     {
-        if (_normalizedWealth >= 0)
-        {
-            throw new Exception($"Clobbering already set normalized wealth");
-        }
-
         _normalizedWealth = 0;
 
         // Best values are at the back
@@ -1216,11 +1223,6 @@ class AggregateValue : IComparable<AggregateValue>
 
     internal void Add(HandValue[] sortedValues, bool sampled)
     {
-        if (_normalizedWealth >= 0)
-        {
-            throw new Exception($"Clobbering already set normalized wealth");
-        }
-
         _normalizedWealth = 0;
 
         // Best values are at the back
@@ -1258,7 +1260,7 @@ class AggregateValue : IComparable<AggregateValue>
         }
 
         double highCardValue = (handValue._highCard.FractionalValue / Card.MaxFractionalValue);
-        double totalValue = handValue.Worth + highCardValue;
+        double totalValue = handValue.Worth + highCardValue - (DiscardCost * HandValue.MinWorth * 10);
         _normalizedWealth += totalValue / (double)setSize;
 
         if (_normalizedByRank.TryGetValue(handValue._handRanking, out Tuple<double, int>? value))
@@ -1278,18 +1280,22 @@ class AggregateValue : IComparable<AggregateValue>
             return 1;
         }
 
-        if (_normalizedWealth <= 0)
-        {
-            throw new Exception($"Aggregate value [{GetDesc()}] doesn't have normalized wealth set");
-        }
+        //if (_normalizedWealth <= 0)
+        //{
+        //    throw new Exception($"Aggregate value [{GetDesc()}] doesn't have normalized wealth set");
+        //}
 
-        if (other._normalizedWealth <= 0)
-        {
-            throw new Exception($"Aggregate value [{other.GetDesc()}] doesn't have normalized wealth set");
-        }
-
+        //if (other._normalizedWealth <= 0)
+        //{
+        //    throw new Exception($"Aggregate value [{other.GetDesc()}] doesn't have normalized wealth set");
+        //}
+        
         if (_normalizedWealth != other._normalizedWealth)
         {
+            if (DiscardCost != 0)
+            {
+                int i = 0;
+            }
             return _normalizedWealth.CompareTo(other._normalizedWealth);
         }
 
@@ -1305,14 +1311,20 @@ class AggregateValue : IComparable<AggregateValue>
     {
         if (_normalizedWealth < other._normalizedWealth)
         {
+            if (DiscardCost != 0)
+            {
+                int i = 0;
+            }
             _hopefulValue = other._hopefulValue;
             _normalizedWealth = other._normalizedWealth;
             _normalizedByRank = other._normalizedByRank;
+            DiscardCost = other.DiscardCost;
             return true;
         }
 
         return false;
     }
+
 }
 
 class HandValue /*: IComparable<HandValue>*/
@@ -1337,6 +1349,7 @@ class HandValue /*: IComparable<HandValue>*/
     internal HandRanking _handRanking;
     internal Card _highCard;
     internal Double _fractionalValue;
+    internal static double MinWorth { get { return (double)HandRanking.HighCard; } }
     internal double Worth { get { return (double)_handRanking; } }
 
     internal string GetDesc()

@@ -167,7 +167,16 @@ public partial class Main : Node
             if (!_players[j].HasDiscarded)
             {
                 Hand hand = Deal.GetPlayerHand(_players[j]);
+                Deal.ApplyDiscardCost();
                 _players[j].Discards = hand.SelectDiscards(0, Deal.MaxDiscard, Deal, rnd);
+                if (_players[j].Discards != null)
+                {
+                    Pot += _players[j].Discards!.Count * Deal.CostPerDiscard;
+
+                    GetHUD().SetPot(Pot);
+                }
+
+                Deal.ReleaseDiscardCost();
                 _players[j].HasDiscarded = true;
 
                 GetStateMachine().SwitchState("Play_Animate_Discards");
@@ -271,6 +280,10 @@ public partial class Main : Node
 
     public void ForceNextBet()
     {
+        if (_deal.CostPerDiscard != 0)
+        {
+            throw new Exception("We should not be computing discard cost at this point in time");
+        }
         DateTime start = DateTime.Now;
         Pot += Deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit, BettingRound);
         GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");

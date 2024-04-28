@@ -78,7 +78,9 @@ class Player
 
     internal double ForceBetOrFold(HUD hud, Hand hand, double percent, double betFloor, bool canStopTheRoundByMatching, int bettingRound)
     {
-        AggregateValue agValue = new AggregateValue(this, hand);
+        const double costToDiscard = 0.0; // We've already paid our discard price and we're just now
+                                          // evaluating what we are going to do with the current hand.
+        AggregateValue agValue = new AggregateValue(this, hand, costToDiscard);
         if (agValue._normalizedWealth <= 0)
         {
             throw new Exception($"Why is player #{hand.PositionID}'s aggregate value {agValue.GetDesc()}");
