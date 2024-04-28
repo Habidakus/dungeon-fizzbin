@@ -44,7 +44,7 @@ class Species
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
-            new Species("Centaur", 111, 15, DealComponent_Centaur, NameGenerator_Centaur),
+            new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             //new Species("Elf", 1, 15),
             //new Species("Giant", 1, 15),
