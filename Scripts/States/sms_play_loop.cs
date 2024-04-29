@@ -11,27 +11,33 @@ public partial class sms_play_loop : state_machine_state
 
     public override void Update(double delta)
     {
-        if (GetMainNode().SomeoneNeedsToPass())
+        int highlightPositionId = -1;
+        if (GetMainNode().SomeoneNeedsToPass(out highlightPositionId))
         {
+            GetHUD().HighlightPosition(highlightPositionId);
             GetStateMachine().SwitchState("play_someone_passes");
         }
-        else if (GetMainNode().NeedsToResolvePassAndRiver())
+        else if (GetMainNode().NeedsToResolvePassAndRiver(out highlightPositionId))
         {
+            GetHUD().HighlightPosition(highlightPositionId);
             GetStateMachine().SwitchState("play_resolve_passandriver");
         }
-        else if (GetMainNode().SomeoneNeedsToDiscard())
+        else if (GetMainNode().SomeoneNeedsToDiscard(out highlightPositionId))
         {
+            GetHUD().HighlightPosition(highlightPositionId);
             GetStateMachine().SwitchState("play_someone_discards");
         }
         else if (GetMainNode().HasPostDiscard())
         {
+            GetHUD().HighlightPosition(-1);
             GetStateMachine().SwitchState("play_post_discard");
         }
-        else if (GetMainNode().SomeoneNeedsToBet())
+        else if (GetMainNode().SomeoneNeedsToBet(out highlightPositionId))
         {
+            GetHUD().HighlightPosition(highlightPositionId);
             GetStateMachine().SwitchState("play_someone_bets");
         }
-        else if (GetMainNode().SomeoneNeedsToReveal())
+        else if (GetMainNode().SomeoneNeedsToReveal(out highlightPositionId))
         {
             GetStateMachine().SwitchState("play_someone_reveals");
         }
@@ -39,6 +45,8 @@ public partial class sms_play_loop : state_machine_state
         {
             GetStateMachine().SwitchState("play_declare_winner");
         }
+
+        //GetHUD().HighlightPosition(-1);
     }
 
     public override void ExitState()

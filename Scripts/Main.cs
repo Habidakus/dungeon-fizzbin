@@ -119,13 +119,19 @@ public partial class Main : Node
         }
     }
 
-    internal bool SomeoneNeedsToPass()
+    internal bool SomeoneNeedsToPass(out int positionId)
     {
         if (Deal.PassCardsToLeftNeighbor > 0)
         {
-            return (NextPlayerToPassACard != null);
+            var player = NextPlayerToPassACard;
+            if (player != null)
+            {
+                positionId = player.PositionID;
+                return true;
+            }
         }
 
+        positionId = -1;
         return false;
     }
 
@@ -135,9 +141,9 @@ public partial class Main : Node
         GetStateMachine().SwitchState("Play_Loop");
     }
 
-    internal bool NeedsToResolvePassAndRiver()
+    internal bool NeedsToResolvePassAndRiver(out int positionID)
     {
-        return Deal.NeedsToProcessPassedCards();
+        return Deal.NeedsToProcessPassedCards(out positionID);
     }
 
     internal void ResolvePassAndRiver()
@@ -146,16 +152,19 @@ public partial class Main : Node
         GetStateMachine().SwitchState("Play_Loop");
     }
 
-    public bool SomeoneNeedsToDiscard()
+    public bool SomeoneNeedsToDiscard(out int highlightPositionID)
     {
-        foreach (Player player in _players)
+        for (int i = 0; i < _players.Count; ++i)
         {
-            if (!player.HasDiscarded)
+            int j = (InitialBetter + i) % _players.Count;
+            if (!_players[j].HasDiscarded)
             {
+                highlightPositionID = _players[j].PositionID;
                 return true;
             }
         }
 
+        highlightPositionID = -1;
         return false;
     }
 
@@ -244,10 +253,11 @@ public partial class Main : Node
         Deal.RevealRightNeighborsHighestCards = 0;
     }
 
-    public bool SomeoneNeedsToBet()
+    public bool SomeoneNeedsToBet(out int highlightPositionId)
     {
         if (1 == _players.Where(a => !a.HasFolded).Count())
         {
+            highlightPositionId = -1;
             return false;
         }
 
@@ -266,10 +276,12 @@ public partial class Main : Node
 
             if (_players[CurrentBetter].AmountBet < currentBetLimit)
             {
+                highlightPositionId = _players[CurrentBetter].PositionID;
                 return true;
             }
             else if (_players[CurrentBetter].AmountBet == currentBetLimit)
             {
+                highlightPositionId = -1;
                 return false;
             }
             else
@@ -278,6 +290,7 @@ public partial class Main : Node
             }
         }
 
+        highlightPositionId = -1;
         return false;
     }
 
@@ -299,24 +312,43 @@ public partial class Main : Node
         CurrentBetter = (CurrentBetter + 1) % _players.Count;
     }
 
-    public bool SomeoneNeedsToReveal()
+    public bool SomeoneNeedsToReveal(out int highlightPositionId)
     {
         if (1 == _players.Where(a => !a.HasFolded).Count())
         {
+            // Only one player hasn't folded, they get to keep their hand secret.
+            highlightPositionId = -1;
             return false;
         }
 
-        foreach (Player player in _players)
+        //foreach (Player player in _players)
+        //{
+        //    if (player.HasFolded)
+        //        continue;
+
+        //    if (!player.HasRevealed)
+        //    {
+        //        highlightPositionId = player.PositionID;
+        //        return true;
+        //    }
+        //}
+
+        //highlightPositionId = -1;
+        //return false;
+
+        for (int i = 0; i < _players.Count; ++i)
         {
-            if (player.HasFolded)
+            int position = (InitialBetter + i) % _players.Count;
+            if (_players[position].HasFolded)
+                continue;
+            if (_players[position].HasRevealed)
                 continue;
 
-            if (!player.HasRevealed)
-            {
-                return true;
-            }
+            highlightPositionId = _players[position].PositionID;
+            return true;
         }
 
+        highlightPositionId = -1;
         return false;
     }
 

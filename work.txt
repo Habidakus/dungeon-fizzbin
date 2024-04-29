@@ -9,6 +9,7 @@
 26th Completed Work on halfling, dwarf, and pixie rules. Added the river UI and the pot.
 27th (half) Worked on minimizing memory usage when determining which cards to discard or use from the river
 28th Added the centaur and giant rules
+29th (half) Added highlight mode to visually indicate which player's turn it currently is
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file

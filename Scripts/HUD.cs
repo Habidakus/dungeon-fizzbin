@@ -10,6 +10,7 @@ public partial class HUD : CanvasLayer
 	private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
+    private int CurrentHighlightPositionId { get; set; }
 
     private Control GetChildControl(string name)
 	{
@@ -25,6 +26,8 @@ public partial class HUD : CanvasLayer
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
+
+        CurrentHighlightPositionId = -1;
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -162,6 +165,12 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.FoldHand(amountBet);
+
+            // TODO: When we get a better highlight, remove this. We're just clearing out the reset to standard green here.
+            if (CurrentHighlightPositionId == positionID)
+            {
+                CurrentHighlightPositionId = -1;
+            }
         }
     }
 
@@ -191,4 +200,31 @@ public partial class HUD : CanvasLayer
                 visibleHand.ExposeCardToNonNPC(card);
         }
     }
+
+    public void HighlightPosition(int positionId)
+    {
+        if (CurrentHighlightPositionId == positionId)
+        {
+            return;
+        }
+
+        if (CurrentHighlightPositionId != -1)
+        {
+            if (FindChild($"Hand{CurrentHighlightPositionId}") is VisibleHand visibleHand)
+            {
+                visibleHand.ClearHighlight(positionId != -1 ? $"Switching to #{positionId}" : "Turning off");
+            }
+        }
+
+        CurrentHighlightPositionId = positionId;
+
+        if (CurrentHighlightPositionId != -1)
+        {
+            if (FindChild($"Hand{CurrentHighlightPositionId}") is VisibleHand visibleHand)
+            {
+                visibleHand.SetHighlight();
+            }
+        }
+    }
+
 }

@@ -368,4 +368,30 @@ public partial class VisibleHand : Node2D
             throw new Exception($"{Name} does not have a child Score");
         }
     }
+
+    internal void ClearHighlight(string why)
+    {
+        if (FindChild("ColorRect") is ColorRect cr)
+        {
+            GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} removing highlight. Why={why}");
+            cr.Color = Color.FromHtml("147754");
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child ColorRect");
+        }
+    }
+
+    internal void SetHighlight()
+    {
+        if (FindChild("ColorRect") is ColorRect cr)
+        {
+            GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} adding highlight");
+            cr.Color = Color.FromHtml("277714");
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child ColorRect");
+        }
+    }
 }

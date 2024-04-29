@@ -220,17 +220,19 @@ class Deal
         return _hands.First(a => a._player == player);
     }
 
-    internal bool NeedsToProcessPassedCards()
+    internal bool NeedsToProcessPassedCards(out int positionID)
     {
         foreach (Hand hand in _hands)
         {
             if (HasPassingCards(hand))
             {
                 GD.Print($"We need to process passed cards because {hand._player.Name} still has cards that need to be handed out.");
+                positionID = hand.PositionID;
                 return true;
             }
         }
 
+        positionID = -1;
         return false;
     }
 
