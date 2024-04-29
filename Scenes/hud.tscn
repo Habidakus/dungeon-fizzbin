@@ -15,7 +15,6 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TitlePage" type="Control" parent="."]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,8 +50,7 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 72
-text = "Fantasy Fizzbin
-"
+text = "Dungeon Fizzbin"
 horizontal_alignment = 1
 vertical_alignment = 1
 
