@@ -8,7 +8,7 @@
 25th Added initial species rules, and names for many species
 26th Completed Work on halfling, dwarf, and pixie rules. Added the river UI and the pot.
 27th (half) Worked on minimizing memory usage when determining which cards to discard or use from the river
-28th (half) Added the centaur rules
+28th Added the centaur and giant rules
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file

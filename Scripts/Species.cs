@@ -42,12 +42,11 @@ class Species
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
-            //new Species("Ghoul", 1, 15),
-            //new Species("Dogman", 1, 15),
             new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
-            //new Species("Elf", 1, 15),
-            //new Species("Giant", 1, 15),
+            new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant),
+            //new Species("Ghoul", 1, 15),
+            //new Species("Dogman", 1, 15),
             //new Species("Birdman", 1, 15),
             new Species("Firbolg", 1, 30, DealComponent_Firbolg, NameGenerator_Firbolg),
             //new Species("Golem", 1, 30),
@@ -408,5 +407,24 @@ class Species
     private static void DealComponent_Centaur(Deal deal)
     {
         deal.IncreaseCostPerDiscard();
+    }
+
+    // -------------------------------- Giant --------------------------------
+
+    static private List<string> GIANT_ADJECTIVE = new List<string>() {
+        "Big", "Mega", "Colossal", "Titanic", "Large", "Huge", "Enormous", "Mammoth", "Considerable", "Quite Sizeable",
+    };
+    static private List<string> GIANT_NAME = new List<string>() {
+        "Ed", "Ted", "Joe", "Sam", "Tod", "Abe", "Gus", "Ben", "Dan", "Moe", "Ox",
+    };
+    private static string NameGenerator_Giant(Random rng)
+    {
+        int a = rng.Next() % GIANT_ADJECTIVE.Count;
+        int b = rng.Next() % GIANT_NAME.Count;
+        return $"{GIANT_ADJECTIVE[a]} {GIANT_NAME[b]}";
+    }
+    private static void DealComponent_Giant(Deal deal)
+    {
+        deal.ShowHighestRankCards();
     }
 }

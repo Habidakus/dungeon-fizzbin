@@ -36,6 +36,7 @@ class Deal
     internal bool PixieCompare { get; private set; }
     internal double PendingCostPerDiscard { get; private set; }
     internal double CostPerDiscard { get; private set; }
+    internal int NumberOfHighestRankingCardsToExpose { get; private set; }
 
     public Player NonNPCPlayer {
         get
@@ -55,6 +56,7 @@ class Deal
         PixieCompare = false;
         CostPerDiscard = 0;
         PendingCostPerDiscard = 0;
+        NumberOfHighestRankingCardsToExpose = 0;
 
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
@@ -317,11 +319,12 @@ class Deal
 
         int theyWin = 0;
         const int numHandsToCreate = 1000;
+        int potentialDiscards = Math.Min(otherPlayer.DiscardCount, otherHand._cards.Count - otherHand.CardsVisibleToSeer(ourHand.PositionID));
         for (int i = 0; i < numHandsToCreate; ++i)
         {
             Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd, ourHand._player);
             potentialHand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
-            HandValue av = potentialHand.ApplyRandomDiscard(otherPlayer.DiscardCount, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
+            HandValue av = potentialHand.ApplyRandomDiscard(potentialDiscards, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
 
             if (ourHand._handValue!.PixieCompareTo(av, PixieCompare) < 0)
             {
@@ -330,6 +333,39 @@ class Deal
         }
 
         return 100.0 * theyWin / numHandsToCreate;
+    }
+
+    internal void ExposeHighestRankingCards(HUD hud)
+    {
+        SortedSet<Card> allHandCards = new SortedSet<Card>(Comparer<Card>.Create((a,b) => a.PixieCompareTo(b, pixieCompare: false)));
+        foreach (Hand hand in _hands)
+        {
+            foreach (Card card in hand._cards)
+            {
+                allHandCards.Add(card);
+            }
+        }
+
+        var highestRankCardsInHands = allHandCards.TakeLast(NumberOfHighestRankingCardsToExpose).ToArray().AsSpan();
+        foreach (Hand hand in _hands)
+        {
+            foreach (Card card in highestRankCardsInHands)
+            {
+                if (hand._cards.Contains(card))
+                {
+                    foreach (Player seer in _hands.Select(a => a._player))
+                    {
+                        if (hand.PositionID != seer.PositionID)
+                        {
+                            hand._exposedCards.Add(card, seer.PositionID, canDiscard: false);
+                            hud.ExposeCardToOtherPlayer(hand.PositionID, card, seer);
+                        }
+                    }
+                }
+            }
+        }
+
+        NumberOfHighestRankingCardsToExpose = 0;
     }
 
     public bool MeetsMinCards(int deltaRank, int deltaSuit)
@@ -455,6 +491,11 @@ class Deal
     internal void IncreaseCostPerDiscard()
     {
         PendingCostPerDiscard += 0.5;
+    }
+
+    internal void ShowHighestRankCards()
+    {
+        NumberOfHighestRankingCardsToExpose += 3;
     }
 }
 

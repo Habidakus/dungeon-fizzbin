@@ -227,17 +227,20 @@ public partial class Main : Node
 
     internal bool HasPostDiscard()
     {
-        return Deal.RevealRightNeighborsHighestCards > 0;
+        return Deal.RevealRightNeighborsHighestCards > 0 || Deal.NumberOfHighestRankingCardsToExpose > 0;
     }
 
     internal void PerformPostDiscord()
     {
+        List<int> positionIDs = new List<int>();
         foreach (Hand hand in Deal._hands)
         {
+            positionIDs.Add(hand.PositionID);
             int leftNeighbor = (hand.PositionID + 1 + _players.Count) % _players.Count;
             hand.RevealHighestCardsToOtherPlayer(GetHUD(), Deal.RevealRightNeighborsHighestCards, _players[leftNeighbor], Deal.PixieCompare);
         }
 
+        Deal.ExposeHighestRankingCards(GetHUD());
         Deal.RevealRightNeighborsHighestCards = 0;
     }
 
@@ -280,10 +283,11 @@ public partial class Main : Node
 
     public void ForceNextBet()
     {
-        if (_deal.CostPerDiscard != 0)
+        if (Deal.CostPerDiscard != 0)
         {
             throw new Exception("We should not be computing discard cost at this point in time");
         }
+
         DateTime start = DateTime.Now;
         Pot += Deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit, BettingRound);
         GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");

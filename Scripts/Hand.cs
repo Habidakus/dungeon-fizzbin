@@ -986,7 +986,12 @@ class Hand : IComparable<Hand>
             AggregateValue? bestCardsToDiscardValue = null;
             Bits? bestCardsToDiscard = null;
             Bits viableSlots = GetViableDiscardSlots(observingPlayer);
-            List<Bits> iterList = AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots);
+            int cardsToCosiderAsDiscards = noOfDiscards;
+            if (observingPlayer != null)
+            {
+                cardsToCosiderAsDiscards = Math.Min(cardsToCosiderAsDiscards, _cards.Count - this.CardsVisibleToSeer(observingPlayer.PositionID));
+            }
+            List<Bits> iterList = AllCombinationsOfAvailableSlotsChoseY(cardsToCosiderAsDiscards, viableSlots);
             if (iterList.Count == 0)
                 throw new Exception($"GenerateUniqueDiscardSelections(discards={noOfDiscards} slots={string.Join(',', viableSlots)}) found no valid combos");
             foreach (Bits iter in iterList)
@@ -1125,12 +1130,29 @@ class Hand : IComparable<Hand>
 
     internal void RevealHighestCardsToOtherPlayer(HUD hud, int revealRightNeighborsHighestCards, Player viewingPlayer, bool pixieCompare)
     {
-        List<Card> cardsToReveal = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).TakeLast(revealRightNeighborsHighestCards).ToList();
-        foreach(Card card in cardsToReveal)
+        if (revealRightNeighborsHighestCards > 0)
         {
-            _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);
-            hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer);
+            List<Card> cardsToReveal = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).TakeLast(revealRightNeighborsHighestCards).ToList();
+            foreach (Card card in cardsToReveal)
+            {
+                _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);
+                hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer);
+            }
         }
+    }
+
+    internal int CardsVisibleToSeer(int seer)
+    {
+        int retVal = 0;
+        foreach (Card card in _cards)
+        {
+            if (_exposedCards.CanSee(card, seer))
+            {
+                ++retVal;
+            }
+        }
+
+        return retVal;
     }
 }
 
@@ -1279,23 +1301,9 @@ class AggregateValue : IComparable<AggregateValue>
         {
             return 1;
         }
-
-        //if (_normalizedWealth <= 0)
-        //{
-        //    throw new Exception($"Aggregate value [{GetDesc()}] doesn't have normalized wealth set");
-        //}
-
-        //if (other._normalizedWealth <= 0)
-        //{
-        //    throw new Exception($"Aggregate value [{other.GetDesc()}] doesn't have normalized wealth set");
-        //}
         
         if (_normalizedWealth != other._normalizedWealth)
         {
-            if (DiscardCost != 0)
-            {
-                int i = 0;
-            }
             return _normalizedWealth.CompareTo(other._normalizedWealth);
         }
 
@@ -1311,10 +1319,6 @@ class AggregateValue : IComparable<AggregateValue>
     {
         if (_normalizedWealth < other._normalizedWealth)
         {
-            if (DiscardCost != 0)
-            {
-                int i = 0;
-            }
             _hopefulValue = other._hopefulValue;
             _normalizedWealth = other._normalizedWealth;
             _normalizedByRank = other._normalizedByRank;
