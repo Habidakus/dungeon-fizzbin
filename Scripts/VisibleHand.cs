@@ -45,10 +45,10 @@ public partial class VisibleHand : Node2D
         {
             cardLabel.Visible = exposed;
             cardLabel.Text = card.ToString();
-            cardLabel.ResetSize();
+            //cardLabel.ResetSize();
             if (cardLabel.Visible)
             {
-                visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
+                //visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
                 //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
             }
         }
@@ -61,15 +61,17 @@ public partial class VisibleHand : Node2D
         {
             cardBack.Visible = !exposed;
             if (cardBack.Visible)
-                visibleCard.CustomMinimumSize = cardBack.Size + new Vector2(4, 4);
+            {
+                //visibleCard.CustomMinimumSize = cardBack.Size + new Vector2(4, 4);
+            }
         }
         else
         {
             throw new Exception($"VisibleCard {visibleCard} has no child label");
         }
 
-        visibleCard.UpdateMinimumSize();
-        visibleCard.ResetSize();
+        //visibleCard.UpdateMinimumSize();
+        //visibleCard.ResetSize();
     }
 
     internal void ExposeNonNPCCardToNPC(Card card)
@@ -127,7 +129,7 @@ public partial class VisibleHand : Node2D
                                 cardLabel.ResetSize();
                                 if (cardLabel.Visible)
                                 {
-                                    visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
+                                    //visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
                                     //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
                                 }
                             }
@@ -198,7 +200,7 @@ public partial class VisibleHand : Node2D
                 {
                     if (_visibleCard.Instantiate() is Control visibleCard)
                     {
-                        visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+                        //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
                         AddCardToControl(visibleCard, exposed: true, card);
                     }
@@ -246,7 +248,7 @@ public partial class VisibleHand : Node2D
                 {
                     if (_visibleCard.Instantiate() is Control visibleCard)
                     {
-                        visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+                        //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
                         AddCardToControl(visibleCard, hand.IsVisible(card, nonNPCPlayer), card);
                     }
@@ -291,7 +293,7 @@ public partial class VisibleHand : Node2D
                 
                 if (_visibleCard.Instantiate() is Control visibleCard)
                 {
-                    visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+                    //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                     discardBox.AddChild(visibleCard);
                     AddCardToControl(visibleCard, isVisibleToNonNPC, discard);
                 }

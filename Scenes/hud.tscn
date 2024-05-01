@@ -72,19 +72,19 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Hand0" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(576, 510)
+position = Vector2(576, 526)
 
 [node name="Hand1" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(240, 324)
+position = Vector2(192, 324)
 
 [node name="Hand2" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(302, 144)
+position = Vector2(318, 128)
 
 [node name="Hand3" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(850, 144)
+position = Vector2(834, 128)
 
 [node name="Hand4" parent="PlayPage" instance=ExtResource("2_ihxo0")]
-position = Vector2(912, 324)
+position = Vector2(960, 324)
 
 [node name="River" parent="PlayPage" instance=ExtResource("2_ihxo0")]
 position = Vector2(576, 324)
