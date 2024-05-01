@@ -91,7 +91,7 @@ public partial class HUD : CanvasLayer
 
     internal void HideRiver()
     {
-        if (PlayPage.FindChild("River") is VisibleHand river)
+        if (PlayPage.FindChild("Pot") is VisibleHand river)
         {
             river.Hide();
         }
@@ -99,16 +99,20 @@ public partial class HUD : CanvasLayer
 
     internal void ShowRiver(List<Card> cards)
     {
-        if (PlayPage.FindChild("River") is VisibleHand river)
+        if (PlayPage.FindChild("Pot") is VisibleHand river)
         {
             river.UpdateRiver(cards);
             river.Show();
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Pot");
         }
     }
 
     internal void SetPot(double amount)
     {
-        if (PlayPage.FindChild("River") is VisibleHand river)
+        if (PlayPage.FindChild("Pot") is VisibleHand river)
         {
             river.SetPot(amount);
             river.Show();

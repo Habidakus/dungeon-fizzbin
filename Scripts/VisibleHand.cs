@@ -178,6 +178,11 @@ public partial class VisibleHand : Node2D
             }
         }
 
+        if (FindChild("Text") is Label text)
+        {
+            text.Text = "";
+        }
+
         if (FindChild("ColorRect") is ColorRect cr)
         {
             cr.Color = Color.FromHtml("147754");
@@ -216,21 +221,13 @@ public partial class VisibleHand : Node2D
             throw new Exception($"{Name} does not have a child Cards");
         }
 
-        if (FindChild("PlayerInfo") is BoxContainer infoBox)
+        if (FindChild("Text") is Label infoBox)
         {
-            if (infoBox.GetChildCount() == 0)
-            {
-                Label nameText = new Label();
-                nameText.Text = "River";
-                nameText.HorizontalAlignment = HorizontalAlignment.Center;
-                nameText.VerticalAlignment = VerticalAlignment.Center;
-                nameText.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-                infoBox.AddChild(nameText);
-            }
+            infoBox.Text = "River";
         }
         else
         {
-            throw new Exception($"{Name} does not have a child PlayerInfo");
+            throw new Exception($"{Name} does not have a child Text");
         }
     }
 
@@ -338,7 +335,7 @@ public partial class VisibleHand : Node2D
 
     internal void SetPot(double amount)
     {
-        if (FindChild("Score") is Label scoreLabel)
+        if (FindChild("Text") is Label scoreLabel)
         {
             scoreLabel.Text = (amount > 0) ? $"Pot: ${amount:F2}" : "";
             scoreLabel.Show();

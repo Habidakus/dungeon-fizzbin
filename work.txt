@@ -11,6 +11,7 @@
 28th Added the centaur and giant rules
 29th (half) Added highlight mode to visually indicate which player's turn it currently is
 30th You can play multiple hands in a row, fixed a hand strength calculation bug
+1st () working on UI
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file
