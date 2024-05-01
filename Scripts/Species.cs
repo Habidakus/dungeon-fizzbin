@@ -44,7 +44,7 @@ class Species
         AllSpecies = new List<Species>() {
             new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human),
             new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf),
-            new Species("Dwarf", 10.5, 0, DealComponent_Dwarf, NameGenerator_Dwarf),
+            new Species("Dwarf", 0.5, 0, DealComponent_Dwarf, NameGenerator_Dwarf),
             new Species("Goblin", 1, 5, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin),
             new Species("Dragonkin", 1, 10, DealComponent_Dragonkin, NameGenerator_Dragonkin),
             new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),

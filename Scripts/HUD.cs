@@ -10,7 +10,27 @@ public partial class HUD : CanvasLayer
 	private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
-    private int CurrentHighlightPositionId { get; set; }
+    private PotBackground PotBackground
+    {
+        get
+        {
+            if (FindChild("Pot") is VisibleHand pot)
+            {
+                if (pot.FindChild("Background") is PotBackground potBackground)
+                {
+                    return potBackground;
+                }
+                else
+                {
+                    throw new Exception($"{Name}.Pot has no child Background");
+                }
+            }
+            else
+            {
+                throw new Exception($"{Name} has no child Pot");
+            }
+        }
+    }
 
     private Control GetChildControl(string name)
 	{
@@ -26,8 +46,6 @@ public partial class HUD : CanvasLayer
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
-
-        CurrentHighlightPositionId = -1;
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -170,12 +188,12 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.FoldHand(amountBet);
+        }
 
-            // TODO: When we get a better highlight, remove this. We're just clearing out the reset to standard green here.
-            if (CurrentHighlightPositionId == positionID)
-            {
-                CurrentHighlightPositionId = -1;
-            }
+        PotBackground potBackground = PotBackground;
+        if (potBackground.HighlightPositionId == positionID)
+        {
+            potBackground.SetHighlight(-1, Vector2.Zero);
         }
     }
 
@@ -206,30 +224,17 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    public void HighlightPosition(int positionId)
+    public void HighlightPosition(int positionID)
     {
-        if (CurrentHighlightPositionId == positionId)
+        Vector2 direction = Vector2.Zero;
+        if (positionID != -1)
         {
-            return;
-        }
-
-        if (CurrentHighlightPositionId != -1)
-        {
-            if (FindChild($"Hand{CurrentHighlightPositionId}") is VisibleHand visibleHand)
+            if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
             {
-                visibleHand.ClearHighlight(positionId != -1 ? $"Switching to #{positionId}" : "Turning off");
+                direction = (visibleHand.GlobalPosition - PotBackground.GlobalPosition).Normalized();
             }
         }
 
-        CurrentHighlightPositionId = positionId;
-
-        if (CurrentHighlightPositionId != -1)
-        {
-            if (FindChild($"Hand{CurrentHighlightPositionId}") is VisibleHand visibleHand)
-            {
-                visibleHand.SetHighlight();
-            }
-        }
+        PotBackground.SetHighlight(positionID, direction);
     }
-
 }
