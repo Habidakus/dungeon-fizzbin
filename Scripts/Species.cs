@@ -29,6 +29,15 @@ class Species
         _allowed = allowed;
     }
 
+    internal static Species Get(string name)
+    {
+        if (AllSpecies == null)
+        {
+            InitSpeciesList();
+        }
+        return AllSpecies!.Where(s => s.Name.ToLower().CompareTo(name.ToLower()) == 0).First();
+    }
+
     static private List<Species>? AllSpecies = null;
     private static void InitSpeciesList()
     {
@@ -41,7 +50,7 @@ class Species
             new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
-            new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
+            new Species("Halfling", 111, 15, DealComponent_Halfling, NameGenerator_Halfling),
             new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant),

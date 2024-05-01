@@ -142,13 +142,55 @@ public partial class VisibleHand : Node2D
         }
     }
 
+    internal void ResetDisplay()
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                cards.RemoveChild(child);
+            }
+        }
+
+        if (FindChild("Discards") is BoxContainer discardBox)
+        {
+            Godot.Collections.Array<Node> children = discardBox.GetChildren();
+            foreach (Node child in children)
+            {
+                discardBox.RemoveChild(child);
+            }
+        }
+
+        if (FindChild("Score") is Label scoreLabel)
+        {
+            scoreLabel.Hide();
+        }
+
+        if (FindChild("PlayerInfo") is BoxContainer infoBox)
+        {
+            Godot.Collections.Array<Node> children = infoBox.GetChildren();
+            foreach (Node child in children)
+            {
+                infoBox.RemoveChild(child);
+            }
+        }
+
+        if (FindChild("ColorRect") is ColorRect cr)
+        {
+            cr.Color = Color.FromHtml("147754");
+        }
+    }
+
     internal void UpdateRiver(List<Card> river)
     {
         if (FindChild("Cards") is Control cards)
         {
             Godot.Collections.Array<Node> children = cards.GetChildren();
             foreach (Node child in children)
+            {
                 cards.RemoveChild(child);
+            }
 
             if (_visibleCard != null)
             {
@@ -373,7 +415,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} removing highlight. Why={why}");
+            //GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} removing highlight. Why={why}");
             cr.Color = Color.FromHtml("147754");
         }
         else
@@ -386,7 +428,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} adding highlight");
+            //GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} adding highlight");
             cr.Color = Color.FromHtml("277714");
         }
         else

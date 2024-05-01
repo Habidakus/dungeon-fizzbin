@@ -128,6 +128,15 @@ public partial class HUD : CanvasLayer
         }
     }
 
+    internal void SetPlayerInfo(Player player)
+    {
+        if (FindChild($"Hand{player.PositionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.ResetDisplay();
+            visibleHand.SetPlayerInfo(player.Name, player.Species);
+        }
+    }
+
     internal void SetVisibleHand(Hand hand, Player nonNPCPlayer)
     {
         if (FindChild($"Hand{hand.PositionID}") is VisibleHand visibleHand)
@@ -141,14 +150,6 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.AddDiscard(card, isVisibileToNonNPC);
-        }
-    }
-
-    internal void SetPlayerInfo(Player player)
-    {
-        if (FindChild($"Hand{player.PositionID}") is VisibleHand visibleHand)
-        {
-            visibleHand.SetPlayerInfo(player.Name, player.Species);
         }
     }
 

@@ -2,8 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 #nullable enable
 
 public partial class Main : Node
@@ -24,7 +22,6 @@ public partial class Main : Node
         }
     }
 
-    internal double Pot { get; private set; }
     internal int Dealer { get; private set; }
     internal int InitialBetter { get { return (Dealer + 1) % _players.Count; } }
     internal int CurrentBetter { get; private set; }
@@ -47,29 +44,34 @@ public partial class Main : Node
 
     internal void StartFreshDeal()
     {
-        //Test(rnd);
-
         _deal = new Deal();
 
-        for (int i = 0; i < TableSize; ++i)
+        while (_players.Count < TableSize)
         {
-            Player player = new Player(i, rnd, SpeciesAtTable, _deal);
+            List<int> tablePositions = new List<int>() { 0, 1, 2, 3, 4 };
+            int missingPositionID = tablePositions.Where(a => !_players.Select(b => b.PositionID).Contains(a)).First();
+            Player player = new Player(missingPositionID, rnd, SpeciesAtTable, _deal);
             _players.Add(player);
-            _deal.AddPlayer(player);
+        }
+
+        HUD hud = GetHUD();
+        foreach (Player player in _players)
+        {
+            if (rnd.NextDouble() * 150 > player.Wallet)
+                throw new Exception($"{player.Name} no longer wishes to play with only ${player.Wallet:F2}");
+            _deal.AddPlayer(hud, player);
         }
 
         _deal.Shuffle(_players, rnd);
-        _deal.UpdateHUD(GetHUD());
+        _deal.UpdateHUD(hud);
 
-        Pot = 0;
         const double anteAmount = 1;
         foreach (Player player in _players)
         {
-            player.InitHud(GetHUD());
-            Pot += player.Ante(GetHUD(), anteAmount);
+            Deal.MoveMoneyToPot(player.Ante(hud, anteAmount), player);
         }
 
-        GetHUD().SetPot(Pot);
+        Deal.UpdatePot(hud);
 
         BettingRound = 0;
         Dealer = 0; // Should advance each round
@@ -180,9 +182,9 @@ public partial class Main : Node
                 _players[j].Discards = hand.SelectDiscards(0, Deal.MaxDiscard, Deal, rnd);
                 if (_players[j].Discards != null)
                 {
-                    Pot += _players[j].Discards!.Count * Deal.CostPerDiscard;
-
-                    GetHUD().SetPot(Pot);
+                    double penaltyForDiscard = _players[j].Discards!.Count * Deal.CostPerDiscard;
+                    Deal.MoveMoneyToPot(penaltyForDiscard, _players[j]);
+                    Deal.UpdatePot(GetHUD());
                 }
 
                 Deal.ReleaseDiscardCost();
@@ -301,11 +303,17 @@ public partial class Main : Node
             throw new Exception("We should not be computing discard cost at this point in time");
         }
 
+        HUD hud = GetHUD();
         DateTime start = DateTime.Now;
-        Pot += Deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, GetHUD(), currentBetLimit, BettingRound);
+        var betAmount = Deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, hud, currentBetLimit, BettingRound);
         GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");
 
-        GetHUD().SetPot(Pot);
+        if (betAmount > 0)
+        {
+            Deal.MoveMoneyToPot(betAmount, _players[CurrentBetter]);
+            Deal.UpdatePot(hud);
+        }
+
         if (!_players[CurrentBetter].HasFolded)
             currentBetLimit = _players[CurrentBetter].AmountBet;
 
@@ -320,21 +328,6 @@ public partial class Main : Node
             highlightPositionId = -1;
             return false;
         }
-
-        //foreach (Player player in _players)
-        //{
-        //    if (player.HasFolded)
-        //        continue;
-
-        //    if (!player.HasRevealed)
-        //    {
-        //        highlightPositionId = player.PositionID;
-        //        return true;
-        //    }
-        //}
-
-        //highlightPositionId = -1;
-        //return false;
 
         for (int i = 0; i < _players.Count; ++i)
         {
@@ -354,8 +347,6 @@ public partial class Main : Node
 
     public void RevealHand()
     {
-        Deal.Dump();
-
         for (int i = 0;i < _players.Count; ++i)
         {
             int position = (InitialBetter + i) % _players.Count;
@@ -392,6 +383,77 @@ public partial class Main : Node
             return;
         }
     }
+
+    public void AwardWinner()
+    {
+        Hand? bestHand = null;
+        foreach (Player player in _players)
+        {
+            if (player.HasFolded)
+            {
+                continue;
+            }
+
+            Hand hand = Deal.GetPlayerHand(player);
+            if (bestHand == null || hand.CompareTo(bestHand) > 0)
+            {
+                bestHand = hand;
+            }
+        }
+
+        if (bestHand == null)
+        {
+            throw new Exception("Why didn't we find a winning player?");
+        }
+
+        Deal.MovePotToPlayer(bestHand._player);
+        Deal.UpdatePot(GetHUD());
+        GetHUD().HighlightPosition(-1);
+        Deal.Dump();
+    }
+
+    //private void Test()
+    //{
+    //    Deal deal = new Deal();
+    //    deal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+
+    //    // Sorted hands (pixie=False):
+
+    //    Player player = new Player(0, rnd, new List<Species>(), deal);
+    //    Player player1 = new Player(1, rnd, Species.Get("Elf"), deal);
+    //    Player player2 = new Player(2, rnd, Species.Get("Centaur"), deal);
+    //    Player player3 = new Player(3, rnd, Species.Get("Giant"), deal);
+    //    Player player4 = new Player(4, rnd, Species.Get("Halfling"), deal);
+    //    deal.AddPlayer(GetHUD(), player);
+    //    deal.AddPlayer(GetHUD(), player1);
+    //    deal.AddPlayer(GetHUD(), player2);
+    //    deal.AddPlayer(GetHUD(), player3);
+    //    deal.AddPlayer(GetHUD(), player4);
+
+    //    Hand hand = new Hand(player);
+    //    Suit spade = Suit.DefaultSuits[0];
+    //    Suit heart = Suit.DefaultSuits[1];
+    //    Suit diamond = Suit.DefaultSuits[2];
+    //    Rank three = Rank.DefaultRanks[1];
+    //    Rank five = Rank.DefaultRanks[3];
+    //    Rank six = Rank.DefaultRanks[4];
+    //    Rank seven = Rank.DefaultRanks[5];
+    //    Rank eight = Rank.DefaultRanks[6];
+    //    Rank nine = Rank.DefaultRanks[7];
+    //    hand.AddCard(new Card(spade, five));
+    //    hand.AddCard(new Card(spade, nine));
+    //    hand.AddCard(new Card(heart, eight));
+    //    hand.AddCard(new Card(diamond, seven));
+    //    Card card_d3 = new Card(diamond, three);
+    //    hand.AddCard(card_d3);
+    //    hand.ComputeBestScore(minRank, maxRank, suitsCount, new List<Card>());
+    //    //
+    //    hand._cards.Remove(card_d3);
+    //    hand.AddCard(new Card(diamond, six));
+    //    deal._hands.Add(hand);
+    //    deal.Dump();
+    //    GD.Print("------------------");
+    //}
 }
 
 //private void Test(Random rnd)

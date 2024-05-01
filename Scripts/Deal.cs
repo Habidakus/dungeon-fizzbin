@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 #nullable enable
 
@@ -37,6 +36,7 @@ class Deal
     internal double PendingCostPerDiscard { get; private set; }
     internal double CostPerDiscard { get; private set; }
     internal int NumberOfHighestRankingCardsToExpose { get; private set; }
+    internal double Pot { get; private set; }
 
     public Player NonNPCPlayer {
         get
@@ -62,9 +62,11 @@ class Deal
         _ranks.AddRange(Rank.DefaultRanks);
     }
 
-    internal void AddPlayer(Player player)
+    internal void AddPlayer(HUD hud, Player player)
     {
         player.Species.ApplyDealComponent(this);
+        player.PrepForDeal(this);
+        player.InitHud(hud);
     }
 
     internal void Shuffle(List<Player> players, Random rnd)
@@ -122,6 +124,12 @@ class Deal
                     if (otherPlayer.AmountBet < currentRaise)
                     {
                         canStopTheRoundByMatching = false;
+                    }
+
+                    Hand otherHand = GetPlayerHand(otherPlayer);
+                    if (otherHand._handValue == null)
+                    {
+                        otherHand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
                     }
 
                     List<Card> unseenCards = AvailableCardsFromHandsView(hand);
@@ -252,6 +260,7 @@ class Deal
     {
         // TODO: We should animate all this passing
 
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         foreach (Hand hand in _hands)
         {
             int getFromPositionID = (hand.PositionID + _hands.Count - 1) % _hands.Count;
@@ -263,6 +272,8 @@ class Deal
                     hand.AddCard(card);
                     hand._exposedCards.Add(card: card, seer: getFromPositionID, canDiscard: true);
                 }
+
+                hand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
 
                 GD.Print($"{passingHand._player.Name} passed {string.Join(',', passingHand._passingCards)} to {hand._player.Name}");
 
@@ -283,6 +294,7 @@ class Deal
     {
         Hand hand = GetPlayerHand(player);
         hand._cards.Remove(card);
+        hand._handValue = null;
         _discards.Add(new DiscardCards(card, playersWhoCanSeeThisDiscard, player.PositionID));
         hud.SetVisibleHand(hand, NonNPCPlayer);
         hud.MoveCardToDiscard(player.PositionID, card, playersWhoCanSeeThisDiscard.Contains(NonNPCPlayer.PositionID));
@@ -297,6 +309,7 @@ class Deal
                 Card card = _drawPile.First();
                 _drawPile.RemoveAt(0);
                 hand._cards.Add(card);
+                hand._handValue = null;
                 hud.SetVisibleHand(hand, NonNPCPlayer);
                 return true;
             }
@@ -498,6 +511,23 @@ class Deal
     internal void ShowHighestRankCards()
     {
         NumberOfHighestRankingCardsToExpose += 3;
+    }
+
+    internal void MoveMoneyToPot(double amount, Player player)
+    {
+        Pot += amount;
+        player.RemoveMoney(amount);
+    }
+
+    internal void UpdatePot(HUD hud)
+    {
+        hud.SetPot(Pot);
+    }
+
+    internal void MovePotToPlayer(Player player)
+    {
+        player.AddMoney(Pot);
+        Pot = 0;
     }
 }
 

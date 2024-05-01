@@ -18,23 +18,19 @@ class Player
     internal string Name { get; private set; }
     internal int ExposedDiscardCount { get; set; }
     internal Deal Deal { get; private set; }
+    internal double Wallet { get; private set; }
 
     public override string ToString()
     {
-        return $"{PositionID}: {Name} {Species.Name}";
+        return $"{PositionID}: {Name} {Species.Name} ${Wallet:F2}";
     }
 
     internal Player(int positionID, Random rng, List<Species> speciesAlreadyAtTable, Deal deal)
     {
-        PositionID = positionID;
-        HasDiscarded = false;
-        HasFolded = false;
-        HasRevealed = false;
-        AmountBet = 0;
-        Discards = null;
-        DiscardCount = 0;
-        ExposedDiscardCount = 0;
         Deal = deal;
+        PositionID = positionID;
+        Wallet = 200;
+
         if (PositionID == 0)
         {
             IsNPC = false;
@@ -50,6 +46,39 @@ class Player
             Species = Species.PickSpecies(rng, speciesAlreadyAtTable, deal);
             Name = Species.GenerateRandomName(rng, PositionID);
         }
+    }
+
+    internal Player(int positionID, Random rng, Species species, Deal deal)
+    {
+        Deal = deal;
+        PositionID = positionID;
+        Wallet = 200;
+        IsNPC = (PositionID != 0);
+        Species = species;
+
+        if (PositionID == 0)
+        {
+            if (OS.HasEnvironment("USERNAME"))
+                Name = OS.GetEnvironment("USERNAME");
+            else
+                Name = "Player";
+        }
+        else
+        {
+            Name = Species.GenerateRandomName(rng, PositionID);
+        }
+    }
+
+    internal void PrepForDeal(Deal deal)
+    {
+        Deal = deal;
+        AmountBet = 0;
+        HasDiscarded = false;
+        HasFolded = false;
+        HasRevealed = false;
+        Discards = null;
+        DiscardCount = 0;
+        ExposedDiscardCount = 0;
     }
 
     internal void InitHud(HUD hud)
@@ -181,5 +210,15 @@ class Player
         }
 
         return raiseAmount;
+    }
+
+    internal void RemoveMoney(double amount)
+    {
+        Wallet -= amount;
+    }
+
+    internal void AddMoney(double amount)
+    {
+        Wallet += amount;
     }
 }

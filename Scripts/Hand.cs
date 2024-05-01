@@ -337,6 +337,7 @@ class Hand : IComparable<Hand>
     internal void AddCard(Card card)
     {
         _cards.Add(card);
+        _handValue = null;
     }
 
     internal static bool IsStraight(List<Card> fiveCards, int minRank, int maxRank, bool pixieCompare)
@@ -664,6 +665,7 @@ class Hand : IComparable<Hand>
                     bestCount = cardsOfThisRank.Count;
                     bestRank = card.Rank;
                 }
+                // TODO: If we have a river and more than one hand thus share the same "high card" we need to break the tie
                 else if (cardsOfThisRank.Count == bestCount && card.Rank.PixieCompareTo(bestRank, pixieCompare) > 0)
                 {
                     bestRank = card.Rank;
@@ -1093,6 +1095,7 @@ class Hand : IComparable<Hand>
         foreach (Card card in _passingCards)
         {
             _cards.Remove(card);
+            _handValue = null;
         }
     }
 

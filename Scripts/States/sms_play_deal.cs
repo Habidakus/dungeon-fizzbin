@@ -8,6 +8,7 @@ public partial class sms_play_deal : state_machine_state
     bool _run = false;
     public override void EnterState()
     {
+        _run = false;
     }
 
     public override void Update(double delta)
