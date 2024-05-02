@@ -513,10 +513,10 @@ class Deal
         NumberOfHighestRankingCardsToExpose += 3;
     }
 
-    internal void MoveMoneyToPot(double amount, Player player)
+    internal void MoveMoneyToPot(HUD hud, double amount, Player player)
     {
         Pot += amount;
-        player.RemoveMoney(amount);
+        player.RemoveMoney(hud, amount);
     }
 
     internal void UpdatePot(HUD hud)
@@ -524,9 +524,9 @@ class Deal
         hud.SetPot(Pot);
     }
 
-    internal void MovePotToPlayer(Player player)
+    internal void MovePotToPlayer(HUD hud, Player player)
     {
-        player.AddMoney(Pot);
+        player.AddMoney(hud, Pot);
         Pot = 0;
     }
 }

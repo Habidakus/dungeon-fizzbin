@@ -212,13 +212,21 @@ class Player
         return raiseAmount;
     }
 
-    internal void RemoveMoney(double amount)
+    internal void RemoveMoney(HUD hud, double amount)
     {
         Wallet -= amount;
+        if (!IsNPC)
+        {
+            hud.SetStake(Wallet);
+        }
     }
 
-    internal void AddMoney(double amount)
+    internal void AddMoney(HUD hud, double amount)
     {
         Wallet += amount;
+        if (!IsNPC)
+        {
+            hud.SetStake(Wallet);
+        }
     }
 }

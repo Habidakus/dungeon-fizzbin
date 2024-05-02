@@ -54,12 +54,12 @@ class Species
             new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
             new Species("Dwarf", 0.25, 0, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
             new Species("Goblin", 0.5, 0, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin, GetText_Greenskin),
-            new Species("Dragonkin", 1, 5, DealComponent_Dragonkin, NameGenerator_Dragonkin),
+            new Species("Dragonkin", 1, 5, DealComponent_Dragonkin, NameGenerator_Dragonkin, null, GetText_Dragonkin),
             new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll, GetText_Greenskin),
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
-            new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur),
+            new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur, null, GetText_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
             //new Species("Ghoul", 1, 15),
@@ -419,6 +419,15 @@ class Species
     {
         deal.AddSuit();
     }
+    static private string GetText_Dragonkin(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "I must fly.";
+            default:
+                throw new Exception($"No Dragonkin text for bark={bark}");
+        }
+    }
 
     // -------------------------------- Firbolg --------------------------------
 
@@ -480,10 +489,18 @@ class Species
         int b = rng.Next() % CENTAUR_END.Count;
         return $"{CENTAUR_FRONT[a]}{CENTAUR_END[b]}";
     }
-
     private static void DealComponent_Centaur(Deal deal)
     {
         deal.IncreaseCostPerDiscard();
+    }
+    static private string GetText_Centaur(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "The high plains call to me.";
+            default:
+                throw new Exception($"No Centaur text for bark={bark}");
+        }
     }
 
     // -------------------------------- Giant --------------------------------
@@ -513,5 +530,4 @@ class Species
                 throw new Exception($"No giant text for bark={bark}");
         }
     }
-    
 }

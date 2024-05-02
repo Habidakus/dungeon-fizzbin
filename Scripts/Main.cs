@@ -69,7 +69,7 @@ public partial class Main : Node
         const double anteAmount = 1;
         foreach (Player player in _players)
         {
-            Deal.MoveMoneyToPot(player.Ante(hud, anteAmount), player);
+            Deal.MoveMoneyToPot(GetHUD(), player.Ante(hud, anteAmount), player);
         }
 
         Deal.UpdatePot(hud);
@@ -173,6 +173,7 @@ public partial class Main : Node
 
     public void ForceSomeoneToDiscard()
     {
+        HUD hud = GetHUD();
         for (int i = 0; i < _players.Count; ++i)
         {
             int j = (InitialBetter + i) % _players.Count;
@@ -184,8 +185,8 @@ public partial class Main : Node
                 if (_players[j].Discards != null)
                 {
                     double penaltyForDiscard = _players[j].Discards!.Count * Deal.CostPerDiscard;
-                    Deal.MoveMoneyToPot(penaltyForDiscard, _players[j]);
-                    Deal.UpdatePot(GetHUD());
+                    Deal.MoveMoneyToPot(hud, penaltyForDiscard, _players[j]);
+                    Deal.UpdatePot(hud);
                 }
 
                 Deal.ReleaseDiscardCost();
@@ -317,7 +318,7 @@ public partial class Main : Node
 
         if (betAmount > 0)
         {
-            Deal.MoveMoneyToPot(betAmount, _players[CurrentBetter]);
+            Deal.MoveMoneyToPot(hud, betAmount, _players[CurrentBetter]);
             Deal.UpdatePot(hud);
         }
 
@@ -365,9 +366,14 @@ public partial class Main : Node
         Deal.Reveal(playerToRevealThisTime, GetHUD(), revealedHand.ScoreAsString());
 
         List<Hand> allHandsWhichHaveRevealed = _players.Where(p => p.HasRevealed && !p.HasFolded).Select(a => Deal.GetPlayerHand(a)).ToList();
-        for (int i = 0; i< allHandsWhichHaveRevealed.Count - 1; ++i)
+        allHandsWhichHaveRevealed.Sort();
+        if (allHandsWhichHaveRevealed.Count > 1)
         {
-            GetHUD().SetFeltToLost(allHandsWhichHaveRevealed[i].PositionID);
+            for (int i = 0; i < allHandsWhichHaveRevealed.Count - 1; ++i)
+            {
+                GD.Print($"Marking {allHandsWhichHaveRevealed[i]} as lost.");
+                GetHUD().SetFeltToLost(allHandsWhichHaveRevealed[i].PositionID);
+            }
         }
     }
 
@@ -415,9 +421,10 @@ public partial class Main : Node
     public void AwardWinner()
     {
         Hand bestHand = GetWinningHand();
-        Deal.MovePotToPlayer(bestHand._player);
-        Deal.UpdatePot(GetHUD());
-        GetHUD().HighlightPosition(-1);
+        HUD hud = GetHUD();
+        Deal.MovePotToPlayer(hud, bestHand._player);
+        Deal.UpdatePot(hud);
+        hud.HighlightPosition(-1);
         Deal.Dump();
 
         PlayersWhoAreLeaving = new List<int>();

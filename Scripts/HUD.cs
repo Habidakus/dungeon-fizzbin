@@ -151,6 +151,14 @@ public partial class HUD : CanvasLayer
         }
     }
 
+    internal void SetStake(double amount)
+    {
+        if (PlayPage.FindChild("PlayersCash") is Label label)
+        {
+            label.Text = $"Your stake: ${amount:F2}";
+        }
+    }
+
     internal void SetPot(double amount)
     {
         if (PlayPage.FindChild("Pot") is VisibleHand river)
