@@ -30,7 +30,7 @@ public partial class Main : Node
     private int TableSize = 5;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
-    public static int HandNumber { get; private set; } = 20; // TODO: Update me
+    public static int HandNumber { get; private set; } = 0;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -53,6 +53,9 @@ public partial class Main : Node
             Player player = new Player(missingPositionID, rnd, SpeciesAtTable, _deal);
             _players.Add(player);
         }
+        _players.Sort((a,b) => a.PositionID.CompareTo(b.PositionID));
+
+        HandNumber += 1;
 
         HUD hud = GetHUD();
         foreach (Player player in _players)
@@ -351,40 +354,20 @@ public partial class Main : Node
 
     public void RevealHand()
     {
-        for (int i = 0;i < _players.Count; ++i)
+        if (!SomeoneNeedsToReveal(out int positionId))
         {
-            int position = (InitialBetter + i) % _players.Count;
-            if (_players[position].HasFolded)
-                continue;
-            if (_players[position].HasRevealed)
-                continue;
+            throw new Exception("Can not reveal hand if no one needs to reveal.");
+        }
 
-            Hand revealedHand = Deal.GetPlayerHand(_players[position]);
-            Deal.Reveal(_players[position], GetHUD(), revealedHand.ScoreAsString());
-            foreach(Player player in _players)
-            {
-                if (!player.HasRevealed)
-                    continue;
-                if (player.PositionID == position)
-                    continue;
-                
-                Hand previouslyRevealedHand = Deal.GetPlayerHand(player);
-                int comparison = previouslyRevealedHand.CompareTo(revealedHand);
-                if (comparison > 0)
-                {
-                    GetHUD().SetFeltToLost(position);
-                }
-                else if (comparison < 0)
-                {
-                    GetHUD().SetFeltToLost(player.PositionID);
-                }
-                else
-                {
-                    throw new Exception($"How are hands {revealedHand} and {previouslyRevealedHand} equal?");
-                }
-            }
+        Player playerToRevealThisTime = _players[positionId];
+        Hand revealedHand = Deal.GetPlayerHand(playerToRevealThisTime);
+        GD.Print($"Revealing {revealedHand} from {playerToRevealThisTime}");
+        Deal.Reveal(playerToRevealThisTime, GetHUD(), revealedHand.ScoreAsString());
 
-            return;
+        List<Hand> allHandsWhichHaveRevealed = _players.Where(p => p.HasRevealed && !p.HasFolded).Select(a => Deal.GetPlayerHand(a)).ToList();
+        for (int i = 0; i< allHandsWhichHaveRevealed.Count - 1; ++i)
+        {
+            GetHUD().SetFeltToLost(allHandsWhichHaveRevealed[i].PositionID);
         }
     }
 
@@ -442,7 +425,7 @@ public partial class Main : Node
         {
             if (player.IsNPC)
             {
-                if (180 + rnd.NextDouble() * 20 > player.Wallet)
+                if (100 + rnd.NextDouble() * 100 > player.Wallet)
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
                 }
@@ -469,7 +452,7 @@ public partial class Main : Node
             int playerIDToLeave = PlayersWhoAreLeaving[0];
             Player playerWhoIsLeaving = _players.Where(p => p.PositionID == playerIDToLeave).First();
             PlayersWhoAreLeaving.RemoveAt(0);
-            GetHUD().PlayerLeaves(playerIDToLeave, playerWhoIsLeaving.Species.LeavingText);
+            GetHUD().PlayerLeaves(playerIDToLeave, playerWhoIsLeaving.Species.GetLeavingText(playerWhoIsLeaving));
             _players.Remove(playerWhoIsLeaving);
         }
         else

@@ -1,8 +1,6 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Text;
-
 #nullable enable
 
 public partial class VisibleHand : Node2D

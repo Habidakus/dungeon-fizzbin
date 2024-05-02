@@ -7,7 +7,7 @@ using System.Linq;
 
 class Species
 {
-    enum Bark
+    internal enum Bark
     {
         Leaving,
     };
@@ -15,7 +15,7 @@ class Species
     private delegate void DealComponent(Deal deal);
     private delegate string SpeciesNameGenerator(Random rnd);
     private delegate bool SpeciesAllowed(Deal deal);
-    private delegate string SpeciesText(Bark bark);
+    private delegate string SpeciesText(Player player, Bark bark);
 
     private int _introHand = 0;
     private double _weight = 1;
@@ -52,16 +52,16 @@ class Species
         AllSpecies = new List<Species>() {
             new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human, null, GetText_Human),
             new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
-            new Species("Dwarf", 0.5, 0, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
-            new Species("Goblin", 1, 5, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin),
-            new Species("Dragonkin", 1, 10, DealComponent_Dragonkin, NameGenerator_Dragonkin),
-            new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
+            new Species("Dwarf", 0.25, 0, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
+            new Species("Goblin", 0.5, 0, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin, GetText_Greenskin),
+            new Species("Dragonkin", 1, 5, DealComponent_Dragonkin, NameGenerator_Dragonkin),
+            new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll, GetText_Greenskin),
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
-            new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
+            new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
             new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
-            new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant),
+            new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
             //new Species("Birdman", 1, 15),
@@ -85,9 +85,12 @@ class Species
         }
     }
 
-    public string LeavingText { get { return (_speciesText == null) ? GenericText(Bark.Leaving) : _speciesText(Bark.Leaving); } }
+    internal string GetLeavingText(Player player)
+    {
+        return (_speciesText == null) ? GenericText(player, Bark.Leaving) : _speciesText(player, Bark.Leaving);
+    }
 
-    private string GenericText(Bark bark)
+    private string GenericText(Player _player, Bark bark)
     {
         switch (bark)
         {
@@ -157,7 +160,7 @@ class Species
     {
         deal.IncreaseDiscardReveal();
     }
-    static private string GetText_Human(Bark bark)
+    static private string GetText_Human(Player _player, Bark bark)
     {
         switch (bark)
         {
@@ -183,7 +186,7 @@ class Species
     {
         deal.IncreaseRiver();
     }
-    static private string GetText_Dwarf(Bark bark)
+    static private string GetText_Dwarf(Player _player, Bark bark)
     {
         switch (bark)
         {
@@ -212,7 +215,7 @@ class Species
     {
         deal.AddRank(addToLowEnd: false);
     }
-    static private string GetText_Elf(Bark bark)
+    static private string GetText_Elf(Player _player, Bark bark)
     {
         switch (bark)
         {
@@ -265,7 +268,7 @@ class Species
     {
         deal.AddPassToNeighbor();
     }
-    static private string GetText_Halfling(Bark bark)
+    static private string GetText_Halfling(Player _player, Bark bark)
     {
         switch (bark)
         {
@@ -333,6 +336,15 @@ class Species
     static internal bool CanAdd_Goblin(Deal deal)
     {
         return deal.MeetsMinCards(-2, 0);
+    }
+    static internal string GetText_Greenskin(Player player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return $"Stupid game. {player.Name} go now.";
+            default:
+                throw new Exception($"No halfling text for bark={bark}");
+        }
     }
 
     // -------------------------------- ORC --------------------------------
@@ -492,4 +504,14 @@ class Species
     {
         deal.ShowHighestRankCards();
     }
+    static private string GetText_Giant(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "Looks like I'm now short on cash...";
+            default:
+                throw new Exception($"No giant text for bark={bark}");
+        }
+    }
+    
 }

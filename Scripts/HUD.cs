@@ -6,9 +6,15 @@ using System.Collections.Generic;
 
 public partial class HUD : CanvasLayer
 {
-	private Control TitlePage { get { return GetChildControl("TitlePage"); } }
+    [Export]
+    public Texture2D? NineGridButton_Default = null;
+    [Export]
+    public Texture2D? NineGridButton_Hover = null;
+
+    private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
+    private Control NextHandMenu { get { return GetChildControl(PlayPage, "NextHandMenu"); } }
     private PotBackground PotBackground
     {
         get
@@ -29,6 +35,14 @@ public partial class HUD : CanvasLayer
                 throw new Exception($"{Name} has no child Pot");
             }
         }
+    }
+
+    private Control GetChildControl(Control control, string name)
+    {
+        if (control.GetNode(name) is Control retVal)
+            return retVal;
+
+        throw new Exception($"No child of {Name}.{control.Name} called {name}");
     }
 
     private Control GetChildControl(string name)
@@ -73,8 +87,11 @@ public partial class HUD : CanvasLayer
             case "Play_Declare_Winner":
             case "Play_Post_Discard":
             case "Play_Player_Leaves_Game":
+                PlayPage.Show();
+                break;
             case "Play_Offer_Another_Hand":
                 PlayPage.Show();
+                NextHandMenu.Show();
                 break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
@@ -102,8 +119,11 @@ public partial class HUD : CanvasLayer
             case "Play_Declare_Winner":
             case "Play_Post_Discard":
             case "Play_Player_Leaves_Game":
+                PlayPage.Hide();
+                break;
             case "Play_Offer_Another_Hand":
                 PlayPage.Hide();
+                NextHandMenu.Hide();
                 break;
             default:
                 throw new Exception($"{Name} has no conception of state \"{state}\"");
@@ -137,19 +157,6 @@ public partial class HUD : CanvasLayer
         {
             river.SetPot(amount);
             river.Show();
-        }
-    }
-
-    public void OnQuitButtonPressed()
-    {
-        GetTree().Quit();
-    }
-
-    public void OnPlayPressed()
-    {
-        if (GetParent() is Main mainNode)
-        {
-            mainNode.GetStateMachine().SwitchState("Play_Deal");
         }
     }
 
@@ -246,6 +253,87 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.PlayerLeaves(leavingText);
+        }
+    }
+
+    private void SwitchState(string stateName)
+    {
+        if (GetParent() is Main mainNode)
+        {
+            mainNode.GetStateMachine().SwitchState(stateName);
+        }
+    }
+
+    // ------------------------------ Events -----------------------------------------------
+
+    public void OnQuitButtonPressed()
+    {
+        GetTree().Quit();
+    }
+
+    public void OnPlayPressed()
+    {
+        SwitchState("Play_Deal");
+    }
+
+    public void On_NextHandMenu_PlayAnotherHand_MouseEnter()
+    {
+        if (NineGridButton_Hover != null)
+        {
+            if (NextHandMenu.FindChild("PlayAnotherHand") is NinePatchRect npr)
+            {
+                npr.Texture = NineGridButton_Hover;
+            }
+        }
+    }
+    public void On_NextHandMenu_PlayAnotherHand_MouseExit()
+    {
+        if (NineGridButton_Hover != null)
+        {
+            if (NextHandMenu.FindChild("PlayAnotherHand") is NinePatchRect npr)
+            {
+                npr.Texture = NineGridButton_Default;
+            }
+        }
+    }
+    public void On_NextHandMenu_PlayAnotherHand_GuiInput(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventMouseButton iemb)
+        {
+            if (iemb.Pressed)
+            {
+                SwitchState("Play_Deal");
+            }
+        }
+    }
+    public void On_NextHandMenu_Quit_MouseEnter()
+    {
+        if (NineGridButton_Hover != null)
+        {
+            if (NextHandMenu.FindChild("Quit") is NinePatchRect npr)
+            {
+                npr.Texture = NineGridButton_Hover;
+            }
+        }
+    }
+    public void On_NextHandMenu_Quit_MouseExit()
+    {
+        if (NineGridButton_Hover != null)
+        {
+            if (NextHandMenu.FindChild("Quit") is NinePatchRect npr)
+            {
+                npr.Texture = NineGridButton_Default;
+            }
+        }
+    }
+    public void On_NextHandMenu_Quit_GuiInput(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventMouseButton iemb)
+        {
+            if (iemb.Pressed)
+            {
+                SwitchState("Menu");
+            }
         }
     }
 }

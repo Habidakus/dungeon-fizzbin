@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cyg6udbgcsgle"]
+[gd_scene load_steps=19 format=3 uid="uid://cyg6udbgcsgle"]
 
 [ext_resource type="PackedScene" uid="uid://xk13m276r8fe" path="res://Scenes/state_machine.tscn" id="1_cfnxq"]
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_rrlci"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://Scripts/States/sms_play_player_leaves_game.cs" id="12_dd1fu"]
 [ext_resource type="Script" path="res://Scripts/States/sms_play_someone_reveals.cs" id="12_oc65y"]
 [ext_resource type="Script" path="res://Scripts/States/sms_play_declare_winner.cs" id="13_4obca"]
+[ext_resource type="Script" path="res://Scripts/States/sms_play_offer_another_hand.cs" id="18_qkhen"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_rrlci")
@@ -65,3 +66,6 @@ script = ExtResource("12_oc65y")
 
 [node name="Play_Declare_Winner" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("13_4obca")
+
+[node name="Play_Offer_Another_Hand" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("18_qkhen")
