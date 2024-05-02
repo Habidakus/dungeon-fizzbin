@@ -3,21 +3,20 @@ using System;
 
 #nullable enable
 
-public partial class sms_play_declare_winner : state_machine_state
+public partial class sms_play_player_leaves_game : state_machine_state
 {
-    double delay = 5;
-    double wait;
-
+    private double _wait = 0;
+    private const double _delay = 7.5;
     public override void EnterState()
     {
-        GetMainNode().AwardWinner();
-        wait = delay;
+        GetMainNode().HavePlayerLeave();
+        _wait = _delay;
     }
 
     public override void Update(double delta)
     {
-        wait -= delta;
-        if (wait  < 0)
+        _wait -= delta;
+        if (_wait < 0)
         {
             GetStateMachine().SwitchState("Play_Loop");
         }

@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 
 #nullable enable
 
@@ -73,6 +72,8 @@ public partial class HUD : CanvasLayer
             case "Play_Someone_Reveals":
             case "Play_Declare_Winner":
             case "Play_Post_Discard":
+            case "Play_Player_Leaves_Game":
+            case "Play_Offer_Another_Hand":
                 PlayPage.Show();
                 break;
             default:
@@ -100,6 +101,8 @@ public partial class HUD : CanvasLayer
             case "Play_Someone_Reveals":
             case "Play_Declare_Winner":
             case "Play_Post_Discard":
+            case "Play_Player_Leaves_Game":
+            case "Play_Offer_Another_Hand":
                 PlayPage.Hide();
                 break;
             default:
@@ -236,5 +239,13 @@ public partial class HUD : CanvasLayer
         }
 
         PotBackground.SetHighlight(positionID, direction);
+    }
+
+    internal void PlayerLeaves(int positionID, string leavingText)
+    {
+        if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.PlayerLeaves(leavingText);
+        }
     }
 }

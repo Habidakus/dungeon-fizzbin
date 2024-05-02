@@ -7,9 +7,15 @@ using System.Linq;
 
 class Species
 {
+    enum Bark
+    {
+        Leaving,
+    };
+
     private delegate void DealComponent(Deal deal);
     private delegate string SpeciesNameGenerator(Random rnd);
     private delegate bool SpeciesAllowed(Deal deal);
+    private delegate string SpeciesText(Bark bark);
 
     private int _introHand = 0;
     private double _weight = 1;
@@ -18,8 +24,9 @@ class Species
     private SpeciesNameGenerator? _nameGenerator;
     private readonly DealComponent _dealComponent;
     private readonly SpeciesAllowed? _allowed;
+    private SpeciesText? _speciesText;
 
-    private Species(String name, double weight, int introHand, DealComponent dealComponent, SpeciesNameGenerator? sng = null, SpeciesAllowed? allowed = null)
+    private Species(String name, double weight, int introHand, DealComponent dealComponent, SpeciesNameGenerator? sng = null, SpeciesAllowed? allowed = null, SpeciesText? speciesText = null)
     {
         Name = name;
         _weight = weight;
@@ -27,6 +34,7 @@ class Species
         _nameGenerator = sng;
         _dealComponent = dealComponent;
         _allowed = allowed;
+        _speciesText = speciesText; 
     }
 
     internal static Species Get(string name)
@@ -42,15 +50,15 @@ class Species
     private static void InitSpeciesList()
     {
         AllSpecies = new List<Species>() {
-            new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human),
-            new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf),
-            new Species("Dwarf", 0.5, 0, DealComponent_Dwarf, NameGenerator_Dwarf),
+            new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human, null, GetText_Human),
+            new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
+            new Species("Dwarf", 0.5, 0, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
             new Species("Goblin", 1, 5, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin),
             new Species("Dragonkin", 1, 10, DealComponent_Dragonkin, NameGenerator_Dragonkin),
             new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll),
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc),
-            new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling),
+            new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
             new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant),
@@ -74,6 +82,18 @@ class Species
             }
 
             return AllSpecies!.Where(n => n.Name == "Human").First();
+        }
+    }
+
+    public string LeavingText { get { return (_speciesText == null) ? GenericText(Bark.Leaving) : _speciesText(Bark.Leaving); } }
+
+    private string GenericText(Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "I'm out...";
+            default:
+                throw new Exception($"No generic text for bark={bark}");
         }
     }
 
@@ -137,6 +157,15 @@ class Species
     {
         deal.IncreaseDiscardReveal();
     }
+    static private string GetText_Human(Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "I better go while I still have some coin.";
+            default:
+                throw new Exception($"No elf text for bark={bark}");
+        }
+    }
 
     // -------------------------------- DWARF --------------------------------
 
@@ -153,6 +182,15 @@ class Species
     static internal void DealComponent_Dwarf(Deal deal)
     {
         deal.IncreaseRiver();
+    }
+    static private string GetText_Dwarf(Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "This mine is all tapped out.";
+            default:
+                throw new Exception($"No dwarf text for bark={bark}");
+        }
     }
 
     // -------------------------------- ELF --------------------------------
@@ -173,6 +211,15 @@ class Species
     static internal void DealComponent_Elf(Deal deal)
     {
         deal.AddRank(addToLowEnd: false);
+    }
+    static private string GetText_Elf(Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "All the leaves have fallen from this tree.";
+            default:
+                throw new Exception($"No elf text for bark={bark}");
+        }
     }
 
     // -------------------------------- HALFLING --------------------------------
@@ -217,6 +264,15 @@ class Species
     static internal void DealComponent_Halfling(Deal deal)
     {
         deal.AddPassToNeighbor();
+    }
+    static private string GetText_Halfling(Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.Leaving: return "I better go while I still own my pants.";
+            default:
+                throw new Exception($"No halfling text for bark={bark}");
+        }
     }
 
     // -------------------------------- LIZARDMAN --------------------------------

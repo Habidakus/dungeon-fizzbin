@@ -39,11 +39,23 @@ public partial class sms_play_loop : state_machine_state
         }
         else if (GetMainNode().SomeoneNeedsToReveal(out highlightPositionId))
         {
+            GetHUD().HighlightPosition(highlightPositionId);
             GetStateMachine().SwitchState("play_someone_reveals");
+        }
+        else if (GetMainNode().NeedToDeclareWinner(out highlightPositionId))
+        {
+            GetHUD().HighlightPosition(highlightPositionId);
+            GetStateMachine().SwitchState("play_declare_winner");
+        }
+        else if (GetMainNode().SomeoneNeedsToLeaveGame(out highlightPositionId))
+        {
+            GetHUD().HighlightPosition(highlightPositionId);
+            GetStateMachine().SwitchState("play_player_leaves_game");
         }
         else
         {
-            GetStateMachine().SwitchState("play_declare_winner");
+            GetHUD().HighlightPosition(-1);
+            GetStateMachine().SwitchState("play_offer_another_hand");
         }
 
         //GetHUD().HighlightPosition(-1);

@@ -34,7 +34,7 @@ public partial class PotBackground : Node2D
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Draw()
     {
-        Color feltGreen = Color.FromHtml("147754");
+        Color feltGreen = Color.FromHtml("277714");
         const float width = 69 * 2 + 16;
         const float height = 169 / 2f;
         DrawOval(Vector2.Zero, width, height, feltGreen);

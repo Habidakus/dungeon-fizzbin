@@ -185,7 +185,7 @@ public partial class VisibleHand : Node2D
 
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            cr.Color = Color.FromHtml("147754");
+            cr.Color = Color.FromHtml("277714");
         }
     }
 
@@ -410,29 +410,42 @@ public partial class VisibleHand : Node2D
         }
     }
 
-    internal void ClearHighlight(string why)
+    internal void PlayerLeaves(string leavingText)
     {
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            //GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} removing highlight. Why={why}");
             cr.Color = Color.FromHtml("147754");
+            //cr.Color = Color.FromHtml("277714");
         }
         else
         {
             throw new Exception($"{Name} does not have a child ColorRect");
         }
-    }
 
-    internal void SetHighlight()
-    {
-        if (FindChild("ColorRect") is ColorRect cr)
+        if (FindChild("Score") is Label scoreLabel)
         {
-            //GD.Print($"{DateTime.Now.Second}.{DateTime.Now.Millisecond} {Name} adding highlight");
-            cr.Color = Color.FromHtml("277714");
+            scoreLabel.Text = $"\"{leavingText}\"";
+            scoreLabel.Show();
         }
         else
         {
-            throw new Exception($"{Name} does not have a child ColorRect");
+            throw new Exception($"{Name} does not have a child Score");
+        }
+
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+                cards.RemoveChild(child);
+        }
+
+        if (FindChild("Discards") is BoxContainer discardBox)
+        {
+            Godot.Collections.Array<Node> children = discardBox.GetChildren();
+            foreach (Node child in children)
+            {
+                discardBox.RemoveChild(child);
+            }
         }
     }
 }

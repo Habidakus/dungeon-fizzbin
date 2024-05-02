@@ -57,8 +57,6 @@ public partial class Main : Node
         HUD hud = GetHUD();
         foreach (Player player in _players)
         {
-            if (rnd.NextDouble() * 150 > player.Wallet)
-                throw new Exception($"{player.Name} no longer wishes to play with only ${player.Wallet:F2}");
             _deal.AddPlayer(hud, player);
         }
 
@@ -257,6 +255,12 @@ public partial class Main : Node
 
     public bool SomeoneNeedsToBet(out int highlightPositionId)
     {
+        if (Deal.Pot == 0)
+        {
+            highlightPositionId = -1;
+            return false;
+        }
+
         if (1 == _players.Where(a => !a.HasFolded).Count())
         {
             highlightPositionId = -1;
@@ -384,7 +388,7 @@ public partial class Main : Node
         }
     }
 
-    public void AwardWinner()
+    private Hand GetWinningHand()
     {
         Hand? bestHand = null;
         foreach (Player player in _players)
@@ -406,10 +410,72 @@ public partial class Main : Node
             throw new Exception("Why didn't we find a winning player?");
         }
 
+        return bestHand;
+    }
+
+    internal bool NeedToDeclareWinner(out int highlightPositionId)
+    {
+        if (Deal.Pot > 0)
+        {
+            highlightPositionId = GetWinningHand().PositionID;
+            return true;
+        }
+        else
+        {
+            highlightPositionId = -1;
+            return false;
+        }
+    }
+
+    private List<int>? PlayersWhoAreLeaving { get; set; } = null;
+
+    public void AwardWinner()
+    {
+        Hand bestHand = GetWinningHand();
         Deal.MovePotToPlayer(bestHand._player);
         Deal.UpdatePot(GetHUD());
         GetHUD().HighlightPosition(-1);
         Deal.Dump();
+
+        PlayersWhoAreLeaving = new List<int>();
+        foreach (Player player in _players)
+        {
+            if (player.IsNPC)
+            {
+                if (180 + rnd.NextDouble() * 20 > player.Wallet)
+                {
+                    PlayersWhoAreLeaving.Add(player.PositionID);
+                }
+            }
+        }
+    }
+
+    internal bool SomeoneNeedsToLeaveGame(out int highlightPositionId)
+    {
+        if (PlayersWhoAreLeaving == null || PlayersWhoAreLeaving.Count == 0)
+        {
+            highlightPositionId = -1;
+            return false;
+        }
+
+        highlightPositionId = PlayersWhoAreLeaving.First();
+        return true;
+    }
+
+    public void HavePlayerLeave()
+    {
+        if (PlayersWhoAreLeaving != null && PlayersWhoAreLeaving.Count > 0)
+        {
+            int playerIDToLeave = PlayersWhoAreLeaving[0];
+            Player playerWhoIsLeaving = _players.Where(p => p.PositionID == playerIDToLeave).First();
+            PlayersWhoAreLeaving.RemoveAt(0);
+            GetHUD().PlayerLeaves(playerIDToLeave, playerWhoIsLeaving.Species.LeavingText);
+            _players.Remove(playerWhoIsLeaving);
+        }
+        else
+        {
+            throw new Exception("Asked to dismiss a player and they're not here.");
+        }
     }
 
     //private void Test()
