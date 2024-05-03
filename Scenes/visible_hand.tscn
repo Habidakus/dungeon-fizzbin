@@ -5,7 +5,7 @@
 
 [node name="VisibleHand" type="Node2D"]
 script = ExtResource("1_qn6xg")
-_visibleCard = ExtResource("2_d84d1")
+_visibleCardScene = ExtResource("2_d84d1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 anchors_preset = 8

@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=8 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
 [ext_resource type="PackedScene" uid="uid://ci4dydx2sl63t" path="res://Scenes/pot.tscn" id="3_0m0fb"]
 [ext_resource type="Texture2D" uid="uid://0k1ihafmqhqf" path="res://Art/ButtonHover.png" id="3_m1pt8"]
 [ext_resource type="Texture2D" uid="uid://u3mwu4hycy5e" path="res://Art/ButtonDefault.png" id="4_lpgy3"]
+[ext_resource type="PackedScene" uid="uid://bgth6f6cw771c" path="res://Scenes/card.tscn" id="6_qtayb"]
 [ext_resource type="PackedScene" uid="uid://beskx4rpqqp30" path="res://Scenes/state_change_button.tscn" id="7_bfjw0"]
 
 [node name="HUD" type="CanvasLayer"]
@@ -94,6 +95,7 @@ position = Vector2(960, 324)
 
 [node name="Pot" parent="PlayPage" instance=ExtResource("3_0m0fb")]
 position = Vector2(576, 324)
+_visibleCardScene = ExtResource("6_qtayb")
 
 [node name="NextHandMenu" type="VBoxContainer" parent="PlayPage"]
 visible = false

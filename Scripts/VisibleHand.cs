@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public partial class VisibleHand : Node2D
 {
     [Export]
-    public PackedScene? _visibleCard = null;
+    public PackedScene? _visibleCardScene = null;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -34,7 +34,7 @@ public partial class VisibleHand : Node2D
         }
     }
 
-    private void AddCardToControl(Control visibleCard, bool exposed, Card card)
+    private static void ConfigureCardExposure(Control visibleCard, bool exposed, Card card)
     {
         if (visibleCard == null)
             return;
@@ -197,15 +197,15 @@ public partial class VisibleHand : Node2D
                 cards.RemoveChild(child);
             }
 
-            if (_visibleCard != null)
+            if (_visibleCardScene != null)
             {
                 foreach (Card card in river)
                 {
-                    if (_visibleCard.Instantiate() is Control visibleCard)
+                    if (_visibleCardScene.Instantiate() is Control visibleCard)
                     {
                         //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
-                        AddCardToControl(visibleCard, exposed: true, card);
+                        ConfigureCardExposure(visibleCard, exposed: true, card);
                     }
                 }
             }
@@ -237,15 +237,15 @@ public partial class VisibleHand : Node2D
             foreach (Node child in children)
                 cards.RemoveChild(child);
             
-            if (_visibleCard != null)
+            if (_visibleCardScene != null)
             {
                 foreach (Card card in hand._cards)
                 {
-                    if (_visibleCard.Instantiate() is Control visibleCard)
+                    if (_visibleCardScene.Instantiate() is Control visibleCard)
                     {
                         //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
-                        AddCardToControl(visibleCard, hand.IsVisible(card, nonNPCPlayer), card);
+                        ConfigureCardExposure(visibleCard, hand.IsVisible(card, nonNPCPlayer), card);
                     }
                 }
 
@@ -275,7 +275,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("Discards") is BoxContainer discardBox)
         {
-            if (_visibleCard != null)
+            if (_visibleCardScene != null)
             {
                 if (discardBox.GetChildCount() == 0)
                 {
@@ -286,11 +286,11 @@ public partial class VisibleHand : Node2D
                     discardBox.AddChild(discardtext);
                 }
                 
-                if (_visibleCard.Instantiate() is Control visibleCard)
+                if (_visibleCardScene.Instantiate() is Control visibleCard)
                 {
                     //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                     discardBox.AddChild(visibleCard);
-                    AddCardToControl(visibleCard, isVisibleToNonNPC, discard);
+                    ConfigureCardExposure(visibleCard, isVisibleToNonNPC, discard);
                 }
             }
             else
@@ -444,6 +444,45 @@ public partial class VisibleHand : Node2D
             {
                 discardBox.RemoveChild(child);
             }
+        }
+    }
+
+    internal void FlingCard(Card card, int cardIndex, Random rnd, bool isVisible, double delay, VisibleHand toHand)
+    {
+        if (_visibleCardScene == null)
+        {
+            throw new Exception("No visible card defined for visible hand");
+        }
+
+        if (_visibleCardScene.Instantiate() is Control visibleCard)
+        {
+            Vector2 launchPos = GlobalPosition;
+            if (FindChild("Cards") is Control cards)
+            {
+                if (cards.GetChild(cardIndex) is Control fc)
+                {
+                    launchPos = fc.GlobalPosition;
+                }
+                else
+                {
+                    GD.Print($"{Name}.Cards[0] is not a Control");
+                }
+            }
+            else
+            {
+                GD.Print($"{Name} has no child Cards");
+            }
+
+            visibleCard.Position = Vector2.Zero;
+            ConfigureCardExposure(visibleCard, isVisible, card);
+            visibleCard.Show();
+            visibleCard.TopLevel = true;
+            this.AddChild(visibleCard);
+            Tween tween = GetTree().CreateTween();
+            tween.TweenProperty(visibleCard, "position", launchPos, 0);
+            tween.TweenProperty(visibleCard, "position", toHand.GlobalPosition, delay);
+            tween.Parallel().TweenProperty(visibleCard, "rotation", (rnd.NextDouble() * 0.5 + 0.75) * Math.Tau, delay);
+            tween.TweenCallback(Callable.From(visibleCard.QueueFree));
         }
     }
 }

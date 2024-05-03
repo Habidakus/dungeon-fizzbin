@@ -1,12 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://ci4dydx2sl63t"]
+[gd_scene load_steps=3 format=3 uid="uid://ci4dydx2sl63t"]
 
 [ext_resource type="Script" path="res://Scripts/VisibleHand.cs" id="1_la1i0"]
-[ext_resource type="PackedScene" uid="uid://bgth6f6cw771c" path="res://Scenes/card.tscn" id="2_y2ps2"]
 [ext_resource type="Script" path="res://Scripts/PotBackground.cs" id="3_lsuqh"]
 
 [node name="Pot" type="Node2D"]
 script = ExtResource("1_la1i0")
-_visibleCard = ExtResource("2_y2ps2")
 
 [node name="Background" type="Node2D" parent="."]
 script = ExtResource("3_lsuqh")

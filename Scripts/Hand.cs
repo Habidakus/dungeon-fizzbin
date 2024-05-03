@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static Godot.OpenXRInterface;
 
 #nullable enable
 
@@ -1079,7 +1080,7 @@ class Hand : IComparable<Hand>
         }
     }
 
-    public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd)
+    public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd, HUD hud, double delay, int destinationPositionId, Player nonNPCPlayer)
     {
         if (actualDeal.CostPerDiscard != 0)
         {
@@ -1094,9 +1095,16 @@ class Hand : IComparable<Hand>
         _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
         foreach (Card card in _passingCards)
         {
-            _cards.Remove(card);
-            _handValue = null;
+            bool isVisible = IsVisible(card, nonNPCPlayer);
+            int cardIndex = _cards.FindIndex(a => a == card);
+            hud.FlingCard(PositionID, destinationPositionId, delay, rnd, card, cardIndex, isVisible);
         }
+        foreach (Card card in _passingCards)
+        {
+            _cards.Remove(card);
+        }
+        if (numberOfCards > 0)
+            _handValue = null;
     }
 
     internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)

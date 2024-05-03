@@ -298,4 +298,15 @@ public partial class HUD : CanvasLayer
             visibleHand.PlayerLeaves(leavingText);
         }
     }
+
+    internal void FlingCard(int fromPositionID, int toPositionID, double delay, Random rnd, Card card, int cardIndex, bool isVisible)
+    {
+        if (FindChild($"Hand{fromPositionID}") is VisibleHand fromHand)
+        {
+            if (FindChild($"Hand{toPositionID}") is VisibleHand toHand)
+            {
+                fromHand.FlingCard(card, cardIndex, rnd, isVisible, delay, toHand);
+            }
+        }
+    }
 }
