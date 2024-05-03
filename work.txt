@@ -12,10 +12,12 @@
 29th (half) Added highlight mode to visually indicate which player's turn it currently is
 30th You can play multiple hands in a row, fixed a hand strength calculation bug
 1st working on UI and replacing a player who has run out of money
+2nd created state change button, added button to keep playing or leave table
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file
 - Need to fix sorting after hand-rank, we need to compare all cards, in order of importance.
+- Clear out the river at the start of each round (especially if the dwarf leaves the table).
 
 felt green #277714
 card red #f03a17

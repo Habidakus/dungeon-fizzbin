@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=7 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
 [ext_resource type="PackedScene" uid="uid://ci4dydx2sl63t" path="res://Scenes/pot.tscn" id="3_0m0fb"]
 [ext_resource type="Texture2D" uid="uid://0k1ihafmqhqf" path="res://Art/ButtonHover.png" id="3_m1pt8"]
 [ext_resource type="Texture2D" uid="uid://u3mwu4hycy5e" path="res://Art/ButtonDefault.png" id="4_lpgy3"]
+[ext_resource type="PackedScene" uid="uid://beskx4rpqqp30" path="res://Scenes/state_change_button.tscn" id="7_bfjw0"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_yllrm")
@@ -102,23 +103,17 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -311.0
-offset_top = -176.0
-offset_right = -71.0
-offset_bottom = -76.0
+offset_left = -313.0
+offset_top = -177.0
+offset_right = -73.0
+offset_bottom = -53.0
 grow_horizontal = 0
 grow_vertical = 0
 alignment = 2
 
-[node name="PlayAnotherHand" type="NinePatchRect" parent="PlayPage/NextHandMenu"]
+[node name="PlayAnotherHand" parent="PlayPage/NextHandMenu" instance=ExtResource("7_bfjw0")]
 layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 0
-texture = ExtResource("4_lpgy3")
-patch_margin_left = 18
-patch_margin_top = 18
-patch_margin_right = 18
-patch_margin_bottom = 18
+State = "Play_Deal"
 
 [node name="Label" type="Label" parent="PlayPage/NextHandMenu/PlayAnotherHand"]
 layout_mode = 1
@@ -127,37 +122,32 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
+offset_left = -98.5
+offset_top = -15.5
+offset_right = 98.5
+offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 22
 text = "Play another hand"
+vertical_alignment = 1
 
-[node name="Quit" type="NinePatchRect" parent="PlayPage/NextHandMenu"]
+[node name="LeaveTable" parent="PlayPage/NextHandMenu" instance=ExtResource("7_bfjw0")]
 layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 0
-texture = ExtResource("4_lpgy3")
-patch_margin_left = 18
-patch_margin_top = 18
-patch_margin_right = 18
-patch_margin_bottom = 18
+State = "Menu"
 
-[node name="Label" type="Label" parent="PlayPage/NextHandMenu/Quit"]
+[node name="Label" type="Label" parent="PlayPage/NextHandMenu/LeaveTable"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
+offset_left = -63.5
+offset_top = -15.5
+offset_right = 63.5
+offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
@@ -205,12 +195,26 @@ theme_override_constants/margin_bottom = 100
 [node name="VBoxContainer" type="VBoxContainer" parent="MenuPage/MarginContainer"]
 layout_mode = 2
 
-[node name="PlayButton" type="Button" parent="MenuPage/MarginContainer/VBoxContainer"]
+[node name="PlayButton2" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
 layout_mode = 2
-focus_next = NodePath("../QuitButton")
-focus_previous = NodePath("../QuitButton")
-theme_override_font_sizes/font_size = 32
-text = "Play"
+State = "Play_Deal"
+
+[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/PlayButton2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "Play	"
 
 [node name="padding" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -220,20 +224,25 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="QuitButton" type="Button" parent="MenuPage/MarginContainer/VBoxContainer"]
+[node name="QuitButton2" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
 layout_mode = 2
-focus_next = NodePath("../PlayButton")
-focus_previous = NodePath("../PlayButton")
-mouse_filter = 1
-theme_override_font_sizes/font_size = 32
-text = "Quit
-"
+patch_margin_left = 20
+patch_margin_right = 20
+State = "Quit"
 
-[connection signal="gui_input" from="PlayPage/NextHandMenu/PlayAnotherHand" to="." method="On_NextHandMenu_PlayAnotherHand_GuiInput"]
-[connection signal="mouse_entered" from="PlayPage/NextHandMenu/PlayAnotherHand" to="." method="On_NextHandMenu_PlayAnotherHand_MouseEnter"]
-[connection signal="mouse_exited" from="PlayPage/NextHandMenu/PlayAnotherHand" to="." method="On_NextHandMenu_PlayAnotherHand_MouseExit"]
-[connection signal="gui_input" from="PlayPage/NextHandMenu/Quit" to="." method="On_NextHandMenu_Quit_GuiInput"]
-[connection signal="mouse_entered" from="PlayPage/NextHandMenu/Quit" to="." method="On_NextHandMenu_Quit_MouseEnter"]
-[connection signal="mouse_exited" from="PlayPage/NextHandMenu/Quit" to="." method="On_NextHandMenu_Quit_MouseExit"]
-[connection signal="pressed" from="MenuPage/MarginContainer/VBoxContainer/PlayButton" to="." method="OnPlayPressed"]
-[connection signal="pressed" from="MenuPage/MarginContainer/VBoxContainer/QuitButton" to="." method="OnQuitButtonPressed"]
+[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/QuitButton2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "Quit"

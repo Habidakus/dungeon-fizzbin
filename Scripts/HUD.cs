@@ -36,6 +36,20 @@ public partial class HUD : CanvasLayer
             }
         }
     }
+    private state_machine StateMachine
+    {
+        get
+        {
+            if (GetParent() is Main mainNode)
+            {
+                return mainNode.GetStateMachine();
+            }
+            else
+            {
+                throw new Exception($"Parent of {Name} is not main node");
+            }
+        }
+    }
 
     private Control GetChildControl(Control control, string name)
     {
@@ -53,9 +67,26 @@ public partial class HUD : CanvasLayer
 		throw new Exception($"No child of {Name} called {name}");
 	}
 
+    private void InitializeStateChangeButton(Control page, string buttonName)
+    {
+        if (page.FindChild(buttonName) is StateChangeButton quitButton)
+        {
+            quitButton.Initialize(StateMachine);
+        }
+        else
+        {
+            throw new Exception($"{page.Name} has no child named {buttonName}");
+        }
+    }
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
+        InitializeStateChangeButton(MenuPage, "PlayButton2");
+        InitializeStateChangeButton(MenuPage, "QuitButton2");
+        InitializeStateChangeButton(PlayPage, "PlayAnotherHand");
+        InitializeStateChangeButton(PlayPage, "LeaveTable");
+
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
@@ -69,8 +100,10 @@ public partial class HUD : CanvasLayer
 	public void StartState(string state)
 	{
 		switch (state)
-		{
-			case "StartUp":
+        {
+            case "Quit":
+                break;
+            case "StartUp":
                 TitlePage.Show();
 				break;
             case "Menu":
@@ -102,6 +135,8 @@ public partial class HUD : CanvasLayer
 	{
         switch (state)
         {
+            case "Quit":
+                break;
             case "StartUp":
                 TitlePage.Hide();
                 break;
@@ -261,87 +296,6 @@ public partial class HUD : CanvasLayer
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.PlayerLeaves(leavingText);
-        }
-    }
-
-    private void SwitchState(string stateName)
-    {
-        if (GetParent() is Main mainNode)
-        {
-            mainNode.GetStateMachine().SwitchState(stateName);
-        }
-    }
-
-    // ------------------------------ Events -----------------------------------------------
-
-    public void OnQuitButtonPressed()
-    {
-        GetTree().Quit();
-    }
-
-    public void OnPlayPressed()
-    {
-        SwitchState("Play_Deal");
-    }
-
-    public void On_NextHandMenu_PlayAnotherHand_MouseEnter()
-    {
-        if (NineGridButton_Hover != null)
-        {
-            if (NextHandMenu.FindChild("PlayAnotherHand") is NinePatchRect npr)
-            {
-                npr.Texture = NineGridButton_Hover;
-            }
-        }
-    }
-    public void On_NextHandMenu_PlayAnotherHand_MouseExit()
-    {
-        if (NineGridButton_Hover != null)
-        {
-            if (NextHandMenu.FindChild("PlayAnotherHand") is NinePatchRect npr)
-            {
-                npr.Texture = NineGridButton_Default;
-            }
-        }
-    }
-    public void On_NextHandMenu_PlayAnotherHand_GuiInput(InputEvent inputEvent)
-    {
-        if (inputEvent is InputEventMouseButton iemb)
-        {
-            if (iemb.Pressed)
-            {
-                SwitchState("Play_Deal");
-            }
-        }
-    }
-    public void On_NextHandMenu_Quit_MouseEnter()
-    {
-        if (NineGridButton_Hover != null)
-        {
-            if (NextHandMenu.FindChild("Quit") is NinePatchRect npr)
-            {
-                npr.Texture = NineGridButton_Hover;
-            }
-        }
-    }
-    public void On_NextHandMenu_Quit_MouseExit()
-    {
-        if (NineGridButton_Hover != null)
-        {
-            if (NextHandMenu.FindChild("Quit") is NinePatchRect npr)
-            {
-                npr.Texture = NineGridButton_Default;
-            }
-        }
-    }
-    public void On_NextHandMenu_Quit_GuiInput(InputEvent inputEvent)
-    {
-        if (inputEvent is InputEventMouseButton iemb)
-        {
-            if (iemb.Pressed)
-            {
-                SwitchState("Menu");
-            }
         }
     }
 }

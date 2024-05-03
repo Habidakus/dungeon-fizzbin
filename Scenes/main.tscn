@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://cyg6udbgcsgle"]
+[gd_scene load_steps=20 format=3 uid="uid://cyg6udbgcsgle"]
 
 [ext_resource type="PackedScene" uid="uid://xk13m276r8fe" path="res://Scenes/state_machine.tscn" id="1_cfnxq"]
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_rrlci"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c6bmnvbmqyo61" path="res://Scenes/state_machine_state.tscn" id="2_sdobx"]
 [ext_resource type="Script" path="res://Scripts/States/sms_start_up.cs" id="3_463al"]
 [ext_resource type="Script" path="res://Scripts/States/sms_menu.cs" id="4_rls27"]
+[ext_resource type="Script" path="res://Scripts/States/sms_quit.cs" id="6_emdaf"]
 [ext_resource type="Script" path="res://Scripts/States/sms_play_loop.cs" id="7_op5e6"]
 [ext_resource type="Script" path="res://Scripts/States/sms_play_someone_discards.cs" id="8_0d8lb"]
 [ext_resource type="Script" path="res://Scripts/States/sms_play_deal.cs" id="8_vph38"]
@@ -30,6 +31,9 @@ unique_name_in_owner = true
 
 [node name="StartUp" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("3_463al")
+
+[node name="Quit" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("6_emdaf")
 
 [node name="Menu" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("4_rls27")

@@ -219,7 +219,7 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "All the leaves have fallen from this tree.";
+            case Bark.Leaving: return "The leaves have fallen from this tree.";
             default:
                 throw new Exception($"No elf text for bark={bark}");
         }
