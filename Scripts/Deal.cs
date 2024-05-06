@@ -249,11 +249,20 @@ class Deal
         return hand.HasPassingCards;
     }
 
-    internal void DeterminePassCards(HUD hud, Player player, Random rng, double delay)
+    internal void DeterminePassCards(HUD hud, Player sourcePlayer, Random rng, Action<int> confirmingPassCardsDetermined)
     {
-        Hand hand = GetPlayerHand(player);
+        Hand hand = GetPlayerHand(sourcePlayer);
         int destinationPositionId = (hand.PositionID + 1) % _hands.Count;
-        hand.SetAsidePassCards(PassCardsToLeftNeighbor, this, rng, hud, delay, destinationPositionId, _hands[0]._player);
+        Player destPlayer = _hands[destinationPositionId].Player;
+        hand.SetAsidePassCards(PassCardsToLeftNeighbor, this, rng, hud, destPlayer, confirmingPassCardsDetermined);
+    }
+
+    internal void DeterminePassCards_Post(HUD hud, Player sourcePlayer, Random rng, double delay)
+    {
+        Hand hand = GetPlayerHand(sourcePlayer);
+        int destinationPositionId = (hand.PositionID + 1) % _hands.Count;
+        Player destPlayer = _hands[destinationPositionId].Player;
+        hand.SetAsidePassCards_Post(rng, hud, delay, destPlayer, _hands[0]._player);
         hud.SetVisibleHand(hand, NonNPCPlayer);
     }
 

@@ -6,19 +6,41 @@ using System;
 public partial class sms_play_someone_passes : state_machine_state
 {
     private double _wait = 0;
-    private const double _delay = 1;
+    private double _delay = 1;
+    private bool _confirmed = false;
+    private int _positionID = -1;
     public override void EnterState()
     {
-        GetMainNode().ForceSomeoneToPass(_delay * 0.8);
+        _confirmed = false;
+        _positionID = -1;
+        GetMainNode().ForceSomeoneToPass(ConfirmingPassCardsDetermined);
+    }
+
+    internal void ConfirmingPassCardsDetermined(int positionID)
+    {
         _wait = _delay;
+        _confirmed = true;
+        _positionID = positionID;
     }
 
     public override void Update(double delta)
     {
-        _wait -= delta;
-        if (_wait <= 0)
+        if (_confirmed)
         {
-            GetStateMachine().SwitchState("Play_Loop");
+            if (_positionID != -1)
+            {
+                GetMainNode().ForceSomeoneToPass_Post(_positionID, _delay * 0.8);
+                _positionID = -1;
+            }
+            else
+            {
+                _wait -= delta;
+                if (_wait <= 0)
+                {
+                    GetStateMachine().SwitchState("Play_Loop");
+                    _confirmed = false;
+                }
+            }
         }
     }
 

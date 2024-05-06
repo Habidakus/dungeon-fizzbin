@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using static Godot.OpenXRInterface;
 
 #nullable enable
@@ -1080,7 +1081,8 @@ class Hand : IComparable<Hand>
         }
     }
 
-    public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd, HUD hud, double delay, int destinationPositionId, Player nonNPCPlayer)
+    //public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd, HUD hud, double delay, Player destination, Player nonNPCPlayer, Action confirmingPassCardsDetermined)
+    public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd, HUD hud, Player destination, Action<int> confirmingPassCardsDetermined)
     {
         if (actualDeal.CostPerDiscard != 0)
         {
@@ -1092,19 +1094,67 @@ class Hand : IComparable<Hand>
             throw new Exception($"Why is {_player.Name} passing again? HasPassingCards={HasPassingCards}");
         }
 
-        _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
+        if (_player.IsNPC)
+        {
+            Task.Run(() =>
+            {
+                _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
+                confirmingPassCardsDetermined(PositionID);
+            });
+        }
+        else
+        {
+            hud.EnableCardSelection(PositionID, numberOfCards, destination.Name);
+            Task.Run(() =>
+            {
+                List<string> cardsAsText = hud.HavePlayerSelectCardsToPass(this, numberOfCards).Result;
+                _passingCards = new List<Card>();
+                foreach (string cardText in cardsAsText)
+                {
+                    Card[] matchingCards = _cards.Where(a => a.ToString().CompareTo(cardText) == 0).ToArray();
+                    if (matchingCards.Count() == 1)
+                    {
+                        _passingCards.Add(matchingCards[0]);
+                    }
+                    else if (matchingCards.Count() > 1)
+                    {
+                        throw new Exception($"Expected 1 card match to hand ({this}) but got {string.Join(',', matchingCards.Select(a => a.ToString()))}");
+                    }
+                    else
+                    {
+                        throw new Exception($"Expected 1 card match to hand ({this}) but got zero");
+                    }
+                }
+                confirmingPassCardsDetermined(PositionID);
+            });
+        }
+    }
+
+    internal void SetAsidePassCards_Post(Random rnd, HUD hud, double delay, Player destination, Player nonNPCPlayer)
+    {
+        if (_passingCards == null)
+        {
+            throw new Exception($"Why is {this} passing cards null to {destination}?");
+        }
+
+        hud.DisableCardSelection(PositionID);
+
         foreach (Card card in _passingCards)
         {
             bool isVisible = IsVisible(card, nonNPCPlayer);
             int cardIndex = _cards.FindIndex(a => a == card);
-            hud.FlingCard(PositionID, destinationPositionId, delay, rnd, card, cardIndex, isVisible);
+            hud.FlingCard(PositionID, destination.PositionID, delay, rnd, card, cardIndex, isVisible);
         }
+
         foreach (Card card in _passingCards)
         {
             _cards.Remove(card);
         }
-        if (numberOfCards > 0)
+
+        if (_passingCards.Count > 0)
+        {
             _handValue = null;
+        }
     }
 
     internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)

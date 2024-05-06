@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -188,7 +190,7 @@ public partial class HUD : CanvasLayer
 
     internal void SetStake(double amount)
     {
-        if (PlayPage.FindChild("PlayersCash") is Label label)
+        if (PlayPage.FindChild("PlayersCash") is Godot.Label label)
         {
             label.Text = $"Your stake: ${amount:F2}";
         }
@@ -307,6 +309,176 @@ public partial class HUD : CanvasLayer
             {
                 fromHand.FlingCard(card, cardIndex, rnd, isVisible, delay, toHand);
             }
+        }
+    }
+
+    private string _selectedCardsDestination = string.Empty;
+    private int _selectedCardsGoalCount = -1;
+    private List<string>? _selectedCardsAsText = null;
+    private bool _selectedCardsConfirmed = false;
+    internal async Task<List<string>> HavePlayerSelectCardsToPass(Hand hand, int numberOfCards)
+    {
+        GD.Print($"Starting sleep for card selection on {hand}");
+        while (true)
+        {
+            if (_selectedCardsAsText == null)
+                throw new Exception($"Why are _selectedCards = null for {hand}");
+
+            if (!_selectedCardsConfirmed)
+            {
+                await Task.Run(() => Thread.Sleep(10));
+            }
+            else
+            {
+                GD.Print($"Ending sleep for card selection on {hand}");
+                return _selectedCardsAsText;
+            }
+        }
+        //return hand._cards.OrderBy(r => r, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, false))).Take(numberOfCards).ToList();
+    }
+
+    internal void CardSelectionGuiHandler(InputEvent inputEvent, Control visibleCard)
+    {
+        if (inputEvent is InputEventMouseButton buttonEvent)
+        {
+            if (buttonEvent.Pressed)
+            {
+                if (visibleCard.FindChild("Label") is Godot.Label label)
+                {
+                    if (_selectedCardsAsText == null)
+                    {
+                        throw new Exception($"Why is _selectedCardsAsText null when {Name}.Text={label.Text} is selected?");
+                    }
+
+                    if (visibleCard.FindChild("SelectionMark") is CanvasItem ci)
+                    {
+                        if (ci.Visible)
+                        {
+                            _selectedCardsAsText.RemoveAll(a => a.CompareTo(label.Text) == 0);
+                            ci.Hide();
+                        }
+                        else
+                        {
+                            _selectedCardsAsText.Add(label.Text);
+                            ci.Show();
+                        }
+
+                        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+                        {
+                            UpdateConfirmationButtonText(confirmationButton);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void UpdateConfirmationButtonText(NinePatchRect confirmationButton)
+    {
+        if (confirmationButton.FindChild("Instructions") is RichTextLabel instructions)
+        {
+            if (_selectedCardsAsText == null)
+            {
+                throw new Exception($"Why is _selectedCardsAsText null when UpdateConfirmationButtonText()?");
+            }
+
+            if (_selectedCardsAsText.Count == _selectedCardsGoalCount)
+            {
+                instructions.Text = $"[center]Please (click here) to confirm passing these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
+            }
+            else
+            {
+                int remainingToSelect = _selectedCardsGoalCount - _selectedCardsAsText.Count;
+                if (remainingToSelect > 1)
+                {
+                    instructions.Text = $"[center]Please select {remainingToSelect} more cards to pass to {_selectedCardsDestination}[/center]";
+                }
+                else if (remainingToSelect == 1)
+                {
+                    instructions.Text = $"[center]Please select one more card to pass to {_selectedCardsDestination}[/center]";
+                }
+                else if (remainingToSelect == -1)
+                {
+                    instructions.Text = $"[center]Unselect {remainingToSelect} card[/center]";
+                }
+                else
+                {
+                    instructions.Text = $"[center]Unselect {remainingToSelect} cards[/center]";
+                }
+            }
+        }
+    }
+
+    internal void OnConfirmationButtonMouseEnter()
+    {
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect npr)
+        {
+            if (_selectedCardsAsText != null)
+            {
+                if (0 == _selectedCardsGoalCount - _selectedCardsAsText.Count)
+                {
+                    npr.Texture = NineGridButton_Hover;
+                }
+            }
+        }
+    }
+
+    internal void OnConfirmationButtonMouseExit()
+    {
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect npr)
+        {
+            npr.Texture = NineGridButton_Default;
+        }
+    }
+
+    internal void OnConfirmationButtonInputEvent(InputEvent inputEvent)
+    {
+        if (_selectedCardsAsText == null)
+            return;
+        if (0 != _selectedCardsGoalCount - _selectedCardsAsText.Count)
+            return;
+
+        if (inputEvent is InputEventMouseButton mouseButton)
+        {
+            if (!mouseButton.Pressed)
+                return;
+
+            _selectedCardsConfirmed = true;
+        }
+    }
+
+    internal void EnableCardSelection(int positionID, int goalCount, string destination)
+    {
+        _selectedCardsGoalCount = goalCount;
+        _selectedCardsAsText = new List<string>();
+        _selectedCardsDestination = destination;
+        _selectedCardsConfirmed = false;
+        if (FindChild($"Hand{positionID}") is VisibleHand hand)
+        {
+            hand.EnableCardSelection(CardSelectionGuiHandler);
+        }
+
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+        {
+            UpdateConfirmationButtonText(confirmationButton);
+            confirmationButton.Show();
+        }
+    }
+
+    internal void DisableCardSelection(int positionID)
+    {
+        _selectedCardsGoalCount = -1;
+        _selectedCardsAsText = null;
+        _selectedCardsDestination = string.Empty;
+        _selectedCardsConfirmed = false;
+        if (FindChild($"Hand{positionID}") is VisibleHand hand)
+        {
+            hand.DisableCardSelection(CardSelectionGuiHandler);
+        }
+
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+        {
+            confirmationButton.Hide();
         }
     }
 }

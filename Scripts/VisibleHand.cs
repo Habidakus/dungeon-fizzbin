@@ -485,4 +485,44 @@ public partial class VisibleHand : Node2D
             tween.TweenCallback(Callable.From(visibleCard.QueueFree));
         }
     }
+
+    internal void EnableCardSelection(Action<InputEvent, Control> cardSelectionGuiHandler)
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                if (child is Control fc)
+                {
+                    if (fc.FindChild("SelectionMark") is CanvasItem ci)
+                    {
+                        ci.Hide();
+                    }
+
+                    fc.GuiInput += (a) => cardSelectionGuiHandler(a, fc);
+                }
+            }
+        }
+    }
+
+    internal void DisableCardSelection(Action<InputEvent, Control> cardSelectionGuiHandler)
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                if (child is Control fc)
+                {
+                    if (fc.FindChild("SelectionMark") is CanvasItem ci)
+                    {
+                        ci.Hide();
+                    }
+
+                    //fc.GuiInput -= (a) => cardSelectionGuiHandler(a, fc);
+                }
+            }
+        }
+    }
 }

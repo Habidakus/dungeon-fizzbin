@@ -156,21 +156,64 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 22
 text = "Leave Table"
 
-[node name="PlayersCash" type="Label" parent="PlayPage"]
+[node name="PlayerFacingInfo" type="VBoxContainer" parent="PlayPage"]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 69.0
-offset_top = -140.0
-offset_right = 315.0
-offset_bottom = -104.0
+offset_left = 8.0
+offset_top = -211.0
+offset_right = 375.0
+offset_bottom = -21.0
 grow_vertical = 0
+
+[node name="Buffer" type="Label" parent="PlayPage/PlayerFacingInfo"]
+layout_mode = 2
+
+[node name="PlayersCash" type="Label" parent="PlayPage/PlayerFacingInfo"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "Your Stake: $200.00
 "
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Buffer2" type="Label" parent="PlayPage/PlayerFacingInfo"]
+layout_mode = 2
+
+[node name="ConfirmationButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 5
+size_flags_vertical = 3
+mouse_filter = 0
+texture = ExtResource("4_lpgy3")
+patch_margin_left = 30
+patch_margin_top = 30
+patch_margin_right = 30
+patch_margin_bottom = 30
+
+[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/ConfirmationButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+bbcode_enabled = true
+text = "[center]Please select 3 cards that you will pass to Happy Hornswoggle.[/center]"
+fit_content = true
+scroll_active = false
 
 [node name="MenuPage" type="Control" parent="."]
 visible = false
@@ -248,3 +291,7 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 22
 text = "Quit"
+
+[connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]
+[connection signal="mouse_entered" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonMouseEnter"]
+[connection signal="mouse_exited" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonMouseExit"]

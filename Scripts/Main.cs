@@ -138,9 +138,14 @@ public partial class Main : Node
         return false;
     }
 
-    internal void ForceSomeoneToPass(double delay)
+    internal void ForceSomeoneToPass(Action<int> confirmingPassCardsDetermined)
     {
-        Deal.DeterminePassCards(GetHUD(), NextPlayerToPassACard!, rnd, delay);
+        Deal.DeterminePassCards(GetHUD(), NextPlayerToPassACard!, rnd, confirmingPassCardsDetermined);
+    }
+
+    internal void ForceSomeoneToPass_Post(int possitionId, double delay)
+    {
+        Deal.DeterminePassCards_Post(GetHUD(), _players[possitionId], rnd, delay);
     }
 
     internal bool NeedsToResolvePassAndRiver(out int positionID)
