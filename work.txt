@@ -22,6 +22,7 @@ TODO:
 - Need to fix sorting after hand-rank, we need to compare all cards, in order of importance.
 - Clear out the river at the start of each round (especially if the dwarf leaves the table).
 - Passing should start with the same person who discards first, and we should rotate who discards first per hand.
+- Achievements: See a <species> leave the table, win more than $ from <species> in a hand, win X times against a <species>
 
 felt green #277714
 card red #f03a17
