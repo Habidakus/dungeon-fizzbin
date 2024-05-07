@@ -5,21 +5,24 @@ using System;
 
 public partial class sms_play_someone_discards : state_machine_state
 {
-    private double _wait = 1.0;
-    private bool _hasRun = false;
+    private int _positionID = -1;
     public override void EnterState()
     {
-        _wait = 1.0;
-        _hasRun = false;
+        _positionID = -1;
+        GetMainNode().ForceSomeoneToDiscard(ConfirmDiscardEvent);
+    }
+
+    internal void ConfirmDiscardEvent(int positionID)
+    {
+        _positionID = positionID;
     }
 
     public override void Update(double delta)
     {
-        _wait -= delta;
-        if (_wait < 0 && !_hasRun)
+        if (_positionID != -1)
         {
-            GetMainNode().ForceSomeoneToDiscard();
-            _hasRun = true;
+            GetMainNode().ForceSomeoneToDiscard_Post(_positionID);
+            _positionID = -1;
         }
     }
 

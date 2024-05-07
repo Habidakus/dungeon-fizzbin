@@ -15,11 +15,13 @@
 2nd created state change button, added button to keep playing or leave table
 3rd (1/4) added passing cards animation
 6th Player gets to pick which cards they pass
+7rd (1/4) Player gets to pick which cards they discard
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file
 - Need to fix sorting after hand-rank, we need to compare all cards, in order of importance.
 - Clear out the river at the start of each round (especially if the dwarf leaves the table).
+- Passing should start with the same person who discards first, and we should rotate who discards first per hand.
 
 felt green #277714
 card red #f03a17

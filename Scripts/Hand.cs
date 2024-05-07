@@ -1081,7 +1081,6 @@ class Hand : IComparable<Hand>
         }
     }
 
-    //public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd, HUD hud, double delay, Player destination, Player nonNPCPlayer, Action confirmingPassCardsDetermined)
     public void SetAsidePassCards(int numberOfCards, Deal actualDeal, Random rnd, HUD hud, Player destination, Action<int> confirmingPassCardsDetermined)
     {
         if (actualDeal.CostPerDiscard != 0)
@@ -1104,10 +1103,10 @@ class Hand : IComparable<Hand>
         }
         else
         {
-            hud.EnableCardSelection(PositionID, numberOfCards, destination.Name);
+            hud.EnableCardSelection_Passing(PositionID, numberOfCards, destination.Name);
             Task.Run(() =>
             {
-                List<string> cardsAsText = hud.HavePlayerSelectCardsToPass(this, numberOfCards).Result;
+                List<string> cardsAsText = hud.HavePlayerSelectCardsToPassOrDiscard(this).Result;
                 _passingCards = new List<Card>();
                 foreach (string cardText in cardsAsText)
                 {
@@ -1137,7 +1136,10 @@ class Hand : IComparable<Hand>
             throw new Exception($"Why is {this} passing cards null to {destination}?");
         }
 
-        hud.DisableCardSelection(PositionID);
+        if (!_player.IsNPC)
+        {
+            hud.DisableCardSelection(PositionID);
+        }
 
         foreach (Card card in _passingCards)
         {

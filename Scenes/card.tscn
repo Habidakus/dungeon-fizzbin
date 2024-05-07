@@ -62,6 +62,7 @@ offset_right = -4.0
 offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 color = Color(0.0784314, 0.466667, 0.329412, 0.501961)
 
 [node name="SelectionMark" type="Polygon2D" parent="."]

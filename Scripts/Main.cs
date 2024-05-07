@@ -175,34 +175,25 @@ public partial class Main : Node
         return false;
     }
 
-    public void ForceSomeoneToDiscard()
+    public void ForceSomeoneToDiscard(Action<int> confirmDiscardEvent)
     {
-        HUD hud = GetHUD();
         for (int i = 0; i < _players.Count; ++i)
         {
             int j = (InitialBetter + i) % _players.Count;
             if (!_players[j].HasDiscarded)
             {
-                Hand hand = Deal.GetPlayerHand(_players[j]);
-                Deal.ApplyDiscardCost();
-                _players[j].Discards = hand.SelectDiscards(0, Deal.MaxDiscard, Deal, rnd);
-                if (_players[j].Discards != null)
-                {
-                    double penaltyForDiscard = _players[j].Discards!.Count * Deal.CostPerDiscard;
-                    Deal.MoveMoneyToPot(hud, penaltyForDiscard, _players[j]);
-                    Deal.UpdatePot(hud);
-                }
-
-                Deal.ReleaseDiscardCost();
-                _players[j].HasDiscarded = true;
-
-                GetStateMachine().SwitchState("Play_Animate_Discards");
-
+                Deal.HavePlayerDiscard(_players[j], rnd, GetHUD(), confirmDiscardEvent);
                 return;
             }
         }
 
         throw new Exception("There was no player awaiting discard");
+    }
+
+    public void ForceSomeoneToDiscard_Post(int positionID)
+    {
+        Deal.HavePlayerDiscard_Post(_players[positionID], GetHUD());
+        GetStateMachine().SwitchState("Play_Animate_Discards");
     }
 
     public bool ProgressDiscardAnimation()

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -221,6 +222,61 @@ class Deal
     internal void ReleaseDiscardCost()
     {
         CostPerDiscard = 0;
+    }
+
+    internal void HavePlayerDiscard(Player player, Random rnd, HUD hud, Action<int> confirmDiscardEvent)
+    {
+        ApplyDiscardCost();
+        if (player.IsNPC)
+        {
+            Hand hand = GetPlayerHand(player);
+            player.Discards = hand.SelectDiscards(0, MaxDiscard, this, rnd);
+            confirmDiscardEvent(player.PositionID);
+        }
+        else
+        {
+            Hand hand = GetPlayerHand(player);
+            hud.EnableCardSelection_Discard(player.PositionID, MaxDiscard, CostPerDiscard);
+            Task.Run(() => {
+                List<string> cardsAsText = hud.HavePlayerSelectCardsToPassOrDiscard(hand).Result;
+                player.Discards = new List<Card>();
+                foreach (string cardText in cardsAsText)
+                {
+                    Card[] matchingCards = hand._cards.Where(a => a.ToString().CompareTo(cardText) == 0).ToArray();
+                    if (matchingCards.Count() == 1)
+                    {
+                        player.Discards.Add(matchingCards[0]);
+                    }
+                    else if (matchingCards.Count() > 1)
+                    {
+                        throw new Exception($"Expected 1 card match to hand ({this}) but got {string.Join(',', matchingCards.Select(a => a.ToString()))}");
+                    }
+                    else
+                    {
+                        throw new Exception($"Expected 1 card match to hand ({this}) but got zero");
+                    }
+                }
+                confirmDiscardEvent(player.PositionID);
+            });
+        }
+    }
+
+    internal void HavePlayerDiscard_Post(Player player, HUD hud)
+    {
+        if (!player.IsNPC)
+        {
+            hud.DisableCardSelection(player.PositionID);
+        }
+
+        if (player.Discards != null)
+        {
+            double penaltyForDiscard = player.Discards!.Count * CostPerDiscard;
+            MoveMoneyToPot(hud, penaltyForDiscard, player);
+            UpdatePot(hud);
+        }
+
+        ReleaseDiscardCost();
+        player.HasDiscarded = true;
     }
 
     internal Hand GetPlayerHand(Player player)

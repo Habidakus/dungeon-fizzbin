@@ -313,10 +313,11 @@ public partial class HUD : CanvasLayer
     }
 
     private string _selectedCardsDestination = string.Empty;
+    private double _selectedCardsCostPerDiscard = 0;
     private int _selectedCardsGoalCount = -1;
     private List<string>? _selectedCardsAsText = null;
     private bool _selectedCardsConfirmed = false;
-    internal async Task<List<string>> HavePlayerSelectCardsToPass(Hand hand, int numberOfCards)
+    internal async Task<List<string>> HavePlayerSelectCardsToPassOrDiscard(Hand hand)
     {
         GD.Print($"Starting sleep for card selection on {hand}");
         while (true)
@@ -334,7 +335,6 @@ public partial class HUD : CanvasLayer
                 return _selectedCardsAsText;
             }
         }
-        //return hand._cards.OrderBy(r => r, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, false))).Take(numberOfCards).ToList();
     }
 
     internal void CardSelectionGuiHandler(InputEvent inputEvent, Control visibleCard)
@@ -365,7 +365,10 @@ public partial class HUD : CanvasLayer
 
                         if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
                         {
-                            UpdateConfirmationButtonText(confirmationButton);
+                            if (_selectedCardsDestination.Length > 0)
+                                UpdateConfirmationButtonText_Passing(confirmationButton);
+                            else
+                                UpdateConfirmationButtonText_Discard(confirmationButton);
                         }
                     }
                 }
@@ -373,18 +376,18 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    private void UpdateConfirmationButtonText(NinePatchRect confirmationButton)
+    private void UpdateConfirmationButtonText_Passing(NinePatchRect confirmationButton)
     {
         if (confirmationButton.FindChild("Instructions") is RichTextLabel instructions)
         {
             if (_selectedCardsAsText == null)
             {
-                throw new Exception($"Why is _selectedCardsAsText null when UpdateConfirmationButtonText()?");
+                throw new Exception("Why is _selectedCardsAsText null when UpdateConfirmationButtonText_Passing()?");
             }
 
             if (_selectedCardsAsText.Count == _selectedCardsGoalCount)
             {
-                instructions.Text = $"[center]Please (click here) to confirm passing these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
+                instructions.Text = $"[center]Please click here to confirm passing these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
             }
             else
             {
@@ -399,11 +402,58 @@ public partial class HUD : CanvasLayer
                 }
                 else if (remainingToSelect == -1)
                 {
-                    instructions.Text = $"[center]Unselect {remainingToSelect} card[/center]";
+                    instructions.Text = "[center]Too many cards selected: unselect one card[/center]";
                 }
                 else
                 {
-                    instructions.Text = $"[center]Unselect {remainingToSelect} cards[/center]";
+                    instructions.Text = $"[center]Too many cards selected: unselect {remainingToSelect} cards[/center]";
+                }
+            }
+        }
+    }
+
+    private void UpdateConfirmationButtonText_Discard(NinePatchRect confirmationButton)
+    {
+        if (confirmationButton.FindChild("Instructions") is RichTextLabel instructions)
+        {
+            if (_selectedCardsAsText == null)
+            {
+                throw new Exception("Why is _selectedCardsAsText null when UpdateConfirmationButtonText_Discard()?");
+            }
+
+            int overselectCount = _selectedCardsGoalCount - _selectedCardsAsText.Count;
+            if (overselectCount == -1)
+            {
+                instructions.Text = "[center]Too many cards selected: unselect one card[/center]";
+            }
+            else if (overselectCount < -1)
+            {
+                instructions.Text = $"[center]Too many cards selected: Unselect {0 - overselectCount} cards[/center]";
+            }
+            else if (_selectedCardsAsText.Count == 0)
+            {
+                instructions.Text = "[center]If you wish to discard nothing then click here.[/center]";
+            }
+            else if (_selectedCardsAsText.Count == 1)
+            {
+                if (_selectedCardsCostPerDiscard == 0)
+                {
+                    instructions.Text = $"[center]Confirm you wish to discard just the {_selectedCardsAsText[0]}[/center]";
+                }
+                else
+                {
+                    instructions.Text = $"[center]Confirm you wish to discard {_selectedCardsAsText[0]} for ${_selectedCardsCostPerDiscard:F2}[/center]";
+                }
+            }
+            else
+            {
+                if (_selectedCardsCostPerDiscard == 0)
+                {
+                    instructions.Text = $"[center]Confirm passing you wish to discard these {_selectedCardsAsText.Count} cards[/center]";
+                }
+                else 
+                { 
+                    instructions.Text = $"[center]Confirm passing you wish to discard these {_selectedCardsAsText.Count} cards for ${_selectedCardsCostPerDiscard * _selectedCardsAsText.Count:F2}[/center]";
                 }
             }
         }
@@ -415,9 +465,21 @@ public partial class HUD : CanvasLayer
         {
             if (_selectedCardsAsText != null)
             {
-                if (0 == _selectedCardsGoalCount - _selectedCardsAsText.Count)
+                if (_selectedCardsDestination.Length > 0)
                 {
-                    npr.Texture = NineGridButton_Hover;
+                    // We are passing, and must only accept the button if the count is right
+                    if (0 == _selectedCardsGoalCount - _selectedCardsAsText.Count)
+                    {
+                        npr.Texture = NineGridButton_Hover;
+                    }
+                }
+                else
+                {
+                    // We are discarding, and can accept up to _selectedCardGoalCount discards
+                    if (_selectedCardsAsText.Count <= _selectedCardsGoalCount)
+                    {
+                        npr.Texture = NineGridButton_Hover;
+                    }
                 }
             }
         }
@@ -435,8 +497,19 @@ public partial class HUD : CanvasLayer
     {
         if (_selectedCardsAsText == null)
             return;
-        if (0 != _selectedCardsGoalCount - _selectedCardsAsText.Count)
-            return;
+
+        if (_selectedCardsDestination.Length > 0)
+        {
+            // We are passing, and must only accept the button if the count is right
+            if (0 != _selectedCardsGoalCount - _selectedCardsAsText.Count)
+                return;
+        }
+        else
+        {
+            // We are discarding, and can accept up to _selectedCardGoalCount discards
+            if (_selectedCardsAsText.Count > _selectedCardsGoalCount)
+                return;
+        }
 
         if (inputEvent is InputEventMouseButton mouseButton)
         {
@@ -447,20 +520,39 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void EnableCardSelection(int positionID, int goalCount, string destination)
+    private void EnableCardSelection(int positionID, int goalCount)
     {
         _selectedCardsGoalCount = goalCount;
         _selectedCardsAsText = new List<string>();
-        _selectedCardsDestination = destination;
         _selectedCardsConfirmed = false;
         if (FindChild($"Hand{positionID}") is VisibleHand hand)
         {
             hand.EnableCardSelection(CardSelectionGuiHandler);
         }
+    }
+
+    internal void EnableCardSelection_Passing(int positionID, int goalCount, string destination)
+    {
+        EnableCardSelection(positionID, goalCount);
+        _selectedCardsDestination = destination;
+        _selectedCardsCostPerDiscard = 0;
 
         if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
         {
-            UpdateConfirmationButtonText(confirmationButton);
+            UpdateConfirmationButtonText_Passing(confirmationButton);
+            confirmationButton.Show();
+        }
+    }
+
+    internal void EnableCardSelection_Discard(int positionID, int goalCount, double costPerDiscard)
+    {
+        EnableCardSelection(positionID, goalCount);
+        _selectedCardsDestination = string.Empty;
+        _selectedCardsCostPerDiscard = costPerDiscard;
+
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+        {
+            UpdateConfirmationButtonText_Discard(confirmationButton);
             confirmationButton.Show();
         }
     }
