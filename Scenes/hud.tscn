@@ -181,6 +181,12 @@ vertical_alignment = 1
 [node name="Buffer2" type="Label" parent="PlayPage/PlayerFacingInfo"]
 layout_mode = 2
 
+[node name="BetSlider" type="HSlider" parent="PlayPage/PlayerFacingInfo"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9.0
+
 [node name="ConfirmationButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo"]
 visible = false
 layout_mode = 2
@@ -292,6 +298,7 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 22
 text = "Quit"
 
+[connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]
 [connection signal="mouse_entered" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonMouseEnter"]
 [connection signal="mouse_exited" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonMouseExit"]

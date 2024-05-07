@@ -19,7 +19,7 @@
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file
-- Need to fix sorting after hand-rank, we need to compare all cards, in order of importance.
+- Need to fix sorting after hand-rank, we need to compare all cards, in order of importance. We also need to compare second pair by rank if both cards of the first pair are the same rank (eg: 9966 vs 9955, can't have the 9955 win if the 9 was a better suit).
 - Clear out the river at the start of each round (especially if the dwarf leaves the table).
 - Passing should start with the same person who discards first, and we should rotate who discards first per hand.
 - Achievements: See a <species> leave the table, win more than $ from <species> in a hand, win X times against a <species>

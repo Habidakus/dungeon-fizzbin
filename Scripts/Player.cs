@@ -1,6 +1,7 @@
 ﻿using Godot;
 using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 
 #nullable enable
 
@@ -105,7 +106,7 @@ class Player
         hud.SetBetAmount(PositionID, AmountBet, null);
     }
 
-    internal double ForceBetOrFold(HUD hud, Hand hand, double percent, double betFloor, bool canStopTheRoundByMatching, int bettingRound)
+    internal void ForceBetOrFold(Hand hand, double percent, double betFloor, bool canStopTheRoundByMatching, int bettingRound, Action<int, double> confirmBetPlaced)
     {
         const double costToDiscard = 0.0; // We've already paid our discard price and we're just now
                                           // evaluating what we are going to do with the current hand.
@@ -120,36 +121,28 @@ class Player
         double amountWedHaveToAdd = betFloor - AmountBet;
 
         string handTxt = hand._handValue?.ToString() ?? "??";
-        //if (willingToGoAsFarAs < betFloor)
         if (comfortZoneStartsAt < betFloor)
         {
             if (canStopTheRoundByMatching && amountWedHaveToAdd <= AmountBet)
             {
                 // if we've put in a lot, and we can stop the betting round with us if we just don't raise, then we should match instead of folding.
                 GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt} ... and would quite but they can stop the bidding here.");
-                Bet(hud, betFloor);
-                return amountWedHaveToAdd;
+                confirmBetPlaced(PositionID, betFloor);
             }
             else
             {
                 GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, Folds as ${comfortZoneStartsAt:F2} < ${betFloor:F2} and ${amountWedHaveToAdd:F2} is too much");
-                Fold(hud);
-                return 0;
+                confirmBetPlaced(PositionID, 0);
             }
-        }
 
-        //if (comfortZoneStartsAt < betFloor)
-        //{
-        //    GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (past our comfort zone) ${comfortZoneStartsAt:F2} < ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
-        //    Bet(hud, betFloor);
-        //    return amountWedHaveToAdd;
-        //}
+            return;
+        }
 
         if (comfortZoneStartsAt - amountWedHaveToAdd < betFloor)
         {
             GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (not willing to risk it) ${comfortZoneStartsAt - amountWedHaveToAdd:F2} < ${betFloor:F2}");
-            Bet(hud, betFloor);
-            return amountWedHaveToAdd;
+            confirmBetPlaced(PositionID, betFloor);
+            return;
         }
 
         double raiseAmount = DetermineRaiseAmount(betFloor, willingToGoAsFarAs, bettingRound);
@@ -157,15 +150,68 @@ class Player
         if (willingToGoAsFarAs < betFloor + raiseAmount)
         {
             GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (would be a step too far) ${willingToGoAsFarAs:F2} < ${betFloor + raiseAmount:F2}");
-            Bet(hud, betFloor);
-            return amountWedHaveToAdd;
+            confirmBetPlaced(PositionID, betFloor);
         }
         else
         {
             // We have a decent hand, and we think we can win
             GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, raises from ${betFloor:F2} to ${betFloor + raiseAmount:F2}: as ${comfortZoneStartsAt:F2} => ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
-            Bet(hud, betFloor + raiseAmount);
-            return amountWedHaveToAdd + raiseAmount;
+            confirmBetPlaced(PositionID, betFloor + raiseAmount);
+        }
+    }
+
+    internal static List<double> GetNextBets(double betFloor, int numberOfBets)
+    {
+        if (numberOfBets <= 0)
+        {
+            return new List<double>();
+        }
+        else
+        {
+            double advance = GetNextBetPast(betFloor);
+
+            if (numberOfBets == 1)
+            {
+                return new List<double>() { advance };
+            }
+            else
+            {
+                List<double> retVal = GetNextBets(advance, numberOfBets - 1);
+                retVal.Insert(0, advance);
+                return retVal;
+            }
+        }
+    }
+
+    private static double GetNextBetPast(double previousBet)
+    {
+        if (previousBet < 5)
+        {
+            return Math.Round(1 + previousBet * 4) / 4;
+        }
+        else if (previousBet < 20)
+        {
+            return Math.Round(previousBet + 1);
+        }
+        else if (previousBet < 100)
+        {
+            return Math.Round(1 + (previousBet / 5)) * 5;
+        }
+        else if (previousBet < 250)
+        {
+            return Math.Round(1 + (previousBet / 10)) * 10;
+        }
+        else if (previousBet < 500)
+        {
+            return Math.Round(1 + (previousBet / 25)) * 25;
+        }
+        else if (previousBet < 1000)
+        {
+            return Math.Round(1 + (previousBet / 50)) * 50;
+        }
+        else
+        {
+            return Math.Round(1 + (previousBet / 100)) * 100;
         }
     }
 

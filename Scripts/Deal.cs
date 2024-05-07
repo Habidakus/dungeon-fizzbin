@@ -107,8 +107,27 @@ class Deal
         }
     }
 
-    public double ForceBetOrFold(Player player, List<Player> allPlayers, Random rnd, HUD hud, double currentRaise, int bettingRound)
+    public void ForceBetOrFold(HUD hud, Player player, List<Player> allPlayers, Random rnd, double currentRaise, int bettingRound, Action<int, double> confirmBetPlaced)
     {
+        if (player.IsNPC)
+            ForceBetOrFold_NPC(player, allPlayers, currentRaise, rnd, bettingRound, confirmBetPlaced);
+        else
+            ForceBetOrFold_NonNPC(hud, player.PositionID, currentRaise, confirmBetPlaced);
+    }
+
+    private void ForceBetOrFold_NonNPC(HUD hud, int positionID, double currentRaise, Action<int, double> confirmBetPlaced)
+    {
+        hud.EnableBetSlider(currentRaise);
+        Task.Run(() =>
+        {
+            double amountToBet = hud.HaveChosenAmountToBet().Result;
+            confirmBetPlaced(positionID, amountToBet);
+        });
+    }
+
+    public void ForceBetOrFold_NPC(Player player, List<Player> allPlayers, double currentRaise, Random rnd, int bettingRound, Action<int, double> confirmBetPlaced)
+    {
+        DateTime start = DateTime.Now;
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         Hand hand = GetPlayerHand(player);
@@ -135,8 +154,6 @@ class Deal
 
                     List<Card> unseenCards = AvailableCardsFromHandsView(hand);
                     double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(otherPlayer, hand, unseenCards, rnd);
-                    //string visibleCards = GetPlayerHand(otherPlayer).HasVisibleCards(player) ? " VISIBLE CARDS" : "";
-                    //GD.Print($"{otherPlayer.Name} beats {player.Name} with new={percent:F2}% %{visibleCards}");
                     if (percent > maxPercent)
                     {
                         maxPercent = percent;
@@ -146,7 +163,9 @@ class Deal
         }
 
         double ourChance = 100.0 - maxPercent;
-        return player.ForceBetOrFold(hud, hand, ourChance, currentRaise, canStopTheRoundByMatching, bettingRound);
+        player.ForceBetOrFold(hand, ourChance, currentRaise, canStopTheRoundByMatching, bettingRound, confirmBetPlaced);
+
+        GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");
     }
 
     public void Dump()

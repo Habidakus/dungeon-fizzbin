@@ -495,28 +495,117 @@ public partial class HUD : CanvasLayer
 
     internal void OnConfirmationButtonInputEvent(InputEvent inputEvent)
     {
-        if (_selectedCardsAsText == null)
-            return;
-
-        if (_selectedCardsDestination.Length > 0)
+        if (_selectedCardsAsText != null)
         {
-            // We are passing, and must only accept the button if the count is right
-            if (0 != _selectedCardsGoalCount - _selectedCardsAsText.Count)
-                return;
+            if (_selectedCardsDestination.Length > 0)
+            {
+                // We are passing, and must only accept the button if the count is right
+                if (0 != _selectedCardsGoalCount - _selectedCardsAsText.Count)
+                    return;
+            }
+            else
+            {
+                // We are discarding, and can accept up to _selectedCardGoalCount discards
+                if (_selectedCardsAsText.Count > _selectedCardsGoalCount)
+                    return;
+            }
+
+            if (inputEvent is InputEventMouseButton mouseButton)
+            {
+                if (!mouseButton.Pressed)
+                    return;
+
+                _selectedCardsConfirmed = true;
+            }
         }
-        else
+        else if (_potentialBetValues != null)
         {
-            // We are discarding, and can accept up to _selectedCardGoalCount discards
-            if (_selectedCardsAsText.Count > _selectedCardsGoalCount)
-                return;
+            // We are selecting a potential amount to bet
+            if (PlayPage.FindChild("BetSlider") is Slider range)
+            {
+                if (inputEvent is InputEventMouseButton mouseButton)
+                {
+                    if (!mouseButton.Pressed)
+                        return;
+
+                    int index = (int)Math.Round(range.Value);
+                    _betValue = _potentialBetValues[index];
+                }
+            }
         }
+    }
 
-        if (inputEvent is InputEventMouseButton mouseButton)
+    private List<double>? _potentialBetValues = null;
+    private double _betValue = -1;
+
+    internal async Task<double> HaveChosenAmountToBet()
+    {
+        GD.Print($"Starting sleep for bet selection");
+        while (true)
         {
-            if (!mouseButton.Pressed)
-                return;
+            if (_betValue < 0)
+            {
+                await Task.Run(() => Thread.Sleep(10));
+            }
+            else
+            {
+                GD.Print($"Ending sleep for bet selection");
+                return _betValue;
+            }
+        }
+    }
 
-            _selectedCardsConfirmed = true;
+    internal void EnableBetSlider(double betFloor)
+    {
+        _betValue = -1;
+        _potentialBetValues = new List<double>() { 0, betFloor };
+        _potentialBetValues.AddRange(Player.GetNextBets(betFloor, 8));
+        if (PlayPage.FindChild("BetSlider") is Slider range)
+        {
+            range.Value = 1;
+            range.Show();
+        }
+    }
+
+    internal void DisableBetSlider()
+    {
+        _betValue = -1;
+        _potentialBetValues = null;
+
+        if (PlayPage.FindChild("BetSlider") is Slider range)
+        {
+            range.Hide();
+        }
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+        {
+            confirmationButton.Hide();
+        }
+    }
+
+    private void UpdateConfirmationButtonText_Bet(NinePatchRect confirmationButton, int value)
+    {
+        if (confirmationButton.FindChild("Instructions") is RichTextLabel instructions)
+        {
+            if (_potentialBetValues == null)
+            {
+                throw new Exception("Why is _potentialBetValues null when UpdateConfirmationButtonText_Bet()?");
+            }
+
+            if (value == 0)
+                instructions.Text = "[center]Fold[/center]";
+            else if (value == 1)
+                instructions.Text = $"[center]Hold at ${_potentialBetValues[1]:F2} - or adjust slider[/center]";
+            else
+                instructions.Text = $"[center]Raise to ${_potentialBetValues[value]:F2}[/center]";
+        }
+    }
+
+    internal void OnBetSliderChanged(float value)
+    {
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+        {
+            UpdateConfirmationButtonText_Bet(confirmationButton, (int)Math.Round(value));
+            confirmationButton.Show();
         }
     }
 

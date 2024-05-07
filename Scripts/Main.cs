@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 #nullable enable
 
 public partial class Main : Node
@@ -299,28 +300,39 @@ public partial class Main : Node
         return false;
     }
 
-    public void ForceNextBet()
+    public void ForceNextBet(Action<int, double> confirmBetPlaced)
     {
         if (Deal.CostPerDiscard != 0)
         {
             throw new Exception("We should not be computing discard cost at this point in time");
         }
+        
+        Deal.ForceBetOrFold(GetHUD(), _players[CurrentBetter], _players, rnd, currentBetLimit, BettingRound, confirmBetPlaced);
+    }
 
+    public void ForceNextBet_Post(double betAmount, int positionID)
+    {
         HUD hud = GetHUD();
-        DateTime start = DateTime.Now;
-        var betAmount = Deal.ForceBetOrFold(_players[CurrentBetter], _players, rnd, hud, currentBetLimit, BettingRound);
-        GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");
-
+        hud.DisableBetSlider();
         if (betAmount > 0)
         {
-            Deal.MoveMoneyToPot(hud, betAmount, _players[CurrentBetter]);
+            double newMoneyAddedToPot = betAmount - _players[positionID].AmountBet;
+            _players[positionID].Bet(hud, betAmount);
+            Deal.MoveMoneyToPot(hud, newMoneyAddedToPot, _players[positionID]);
             Deal.UpdatePot(hud);
+        }
+        else
+        {
+            _players[positionID].Fold(hud);
         }
 
         if (!_players[CurrentBetter].HasFolded)
+        {
             currentBetLimit = _players[CurrentBetter].AmountBet;
+        }
 
         CurrentBetter = (CurrentBetter + 1) % _players.Count;
+
     }
 
     public bool SomeoneNeedsToReveal(out int highlightPositionId)
