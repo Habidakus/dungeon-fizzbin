@@ -14,6 +14,7 @@
 1st working on UI and replacing a player who has run out of money
 2nd created state change button, added button to keep playing or leave table
 3rd (1/4) added passing cards animation
+6th Player gets to pick which cards they pass
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file
