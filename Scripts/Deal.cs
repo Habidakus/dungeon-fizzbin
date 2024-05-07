@@ -229,9 +229,12 @@ class Deal
         ApplyDiscardCost();
         if (player.IsNPC)
         {
-            Hand hand = GetPlayerHand(player);
-            player.Discards = hand.SelectDiscards(0, MaxDiscard, this, rnd);
-            confirmDiscardEvent(player.PositionID);
+            Task.Run(() =>
+            {
+                Hand hand = GetPlayerHand(player);
+                player.Discards = hand.SelectDiscards(0, MaxDiscard, this, rnd);
+                confirmDiscardEvent(player.PositionID);
+            });
         }
         else
         {
