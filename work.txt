@@ -15,7 +15,8 @@
 2nd created state change button, added button to keep playing or leave table
 3rd (1/4) added passing cards animation
 6th Player gets to pick which cards they pass
-7rd Player gets to pick which cards they discard, other bug fixes
+7th Player gets to pick which cards they discard, other bug fixes
+8th (1/4) Fixed bug with calculating Prison 
 
 total: 15.25 days
 

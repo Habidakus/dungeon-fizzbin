@@ -2,7 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 #nullable enable
 
 public partial class Main : Node
@@ -50,6 +49,8 @@ public partial class Main : Node
 
     internal void StartFreshDeal()
     {
+        //Test();
+
         _deal = new Deal();
 
         while (_players.Count < TableSize)
@@ -488,15 +489,16 @@ public partial class Main : Node
     //private void Test()
     //{
     //    Deal deal = new Deal();
+    //    deal.AddSuit();
     //    deal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
     //    // Sorted hands (pixie=False):
 
     //    Player player = new Player(0, rnd, new List<Species>(), deal);
-    //    Player player1 = new Player(1, rnd, Species.Get("Elf"), deal);
-    //    Player player2 = new Player(2, rnd, Species.Get("Centaur"), deal);
-    //    Player player3 = new Player(3, rnd, Species.Get("Giant"), deal);
-    //    Player player4 = new Player(4, rnd, Species.Get("Halfling"), deal);
+    //    Player player1 = new Player(1, rnd, Species.Get("Dragonkin"), deal);
+    //    Player player2 = new Player(2, rnd, Species.Get("Lizardman"), deal);
+    //    Player player3 = new Player(3, rnd, Species.Get("Orc"), deal);
+    //    Player player4 = new Player(4, rnd, Species.Get("Goblin"), deal);
     //    deal.AddPlayer(GetHUD(), player);
     //    deal.AddPlayer(GetHUD(), player1);
     //    deal.AddPlayer(GetHUD(), player2);
@@ -507,22 +509,29 @@ public partial class Main : Node
     //    Suit spade = Suit.DefaultSuits[0];
     //    Suit heart = Suit.DefaultSuits[1];
     //    Suit diamond = Suit.DefaultSuits[2];
+    //    Suit club = Suit.DefaultSuits[3];
+    //    Rank two = Rank.DefaultRanks[0];
     //    Rank three = Rank.DefaultRanks[1];
     //    Rank five = Rank.DefaultRanks[3];
     //    Rank six = Rank.DefaultRanks[4];
     //    Rank seven = Rank.DefaultRanks[5];
     //    Rank eight = Rank.DefaultRanks[6];
     //    Rank nine = Rank.DefaultRanks[7];
-    //    hand.AddCard(new Card(spade, five));
-    //    hand.AddCard(new Card(spade, nine));
-    //    hand.AddCard(new Card(heart, eight));
-    //    hand.AddCard(new Card(diamond, seven));
-    //    Card card_d3 = new Card(diamond, three);
+    //    Rank ten = Rank.DefaultRanks[8];
+    //    Rank jack = Rank.DefaultRanks[9];
+    //    Rank queen = Rank.DefaultRanks[10];
+    //    Rank ace = Rank.DefaultRanks[12];
+    //    hand.AddCard(new Card(Suit.Skull, ace));
+    //    hand.AddCard(new Card(club, queen));
+    //    hand.AddCard(new Card(club, jack));
+    //    hand.AddCard(new Card(club, three));
+    //    Card card_d3 = new Card(diamond, six);
     //    hand.AddCard(card_d3);
     //    hand.ComputeBestScore(minRank, maxRank, suitsCount, new List<Card>());
     //    //
     //    hand._cards.Remove(card_d3);
-    //    hand.AddCard(new Card(diamond, six));
+    //    hand.AddCard(new Card(Suit.Skull, two));
+    //    hand.ComputeBestScore(minRank, maxRank, suitsCount, new List<Card>());
     //    deal._hands.Add(hand);
     //    deal.Dump();
     //    GD.Print("------------------");

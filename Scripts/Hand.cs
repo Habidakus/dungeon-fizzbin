@@ -509,7 +509,7 @@ class Hand : IComparable<Hand>
         ExtractOfAKind(fiveCards, pixieCompare, out List<Card> ofAKind, out List<Card> remainder);
         if (ofAKind.Count > 0)
         {
-            ofAKind.Sort(Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, pixieCompare)));
+            ofAKind.Sort(Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare)));
             ofAKind.Reverse();
             HandValue? possiblyBetter = null;
             if (ofAKind.Count == 5)
@@ -572,6 +572,21 @@ class Hand : IComparable<Hand>
                 }
             }
         }
+        else if (isMinorHouse)
+        {
+            HandValue possiblyBetter = new HandValue(HandValue.HandRanking.Prison, cardsSortedHighestToLowest);
+            if (possiblyBetter.PixieCompareTo(retVal, pixieCompare) > 0)
+            {
+                retVal = possiblyBetter;
+            }
+            else
+            {
+                if (retVal._handRanking == HandValue.HandRanking.HighCard)
+                {
+                    GD.Print($"HighCard better than {possiblyBetter._handRanking}?");
+                }
+            }
+        }
 
         return retVal;
     }
@@ -586,7 +601,7 @@ class Hand : IComparable<Hand>
         }
         else
         {
-            sb.Append(':');
+            sb.Append(": (value unknown)");
         }
 
         sb.Append(CardsAsString());

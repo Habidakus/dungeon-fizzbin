@@ -97,19 +97,19 @@ class Suit : IComparable<Suit>
 class Rank /*: IComparable<Rank>*/
 {
     internal static List<Rank> DefaultRanks = new List<Rank>() {
-        new Rank('2', 2),
+        new Rank('2', 2),   // 0
         new Rank('3', 3),
         new Rank('4', 4),
         new Rank('5', 5),
         new Rank('6', 6),
-        new Rank('7', 7),
+        new Rank('7', 7),   // 5
         new Rank('8', 8),
         new Rank('9', 9),
         new Rank("10", 10),
         new Rank('J', 11),
-        new Rank('Q', 12),
+        new Rank('Q', 12),   // 10
         new Rank('K', 13),
-        new Rank('A', true),
+        new Rank('A', true),   // 12
     };
 
     internal bool FaceCard { get { return _strength > 10; } }
