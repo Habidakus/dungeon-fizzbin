@@ -43,6 +43,11 @@ public partial class Main : Node
     {
     }
 
+    public void AdvanceDealer()
+    {
+        Dealer = (1 + Dealer) % TableSize;
+    }
+
     internal void StartFreshDeal()
     {
         _deal = new Deal();
@@ -76,11 +81,10 @@ public partial class Main : Node
         Deal.UpdatePot(hud);
 
         BettingRound = 0;
-        Dealer = 0; // Should advance each round
         CurrentBetter = InitialBetter;
         currentBetLimit = anteAmount + 1;
 
-        Deal.Dump();
+        //Deal.Dump();
     }
 
     internal HUD GetHUD()
@@ -111,10 +115,11 @@ public partial class Main : Node
             {
                 for (int i = 0; i < _players.Count; ++i)
                 {
-                    bool hasPassingCards = Deal.HasPassingCards(Deal.GetPlayerHand(_players[i]));
+                    int j = (InitialBetter + i) % _players.Count;
+                    bool hasPassingCards = Deal.HasPassingCards(Deal.GetPlayerHand(_players[j]));
                     if (!hasPassingCards)
                     {
-                        return _players[i];
+                        return _players[j];
                     }
                 }
             }
