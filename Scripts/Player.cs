@@ -126,12 +126,12 @@ class Player
             if (canStopTheRoundByMatching && amountWedHaveToAdd <= AmountBet)
             {
                 // if we've put in a lot, and we can stop the betting round with us if we just don't raise, then we should match instead of folding.
-                GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt} ... and would quite but they can stop the bidding here.");
+                //GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt} ... and would quite but they can stop the bidding here.");
                 confirmBetPlaced(PositionID, betFloor);
             }
             else
             {
-                GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, Folds as ${comfortZoneStartsAt:F2} < ${betFloor:F2} and ${amountWedHaveToAdd:F2} is too much");
+                //GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, Folds as ${comfortZoneStartsAt:F2} < ${betFloor:F2} and ${amountWedHaveToAdd:F2} is too much");
                 confirmBetPlaced(PositionID, 0);
             }
 
@@ -140,7 +140,7 @@ class Player
 
         if (comfortZoneStartsAt - amountWedHaveToAdd < betFloor)
         {
-            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (not willing to risk it) ${comfortZoneStartsAt - amountWedHaveToAdd:F2} < ${betFloor:F2}");
+            //GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (not willing to risk it) ${comfortZoneStartsAt - amountWedHaveToAdd:F2} < ${betFloor:F2}");
             confirmBetPlaced(PositionID, betFloor);
             return;
         }
@@ -149,13 +149,13 @@ class Player
 
         if (willingToGoAsFarAs < betFloor + raiseAmount)
         {
-            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (would be a step too far) ${willingToGoAsFarAs:F2} < ${betFloor + raiseAmount:F2}");
+            //GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, stands as (would be a step too far) ${willingToGoAsFarAs:F2} < ${betFloor + raiseAmount:F2}");
             confirmBetPlaced(PositionID, betFloor);
         }
         else
         {
             // We have a decent hand, and we think we can win
-            GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, raises from ${betFloor:F2} to ${betFloor + raiseAmount:F2}: as ${comfortZoneStartsAt:F2} => ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
+            //GD.Print($"Player #{PositionID}: {percent:F2}% chance of winning with {handTxt}, raises from ${betFloor:F2} to ${betFloor + raiseAmount:F2}: as ${comfortZoneStartsAt:F2} => ${betFloor:F2} <= ${willingToGoAsFarAs:F2}");
             confirmBetPlaced(PositionID, betFloor + raiseAmount);
         }
     }

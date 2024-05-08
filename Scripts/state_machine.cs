@@ -49,7 +49,7 @@ public partial class state_machine : Node
 			throw new Exception($"Failed to find state \"{stateName}\"");
 		}
 
-		GD.Print($"Switching to state {stateName}");
+		//GD.Print($"Switching to state {stateName}");
 
         GetHUD().StartState(_current_state.Name.ToString());
         _current_state.EnterState();

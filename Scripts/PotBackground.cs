@@ -10,10 +10,10 @@ public partial class PotBackground : Node2D
         if (positionID == HighlightPositionId)
             return;
 
-        if (positionID == -1)
-            GD.Print("Stopping positionID highlighting");
-        else
-            GD.Print($"Switching highlight from #{HighlightPositionId} to #{positionID}");
+        //if (positionID == -1)
+        //    GD.Print("Stopping positionID highlighting");
+        //else
+        //    GD.Print($"Switching highlight from #{HighlightPositionId} to #{positionID}");
 
         HighlightPositionId = positionID;
         _highlightVectorDirection = direction;
