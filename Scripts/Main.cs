@@ -448,6 +448,10 @@ public partial class Main : Node
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
                 }
+                else if (rnd.NextDouble() * player.Wallet > 300)
+                {
+                    PlayersWhoAreLeaving.Add(player.PositionID);
+                }
             }
         }
     }
@@ -471,7 +475,8 @@ public partial class Main : Node
             int playerIDToLeave = PlayersWhoAreLeaving[0];
             Player playerWhoIsLeaving = _players.Where(p => p.PositionID == playerIDToLeave).First();
             PlayersWhoAreLeaving.RemoveAt(0);
-            GetHUD().PlayerLeaves(playerIDToLeave, playerWhoIsLeaving.Species.GetLeavingText(playerWhoIsLeaving));
+            string bark = playerWhoIsLeaving.Species.GetLeavingText(playerWhoIsLeaving, playerWhoIsLeaving.Wallet < 250);
+            GetHUD().PlayerLeaves(playerIDToLeave, bark);
             _players.Remove(playerWhoIsLeaving);
         }
         else

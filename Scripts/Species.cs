@@ -9,7 +9,8 @@ class Species
 {
     internal enum Bark
     {
-        Leaving,
+        LeavingPoor,
+        LeavingRich,
     };
 
     private delegate void DealComponent(Deal deal);
@@ -85,16 +86,18 @@ class Species
         }
     }
 
-    internal string GetLeavingText(Player player)
+    internal string GetLeavingText(Player player, bool becauseTheyArePoor)
     {
-        return (_speciesText == null) ? GenericText(player, Bark.Leaving) : _speciesText(player, Bark.Leaving);
+        Bark bark = becauseTheyArePoor ? Bark.LeavingPoor : Bark.LeavingRich;
+        return (_speciesText == null) ? GenericText(player, bark) : _speciesText(player, bark);
     }
 
     private string GenericText(Player _player, Bark bark)
     {
         switch (bark)
         {
-            case Bark.Leaving: return "I'm out...";
+            case Bark.LeavingPoor: return "I'm out...";
+            case Bark.LeavingRich: return "I'll leave while I'm ahead.";
             default:
                 throw new Exception($"No generic text for bark={bark}");
         }
@@ -164,7 +167,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "I better go while I still have some coin.";
+            case Bark.LeavingPoor: return "I better go while I still have some coin.";
+            case Bark.LeavingRich: return "My thanks, everyone, the bar calls to me.";
             default:
                 throw new Exception($"No elf text for bark={bark}");
         }
@@ -190,7 +194,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "This mine is all tapped out.";
+            case Bark.LeavingPoor: return "This mine is all tapped out.";
+            case Bark.LeavingRich: return "Grand! Now I can buy a new ax!";
             default:
                 throw new Exception($"No dwarf text for bark={bark}");
         }
@@ -219,7 +224,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "The leaves have fallen from this tree.";
+            case Bark.LeavingPoor: return "The leaves have fallen from this tree.";
+            case Bark.LeavingRich: return "It seems this table is beneath me.";
             default:
                 throw new Exception($"No elf text for bark={bark}");
         }
@@ -272,7 +278,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "I better go while I still own my pants.";
+            case Bark.LeavingPoor: return "I better go while I still own my pants.";
+            case Bark.LeavingRich: return "I'll go before any of you get too mad.";
             default:
                 throw new Exception($"No halfling text for bark={bark}");
         }
@@ -341,7 +348,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return $"Stupid game. {player.Name} go now.";
+            case Bark.LeavingPoor: return $"Stupid game. {player.Name} go now.";
+            case Bark.LeavingRich: return $"{player.Name} has enough of your gold now.";
             default:
                 throw new Exception($"No halfling text for bark={bark}");
         }
@@ -423,7 +431,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "I must fly.";
+            case Bark.LeavingPoor: return "I must fly.";
+            case Bark.LeavingRich: return "I've enjoyed taking your coin.";
             default:
                 throw new Exception($"No Dragonkin text for bark={bark}");
         }
@@ -497,7 +506,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "The high plains call to me.";
+            case Bark.LeavingPoor: return "The high plains call to me.";
+            case Bark.LeavingRich: return "As if any of you were real competition.";
             default:
                 throw new Exception($"No Centaur text for bark={bark}");
         }
@@ -525,7 +535,8 @@ class Species
     {
         switch (bark)
         {
-            case Bark.Leaving: return "Looks like I'm now short on cash...";
+            case Bark.LeavingPoor: return "Looks like I'm now short on cash...";
+            case Bark.LeavingRich: return "I go now to play with taller gamblers.";
             default:
                 throw new Exception($"No giant text for bark={bark}");
         }
