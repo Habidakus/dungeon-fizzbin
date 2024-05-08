@@ -187,6 +187,31 @@ public partial class VisibleHand : Node2D
         }
     }
 
+    internal void HideRiver()
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                cards.RemoveChild(child);
+            }
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Cards");
+        }
+
+        if (FindChild("Text") is Label infoBox)
+        {
+            infoBox.Text = "";
+        }
+        else
+        {
+            throw new Exception($"{Name} does not have a child Text");
+        }
+    }
+
     internal void UpdateRiver(List<Card> river)
     {
         if (FindChild("Cards") is Control cards)

@@ -171,6 +171,7 @@ public partial class HUD : CanvasLayer
     {
         if (PlayPage.FindChild("Pot") is VisibleHand river)
         {
+            river.HideRiver();
             river.Hide();
         }
     }
