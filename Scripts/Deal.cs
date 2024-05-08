@@ -390,6 +390,8 @@ class Deal
 
     internal bool ProgressReplaceDiscard(HUD hud)
     {
+        ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
+
         foreach (Hand hand in _hands)
         {
             if (hand._cards.Count < HandSize)
@@ -397,7 +399,15 @@ class Deal
                 Card card = _drawPile.First();
                 _drawPile.RemoveAt(0);
                 hand._cards.Add(card);
-                hand._handValue = null;
+                if (hand._cards.Count < HandSize)
+                {
+                    hand._handValue = null;
+                }
+                else
+                {
+                    hand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
+                }
+
                 hud.SetVisibleHand(hand, NonNPCPlayer);
                 return true;
             }
