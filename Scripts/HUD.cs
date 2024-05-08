@@ -319,7 +319,7 @@ public partial class HUD : CanvasLayer
     private bool _selectedCardsConfirmed = false;
     internal async Task<List<string>> HavePlayerSelectCardsToPassOrDiscard(Hand hand)
     {
-        GD.Print($"Starting sleep for card selection on {hand}");
+        //GD.Print($"Starting sleep for card selection on {hand}");
         while (true)
         {
             if (_selectedCardsAsText == null)
@@ -331,7 +331,7 @@ public partial class HUD : CanvasLayer
             }
             else
             {
-                GD.Print($"Ending sleep for card selection on {hand}");
+                //GD.Print($"Ending sleep for card selection on {hand}");
                 return _selectedCardsAsText;
             }
         }
@@ -449,11 +449,11 @@ public partial class HUD : CanvasLayer
             {
                 if (_selectedCardsCostPerDiscard == 0)
                 {
-                    instructions.Text = $"[center]Confirm passing you wish to discard these {_selectedCardsAsText.Count} cards[/center]";
+                    instructions.Text = $"[center]Confirm you wish to discard these {_selectedCardsAsText.Count} cards[/center]";
                 }
                 else 
                 { 
-                    instructions.Text = $"[center]Confirm passing you wish to discard these {_selectedCardsAsText.Count} cards for ${_selectedCardsCostPerDiscard * _selectedCardsAsText.Count:F2}[/center]";
+                    instructions.Text = $"[center]Confirm you wish to discard these {_selectedCardsAsText.Count} cards for ${_selectedCardsCostPerDiscard * _selectedCardsAsText.Count:F2}[/center]";
                 }
             }
         }
@@ -481,6 +481,10 @@ public partial class HUD : CanvasLayer
                         npr.Texture = NineGridButton_Hover;
                     }
                 }
+            }
+            else if (_potentialBetValues != null)
+            {
+                npr.Texture = NineGridButton_Hover;
             }
         }
     }
@@ -540,7 +544,7 @@ public partial class HUD : CanvasLayer
 
     internal async Task<double> HaveChosenAmountToBet()
     {
-        GD.Print($"Starting sleep for bet selection");
+        //GD.Print($"Starting sleep for bet selection");
         while (true)
         {
             if (_betValue < 0)
@@ -549,7 +553,7 @@ public partial class HUD : CanvasLayer
             }
             else
             {
-                GD.Print($"Ending sleep for bet selection");
+                //GD.Print($"Ending sleep for bet selection");
                 return _betValue;
             }
         }
@@ -557,16 +561,25 @@ public partial class HUD : CanvasLayer
 
     internal void EnableBetSlider(double betFloor)
     {
+        const int initValue = 1;
+
         _betValue = -1;
         _potentialBetValues = new List<double>() { 0, betFloor };
         _potentialBetValues.AddRange(Player.GetNextBets(betFloor, 8));
+
         if (PlayPage.FindChild("BetSlider") is Slider range)
         {
-            range.Value = 1;
+            range.Value = initValue;
             range.Show();
         }
-    }
 
+        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+        {
+            UpdateConfirmationButtonText_Bet(confirmationButton, initValue);
+            confirmationButton.Show();
+        }
+    }
+    
     internal void DisableBetSlider()
     {
         _betValue = -1;
@@ -576,6 +589,7 @@ public partial class HUD : CanvasLayer
         {
             range.Hide();
         }
+
         if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
         {
             confirmationButton.Hide();
