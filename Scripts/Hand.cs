@@ -625,9 +625,14 @@ class Hand : IComparable<Hand>
             throw new Exception("Comparing to null hand");
         }
 
-        if (_handValue == null || other._handValue == null)
+        if (_handValue == null)
         {
-            throw new Exception("Best Score not computed");
+            throw new Exception($"Best Score not computed for {ToString()}");
+        }
+        
+        if (other._handValue == null)
+        {
+            throw new Exception($"Best Score not computed for {other}");
         }
 
         return _handValue.PixieCompareTo(other._handValue, PixieCompare);
