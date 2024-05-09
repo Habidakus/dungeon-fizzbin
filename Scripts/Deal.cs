@@ -38,6 +38,7 @@ class Deal
     internal double CostPerDiscard { get; private set; }
     internal int NumberOfHighestRankingCardsToExpose { get; private set; }
     internal double Pot { get; private set; }
+    internal HandValue.HandRanking MinimumHandToWinPot { get; private set; } = HandValue.HandRanking.HighCard;
 
     public Player NonNPCPlayer {
         get
@@ -46,7 +47,7 @@ class Deal
         }
     }
 
-    internal Deal()
+    internal Deal(double carryoverPot)
     {
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
@@ -56,8 +57,10 @@ class Deal
         MaxDiscard = 3;
         PixieCompare = false;
         CostPerDiscard = 0;
+        MinimumHandToWinPot = HandValue.HandRanking.HighCard;
         PendingCostPerDiscard = 0;
         NumberOfHighestRankingCardsToExpose = 0;
+        Pot = carryoverPot;
 
         _suits.AddRange(Suit.DefaultSuits);
         _ranks.AddRange(Rank.DefaultRanks);
@@ -622,10 +625,25 @@ class Deal
         hud.SetPot(Pot);
     }
 
+    internal double CarryoverPot()
+    {
+        double retVal = Pot;
+        Pot = 0;
+        return retVal;
+    }
+
     internal void MovePotToPlayer(HUD hud, Player player)
     {
         player.AddMoney(hud, Pot);
         Pot = 0;
+    }
+
+    internal void SetMinimumHandToWinPot(HandValue.HandRanking first, HandValue.HandRanking second)
+    {
+        if (MinimumHandToWinPot == HandValue.HandRanking.HighCard)
+            MinimumHandToWinPot = first;
+        else if (MinimumHandToWinPot == first)
+            MinimumHandToWinPot = second;
     }
 }
 

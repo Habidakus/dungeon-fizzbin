@@ -940,7 +940,7 @@ class Hand : IComparable<Hand>
             discards.Add(_cards[index]);
         }
 
-        AggregateValue aggValue = new AggregateValue(_player, costToDiscard);
+        AggregateValue aggValue = new AggregateValue(_player, costToDiscard, (double)_player.Deal.MinimumHandToWinPot);
         aggValue.Add(sortedHands.ToArray(), generatedHands.Item1);
 
         return Tuple.Create(aggValue, discards);
@@ -983,7 +983,7 @@ class Hand : IComparable<Hand>
                 if (observingPlayer != null && IsVisible(discardCard, observingPlayer))
                     continue;
 
-                AggregateValue aggValue = new AggregateValue(_player, noOfDiscards * _player.Deal.CostPerDiscard);
+                AggregateValue aggValue = new AggregateValue(_player, noOfDiscards * _player.Deal.CostPerDiscard, (double) _player.Deal.MinimumHandToWinPot);
                 SortedSet<Hand> sortedHands = new SortedSet<Hand>();
                 for (int i = 0; i < iterations; ++i)
                 {
@@ -1020,7 +1020,7 @@ class Hand : IComparable<Hand>
                 throw new Exception($"GenerateUniqueDiscardSelections(discards={noOfDiscards} slots={string.Join(',', viableSlots)}) found no valid combos");
             foreach (Bits iter in iterList)
             {
-                AggregateValue aggValue = new AggregateValue(_player, noOfDiscards * _player.Deal.CostPerDiscard);
+                AggregateValue aggValue = new AggregateValue(_player, noOfDiscards * _player.Deal.CostPerDiscard, (double)_player.Deal.MinimumHandToWinPot);
                 SortedSet<Hand> sortedHands = new SortedSet<Hand>();
                 List<Hand> hands = GenerateSampledHands(iter, availableCards, rnd, iterations);
                 foreach (Hand hand in hands)
@@ -1050,14 +1050,14 @@ class Hand : IComparable<Hand>
     {
         if (noOfDiscards == 0)
         {
-            return Tuple.Create(new AggregateValue(_player, this, 0), new List<Card>());
+            return Tuple.Create(new AggregateValue(_player, this, 0, (double)_player.Deal.MinimumHandToWinPot), new List<Card>());
         }
 
         List<Card> retVal = new List<Card>();
 
         if (noOfDiscards == 1)
         {
-            AggregateValue best = new AggregateValue(_player, 0 * _player.Deal.CostPerDiscard);
+            AggregateValue best = new AggregateValue(_player, 0 * _player.Deal.CostPerDiscard, (double)_player.Deal.MinimumHandToWinPot);
             foreach (Card discardCard in _cards)
             {
                 SortedSet<HandValue> scoreList = new SortedSet<HandValue>(Comparer<HandValue>.Create((a,b)=>a.PixieCompareTo(b, PixieCompare)));
@@ -1070,7 +1070,7 @@ class Hand : IComparable<Hand>
 
                 if (scoreList.Count > 0)
                 {
-                    AggregateValue aggValue = new AggregateValue(_player, 1 * _player.Deal.CostPerDiscard);
+                    AggregateValue aggValue = new AggregateValue(_player, 1 * _player.Deal.CostPerDiscard, (double)_player.Deal.MinimumHandToWinPot);
                     aggValue.Add(scoreList.ToArray(), false);
 
                     if (best.UpdateIfBetter(aggValue))
@@ -1084,7 +1084,7 @@ class Hand : IComparable<Hand>
         }
         else
         {
-            AggregateValue best = new AggregateValue(_player, 0);
+            AggregateValue best = new AggregateValue(_player, 0, (double)_player.Deal.MinimumHandToWinPot);
             const int sampleCutOff = 9000;
             Bits viableSlots = GetViableDiscardSlots(null);
             double costToDiscard = noOfDiscards * _player.Deal.CostPerDiscard;
@@ -1184,7 +1184,7 @@ class Hand : IComparable<Hand>
         actualDeal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         List<Card> availableCards = actualDeal.AvailableCardsFromHandsView(this);
         List<Card> retVal = new List<Card>();
-        AggregateValue best = new AggregateValue(_player, actualDeal.CostPerDiscard * 0.0);
+        AggregateValue best = new AggregateValue(_player, actualDeal.CostPerDiscard * 0.0, (double)_player.Deal.MinimumHandToWinPot);
         for (int discards = minDiscards; discards <= maxDiscards; ++discards)
         {
             (AggregateValue bestScoreWithThisDiscardCount, List<Card> cardsToDiscard) = SelectDiscards(discards, availableCards, minRank, maxRank, suitsCount, rnd);
@@ -1245,15 +1245,17 @@ class AggregateValue : IComparable<AggregateValue>
     readonly Player _player;
     private HandValue? _hopefulValue = null;
     internal double _normalizedWealth;
+    readonly private double _minHandWorth;
     internal double DiscardCost { get; private set; } = 0;
     private bool PixieCompare { get { return _player.Deal.PixieCompare; } }
     internal Dictionary<HandValue.HandRanking, Tuple<double, int>> _normalizedByRank = new Dictionary<HandValue.HandRanking, Tuple<double, int>>();
 
-    public AggregateValue(Player player, Hand hand, double discardCost)
+    public AggregateValue(Player player, Hand hand, double discardCost, double minHandWorth)
     {
         _player = player;
         SetHopefulValue(hand._handValue);
 
+        _minHandWorth = minHandWorth;
         _normalizedWealth = 0;
         DiscardCost = discardCost;
         if (hand._handValue == null)
@@ -1264,10 +1266,11 @@ class AggregateValue : IComparable<AggregateValue>
         AddAggreageWorth(hand._handValue, 1);
     }
 
-    internal AggregateValue(Player player, double discardCost)
+    internal AggregateValue(Player player, double discardCost, double minHandWorth)
     {
         _player = player;
         _normalizedWealth = 0;
+        _minHandWorth = minHandWorth;
         DiscardCost = discardCost;
     }
 
@@ -1365,7 +1368,8 @@ class AggregateValue : IComparable<AggregateValue>
         }
 
         double highCardValue = (handValue._highCard.FractionalValue / Card.MaxFractionalValue);
-        double totalValue = handValue.Worth + highCardValue - (DiscardCost * HandValue.MinWorth * 10);
+        double handWorth = handValue.Worth < _minHandWorth ? 0 : handValue.Worth;
+        double totalValue = handWorth + highCardValue - (DiscardCost * HandValue.MinWorth * 10);
         _normalizedWealth += totalValue / (double)setSize;
 
         if (_normalizedByRank.TryGetValue(handValue._handRanking, out Tuple<double, int>? value))

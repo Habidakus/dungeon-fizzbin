@@ -110,7 +110,7 @@ class Player
     {
         const double costToDiscard = 0.0; // We've already paid our discard price and we're just now
                                           // evaluating what we are going to do with the current hand.
-        AggregateValue agValue = new AggregateValue(this, hand, costToDiscard);
+        AggregateValue agValue = new AggregateValue(this, hand, costToDiscard, (double)Deal.MinimumHandToWinPot);
         if (agValue._normalizedWealth <= 0)
         {
             throw new Exception($"Why is player #{hand.PositionID}'s aggregate value {agValue.GetDesc()}");
@@ -120,7 +120,18 @@ class Player
         double comfortZoneStartsAt = willingToGoAsFarAs * percent / 100.0;
         double amountWedHaveToAdd = betFloor - AmountBet;
 
-        string handTxt = hand._handValue?.ToString() ?? "??";
+        if (hand._handValue == null)
+        {
+            throw new Exception($"Why does {hand} not have a value in ForceBetOrFold?");
+        }
+
+        if (hand._handValue.Worth < (double) Deal.MinimumHandToWinPot)
+        {
+            confirmBetPlaced(PositionID, 0);
+            return;
+        }
+
+        //string handTxt = hand._handValue?.ToString() ?? "??";
         if (comfortZoneStartsAt < betFloor)
         {
             if (canStopTheRoundByMatching && amountWedHaveToAdd <= AmountBet)

@@ -60,13 +60,13 @@ class Species
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
             new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
             new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
-            new Species("Centaur", 1, 15, DealComponent_Centaur, NameGenerator_Centaur, null, GetText_Centaur),
+            new Species("Centaur", 0.5, 15, DealComponent_Centaur, NameGenerator_Centaur, null, GetText_Centaur),
             new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
             new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
-            //new Species("Birdman", 1, 15),
-            new Species("Firbolg", 1, 30, DealComponent_Firbolg, NameGenerator_Firbolg),
+            new Species("Birdman", 1, 20, DealComponent_Birdman, NameGenerator_Birdman, CanAdd_Birdman, GetText_Birdman),
+            new Species("Firbolg", 1, 30, DealComponent_Firbolg, NameGenerator_Firbolg, null, GetText_Firbolg),
             //new Species("Golem", 1, 30),
             //new Species("Lich", 0.25, 30),
             //new Species("Vampire", 0.5, 30),
@@ -459,6 +459,70 @@ class Species
     static internal void DealComponent_Firbolg(Deal deal)
     {
         deal.AddRank(addToLowEnd: true);
+    }
+    static private string GetText_Firbolg(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.LeavingPoor: return "The sides of my coin purse touch.";
+            case Bark.LeavingRich: return "May I leave my luck with you.";
+            default:
+                throw new Exception($"No Dragonkin text for bark={bark}");
+        }
+    }
+
+    // -------------------------------- Birdman --------------------------------
+
+    static private List<string> BIRDMAN_FRONT = new List<string>() {
+        "Xh", "Kh", "Nk", "Qw", "X", "G'", "Khw", "'H", "Z", "Qw", "'X", "N'", "Kl",
+    };
+    static private List<string> BIRDMAN_MIDDLE = new List<string>() {
+        "os", "ois", "ar", "ol", "an", "oan", "ul", "ant", "ath", "am", "om", "yl", "oph", "ix", "anth",
+    };
+    static private List<string> BIRDMAN_END = new List<string>() {
+        "a", "an", "i", "ui", "e", "u", "ia",
+    };
+    internal static string NameGenerator_Birdman(Random rng)
+    {
+        int a = rng.Next() % BIRDMAN_FRONT.Count;
+        int b = rng.Next() % BIRDMAN_MIDDLE.Count;
+        int c = rng.Next() % BIRDMAN_END.Count;
+        return $"{BIRDMAN_FRONT[a]}{BIRDMAN_MIDDLE[b]}{BIRDMAN_END[c]}";
+    }
+    static internal void DealComponent_Birdman(Deal deal)
+    {
+        deal.SetMinimumHandToWinPot(HandValue.HandRanking.TwoPairs, HandValue.HandRanking.Prison);
+    }
+    static private bool CanAdd_Birdman(Deal deal)
+    {
+        if (deal.MinimumHandToWinPot == HandValue.HandRanking.HighCard)
+        {
+            GD.Print($"Birdman allowed to join because min hand is HighCard");
+            return true;
+        }
+        else
+        {
+            if (deal._suits.Count > 4)
+            {
+                GD.Print($"Birdman allowed because there are {deal._suits.Count} suits.");
+                return true;
+            }
+            else
+            {
+                GD.Print($"Birdman denied because there are only {deal._suits.Count} suits.");
+                return false;
+            }
+        }
+    }
+    static private string GetText_Birdman(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.LeavingPoor: return "If I stay any longer, I will never fly.";
+            case Bark.LeavingRich: return "I hope I didn't ruffle any feathers.";
+            default:
+                throw new Exception($"No Birdman text for bark={bark}");
+        }
     }
 
     // -------------------------------- Pixie --------------------------------

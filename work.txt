@@ -16,9 +16,9 @@
 3rd (1/4) added passing cards animation
 6th Player gets to pick which cards they pass
 7th Player gets to pick which cards they discard, other bug fixes
-8th (1/4) Fixed bug with calculating Prison 
+8th (1/2) Fixed bug with calculating Prison, added birdman
 
-total: 15.25 days
+total: 15.75 days
 
 TODO:
 - Name selection should work off prime progression rather than pure RND, requires save game file

@@ -28,6 +28,7 @@ public partial class Main : Node
     private double currentBetLimit = 1.0;
     private int BettingRound = 0;
     private int TableSize = 5;
+    private double CarryoverPot { get; set; } = 0;
     internal List<Species> SpeciesAtTable { get { return _players.Select(a => a.Species).ToList(); } }
 
     public static int HandNumber { get; private set; } = 0;
@@ -51,7 +52,14 @@ public partial class Main : Node
     {
         //Test();
 
-        _deal = new Deal();
+        _deal = new Deal(CarryoverPot);
+        CarryoverPot = 0;
+
+        HUD hud = GetHUD();
+        foreach (Player player in _players)
+        {
+            _deal.AddPlayer(hud, player);
+        }
 
         while (_players.Count < TableSize)
         {
@@ -59,16 +67,11 @@ public partial class Main : Node
             int missingPositionID = tablePositions.Where(a => !_players.Select(b => b.PositionID).Contains(a)).First();
             Player player = new Player(missingPositionID, rnd, SpeciesAtTable, _deal);
             _players.Add(player);
+            _deal.AddPlayer(hud, player);
         }
         _players.Sort((a,b) => a.PositionID.CompareTo(b.PositionID));
 
         HandNumber += 1;
-
-        HUD hud = GetHUD();
-        foreach (Player player in _players)
-        {
-            _deal.AddPlayer(hud, player);
-        }
 
         _deal.Shuffle(_players, rnd);
         _deal.UpdateHUD(hud);
@@ -375,7 +378,6 @@ public partial class Main : Node
 
         Player playerToRevealThisTime = _players[positionId];
         Hand revealedHand = Deal.GetPlayerHand(playerToRevealThisTime);
-        GD.Print($"Revealing {revealedHand} from {playerToRevealThisTime}");
         Deal.Reveal(playerToRevealThisTime, GetHUD(), revealedHand.ScoreAsString());
 
         List<Hand> allHandsWhichHaveRevealed = _players.Where(p => p.HasRevealed && !p.HasFolded).Select(a => Deal.GetPlayerHand(a)).ToList();
@@ -384,7 +386,6 @@ public partial class Main : Node
         {
             for (int i = 0; i < allHandsWhichHaveRevealed.Count - 1; ++i)
             {
-                GD.Print($"Marking {allHandsWhichHaveRevealed[i]} as lost.");
                 GetHUD().SetFeltToLost(allHandsWhichHaveRevealed[i].PositionID);
             }
         }
@@ -435,7 +436,31 @@ public partial class Main : Node
     {
         Hand bestHand = GetWinningHand();
         HUD hud = GetHUD();
-        Deal.MovePotToPlayer(hud, bestHand._player);
+
+        if (bestHand._handValue == null)
+        {
+            throw new Exception($"Why does {bestHand} have no hand value in AwardWinner()?");
+        }
+
+        double minimumHandWorthToWinPot = (double)Deal.MinimumHandToWinPot;
+        if (!bestHand.Player.HasRevealed)
+        {
+            if (minimumHandWorthToWinPot > HandValue.MinWorth)
+            {
+                Deal.Reveal(bestHand.Player, hud, bestHand.ScoreAsString());
+            }
+        }
+
+        if (bestHand._handValue.Worth < minimumHandWorthToWinPot)
+        {
+            hud.SetFeltToLost(bestHand.PositionID);
+            CarryoverPot = Deal.CarryoverPot();
+        }
+        else
+        {
+            Deal.MovePotToPlayer(hud, bestHand._player);
+        }
+
         Deal.UpdatePot(hud);
         hud.HighlightPosition(-1);
         Deal.Dump();
@@ -445,11 +470,11 @@ public partial class Main : Node
         {
             if (player.IsNPC)
             {
-                if (100 + rnd.NextDouble() * 100 > player.Wallet)
+                if (100 + rnd.NextDouble() * 100 > (player.Wallet + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
                 }
-                else if (rnd.NextDouble() * player.Wallet > 300)
+                else if (rnd.NextDouble() * player.Wallet > (300 + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
                 }
