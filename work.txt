@@ -17,6 +17,7 @@
 6th Player gets to pick which cards they pass
 7th Player gets to pick which cards they discard, other bug fixes
 8th (1/2) Fixed bug with calculating Prison, added birdman
+9th (1/2) Save file
 
 total: 15.75 days
 

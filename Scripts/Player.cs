@@ -26,27 +26,37 @@ class Player
         return $"{PositionID}: {Name} {Species.Name} ${Wallet:F2}";
     }
 
+    internal Player(Deal deal, PlayerElement? playerElement) // Used for setting the Non NPC Player
+    {
+        Deal = deal;
+        PositionID = 0;
+        IsNPC = false;
+        if (playerElement != null)
+        {
+            Wallet = playerElement.Wallet;
+            Species = Species.Get(playerElement.SpeciesEl.Name);
+        }
+        else
+        {
+            Wallet = 200;
+            Species = Species.Human;
+        }
+
+        if (OS.HasEnvironment("USERNAME"))
+            Name = OS.GetEnvironment("USERNAME");
+        else
+            Name = "Player";
+
+    }
+
     internal Player(int positionID, Random rng, List<Species> speciesAlreadyAtTable, Deal deal)
     {
         Deal = deal;
         PositionID = positionID;
         Wallet = 200;
-
-        if (PositionID == 0)
-        {
-            IsNPC = false;
-            Species = Species.Human;
-            if (PositionID == 0 && OS.HasEnvironment("USERNAME"))
-                Name = OS.GetEnvironment("USERNAME");
-            else
-                Name = "Player";
-        }
-        else
-        {
-            IsNPC = true;
-            Species = Species.PickSpecies(rng, speciesAlreadyAtTable, deal);
-            Name = Species.GenerateRandomName(rng, PositionID);
-        }
+        IsNPC = true;
+        Species = Species.PickSpecies(rng, speciesAlreadyAtTable, deal);
+        Name = Species.GenerateRandomName(rng, PositionID);
     }
 
     internal Player(int positionID, Random rng, Species species, Deal deal)

@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 #nullable enable
 
 public partial class Main : Node
@@ -38,6 +39,7 @@ public partial class Main : Node
     {
     }
 
+
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
@@ -65,10 +67,11 @@ public partial class Main : Node
         {
             List<int> tablePositions = new List<int>() { 0, 1, 2, 3, 4 };
             int missingPositionID = tablePositions.Where(a => !_players.Select(b => b.PositionID).Contains(a)).First();
-            Player player = new Player(missingPositionID, rnd, SpeciesAtTable, _deal);
+            Player player = GeneratePlayer(missingPositionID);
             _players.Add(player);
             _deal.AddPlayer(hud, player);
         }
+
         _players.Sort((a,b) => a.PositionID.CompareTo(b.PositionID));
 
         HandNumber += 1;
@@ -89,6 +92,28 @@ public partial class Main : Node
         currentBetLimit = anteAmount + 1;
 
         //Deal.Dump();
+    }
+
+    private Player GeneratePlayer(int positionID)
+    {
+        if (positionID == 0)
+        {
+            PlayerElement? playerEl = null;
+            using (FileAccess access = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read))
+            {
+                if (access != null)
+                {
+                    SaveFile saveFile = new SaveFile(access);
+                    playerEl = saveFile.wrapperElement.PlayerEl;
+                }
+            }
+
+            return new Player(Deal, playerEl);
+        }
+        else
+        {
+            return new Player(positionID, rnd, SpeciesAtTable, Deal);
+        }
     }
 
     internal HUD GetHUD()
@@ -431,6 +456,7 @@ public partial class Main : Node
     }
 
     private List<int>? PlayersWhoAreLeaving { get; set; } = null;
+    internal Player NonNPCPlayer { get { return _players.Where(a => !a.IsNPC).First(); } }
 
     public void AwardWinner()
     {
@@ -464,6 +490,18 @@ public partial class Main : Node
         Deal.UpdatePot(hud);
         hud.HighlightPosition(-1);
         Deal.Dump();
+
+        using (FileAccess access = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write))
+        {
+            if (access != null)
+            {
+                SaveFile.Save(this, "user://save_game.dat");
+            }
+            else
+            {
+                GD.PrintErr($"Failed to save: {FileAccess.GetOpenError()}");
+            }
+        }
 
         PlayersWhoAreLeaving = new List<int>();
         foreach (Player player in _players)
