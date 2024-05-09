@@ -26,7 +26,7 @@ class Player
         return $"{PositionID}: {Name} {Species.Name} ${Wallet:F2}";
     }
 
-    internal Player(Deal deal, PlayerElement? playerElement) // Used for setting the Non NPC Player
+    internal Player(Deal deal, PlayerSaveElement? playerElement) // Used for setting the Non NPC Player
     {
         Deal = deal;
         PositionID = 0;
@@ -295,5 +295,40 @@ class Player
         {
             hud.SetStake(Wallet);
         }
+    }
+}
+
+public class PlayerSaveElement : SaveElement
+{
+    internal SpeciesSaveElement SpeciesEl { get; private set; }
+    internal double Wallet { get; private set; }
+    public PlayerSaveElement()
+    {
+        SaveVersion = 1;
+        SpeciesEl = new SpeciesSaveElement();
+    }
+    internal PlayerSaveElement(Player player)
+    {
+        SaveVersion = 1;
+        Wallet = player.Wallet;
+        SpeciesEl = new SpeciesSaveElement(player.Species);
+    }
+
+    protected override void LoadData(uint loadVersion, FileAccess access)
+    {
+        if (loadVersion != SaveVersion)
+            throw new Exception($"No upgrade path from version {loadVersion} to {SaveVersion} for PlayerElement");
+
+        if (loadVersion >= 1)
+        {
+            Wallet = access.GetDouble();
+            SpeciesEl.Load(access);
+        }
+    }
+
+    protected override void SaveData(FileAccess access)
+    {
+        access.StoreDouble(Wallet);
+        SpeciesEl.Save(access);
     }
 }

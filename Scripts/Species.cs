@@ -35,7 +35,7 @@ class Species
         _nameGenerator = sng;
         _dealComponent = dealComponent;
         _allowed = allowed;
-        _speciesText = speciesText; 
+        _speciesText = speciesText;
     }
 
     internal static Species Get(string name)
@@ -129,7 +129,7 @@ class Species
         }
 
         double index = rnd.NextDouble() * AllSpecies!.Sum(a => a.CalculateSelectionWeight(speciesAlreadyAtTable, deal));
-        foreach(Species species in AllSpecies!)
+        foreach (Species species in AllSpecies!)
         {
             index -= species.CalculateSelectionWeight(speciesAlreadyAtTable, deal);
             if (index <= 0)
@@ -147,6 +147,38 @@ class Species
             return _nameGenerator(rng);
     }
 
+    // If we just ask for random elements of the name to be generated with a random roll, we will from time to time get
+    // the same sub-elements appearing at the same table. This looks clumsy. If we instead do a prime sampling of the
+    // arrays we cover the entire base, and if we use different primes for each sub-index they're still appear pretty
+    // random in order of appearance.
+    private static Dictionary<string, Tuple<uint, uint>> s_speciesNameSteppers = new Dictionary<string, Tuple<uint, uint>>();
+    private static string PickFromArray(string speciesName, int index, string[] array, Random rnd)
+    {
+        uint nextSelection = 0;
+        uint primeStepper = 101;
+        string lookupHash = $"{speciesName}{index}";
+        if (s_speciesNameSteppers.TryGetValue(lookupHash, out Tuple<uint, uint>? stepper))
+        {
+            primeStepper = stepper.Item2;
+            nextSelection = (stepper.Item1 + primeStepper) % (uint) array.Length;
+        }
+        else
+        {
+            // First time used, initialize
+            uint[] primes = new uint[] {
+                1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049, 1051, 1061, 1063,
+                1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117, 1123, 1129, 1151
+            };
+            primeStepper = primes[rnd.Next(primes.Length)];
+            nextSelection = ((uint)rnd.Next(5000) + primeStepper) % (uint)array.Length;
+        }
+
+        string retVal = array[nextSelection];
+        s_speciesNameSteppers[lookupHash] = Tuple.Create(nextSelection, primeStepper);
+
+        return retVal;
+    }
+
     // -------------------------------- HUMAN --------------------------------
 
     static private List<string> HUMAN_FIRST_NAMES = new List<string>() {
@@ -157,7 +189,9 @@ class Species
     };
     internal static string NameGenerator_Human(Random rng)
     {
-        return $"{HUMAN_FIRST_NAMES.ElementAt(rng.Next(HUMAN_FIRST_NAMES.Count))} {HUMAN_LAST_NAMES.ElementAt(rng.Next(HUMAN_LAST_NAMES.Count))}";
+        string firstName = PickFromArray("Human", 0, HUMAN_FIRST_NAMES.ToArray(), rng);
+        string secondName = PickFromArray("Human", 1, HUMAN_LAST_NAMES.ToArray(), rng);
+        return $"{firstName} {secondName}";
     }
     static internal void DealComponent_Human(Deal deal)
     {
@@ -184,7 +218,9 @@ class Species
     };
     internal static string NameGenerator_Dwarf(Random rng)
     {
-        return $"{DWARF_FIRST_NAMES.ElementAt(rng.Next(DWARF_FIRST_NAMES.Count))} {DWARF_LAST_NAMES.ElementAt(rng.Next(DWARF_LAST_NAMES.Count))}";
+        string firstName = PickFromArray("Dwarf", 0, DWARF_FIRST_NAMES.ToArray(), rng);
+        string secondName = PickFromArray("Dwarf", 1, DWARF_LAST_NAMES.ToArray(), rng);
+        return $"{firstName} {secondName}";
     }
     static internal void DealComponent_Dwarf(Deal deal)
     {
@@ -203,7 +239,7 @@ class Species
 
     // -------------------------------- ELF --------------------------------
 
-    static private List<string> ELF_COMMON = new List<string>() {
+    static private List<string> ELF_START = new List<string>() {
         "E", "Ga", "Glo", "Fëa", "Eare", "Fi", "Ea", "A", "Lú", "Dri", "Elmi",
     };
     static private List<string> ELF_MIDDLE = new List<string>() {
@@ -214,7 +250,10 @@ class Species
     };
     internal static string NameGenerator_Elf(Random rng)
     {
-        return $"{ELF_COMMON.ElementAt(rng.Next(ELF_COMMON.Count))}{ELF_MIDDLE.ElementAt(rng.Next(ELF_MIDDLE.Count))}{ELF_LAST.ElementAt(rng.Next(ELF_LAST.Count))}";
+        string startName = PickFromArray("Elf", 0, ELF_START.ToArray(), rng);
+        string midName = PickFromArray("Elf", 1, ELF_MIDDLE.ToArray(), rng);
+        string endName = PickFromArray("Elf", 2, ELF_LAST.ToArray(), rng);
+        return $"{startName}{midName}{endName}";
     }
     static internal void DealComponent_Elf(Deal deal)
     {
@@ -268,7 +307,10 @@ class Species
     };
     internal static string NameGenerator_Halfling(Random rng)
     {
-        return $"{HALFLING_FIRST_NAMES.ElementAt(rng.Next(HALFLING_FIRST_NAMES.Count))} {HALFLING_LAST_A_NAMES.ElementAt(rng.Next(HALFLING_LAST_A_NAMES.Count))}{HALFLING_LAST_B_NAMES.ElementAt(rng.Next(HALFLING_LAST_B_NAMES.Count))}";
+        string startName = PickFromArray("Halfling", 0, HALFLING_FIRST_NAMES.ToArray(), rng);
+        string lastAName = PickFromArray("Halfling", 1, HALFLING_LAST_A_NAMES.ToArray(), rng);
+        string lastBName = PickFromArray("Halfling", 2, HALFLING_LAST_B_NAMES.ToArray(), rng);
+        return $"{startName} {lastAName}{lastBName}";
     }
     static internal void DealComponent_Halfling(Deal deal)
     {
@@ -298,13 +340,11 @@ class Species
     };
     internal static string NameGenerator_Lizardman(Random rng)
     {
-        int middleA = rng.Next() % LIZARD_MIDDLE.Count;
-        int middleB = rng.Next() % (LIZARD_MIDDLE.Count - 1);
-        if (middleB >= middleA)
-        {
-            middleB += 1;
-        }
-        return $"{LIZARD_FRONT.ElementAt(rng.Next(LIZARD_FRONT.Count))}{LIZARD_MIDDLE.ElementAt(middleA)}{LIZARD_MIDDLE.ElementAt(middleB)}{LIZARD_END.ElementAt(rng.Next(LIZARD_END.Count))}";
+        string startName = PickFromArray("Lizard", 0, LIZARD_FRONT.ToArray(), rng);
+        string midAName = PickFromArray("Lizard", 1, LIZARD_MIDDLE.ToArray(), rng);
+        string midBName = PickFromArray("Lizard", 1, LIZARD_MIDDLE.ToArray(), rng);
+        string endName = PickFromArray("Lizard", 2, LIZARD_END.ToArray(), rng);
+        return $"{startName}{midAName}{midBName}{endName}";
     }
     static internal void DealComponent_Lizardman(Deal deal)
     {
@@ -330,10 +370,10 @@ class Species
     };
     internal static string NameGenerator_Goblin(Random rng)
     {
-        string a = GOBLIN_START[rng.Next() % GOBLIN_START.Count];
-        string b = GREENSKIN_MIDDLE_A[rng.Next() % GREENSKIN_MIDDLE_A.Count];
-        string c = GREENSKIN_MIDDLE_B[rng.Next() % GREENSKIN_MIDDLE_B.Count];
-        string d = GOBLIN_END[rng.Next() % GOBLIN_END.Count];
+        string a = PickFromArray("Goblin", 0, GOBLIN_START.ToArray(), rng);
+        string b = PickFromArray("Greenskin", 0, GREENSKIN_MIDDLE_A.ToArray(), rng);
+        string c = PickFromArray("Greenskin", 1, GREENSKIN_MIDDLE_B.ToArray(), rng);
+        string d = PickFromArray("Goblin", 1, GOBLIN_END.ToArray(), rng);
         return $"{a}{b}{c}{d}";
     }
     static internal void DealComponent_Goblin(Deal deal)
@@ -365,10 +405,10 @@ class Species
     };
     internal static string NameGenerator_Orc(Random rng)
     {
-        string a = ORC_START[rng.Next() % ORC_START.Count];
-        string b = GREENSKIN_MIDDLE_A[rng.Next() % GREENSKIN_MIDDLE_A.Count];
-        string c = GREENSKIN_MIDDLE_B[rng.Next() % GREENSKIN_MIDDLE_B.Count];
-        string d = ORC_END[rng.Next() % ORC_END.Count];
+        string a = PickFromArray("Orc", 0, ORC_START.ToArray(), rng);
+        string b = PickFromArray("Greenskin", 0, GREENSKIN_MIDDLE_A.ToArray(), rng);
+        string c = PickFromArray("Greenskin", 1, GREENSKIN_MIDDLE_B.ToArray(), rng);
+        string d = PickFromArray("Orc", 1, ORC_END.ToArray(), rng);
         return $"{a}{b}{c}{d}";
     }
     static internal void DealComponent_Orc(Deal deal)
@@ -387,9 +427,9 @@ class Species
     };
     internal static string NameGenerator_Troll(Random rng)
     {
-        string a = ORC_START[rng.Next() % ORC_START.Count];
-        string b = TROLL_MID[rng.Next() % TROLL_MID.Count];
-        string c = ORC_END[rng.Next() % ORC_END.Count];
+        string a = PickFromArray("Orc", 0, ORC_START.ToArray(), rng);
+        string b = PickFromArray("Troll", 0, TROLL_MID.ToArray(), rng);
+        string c = PickFromArray("Orc", 1, ORC_END.ToArray(), rng);
         return $"{a}{b}{c}";
     }
     static internal void DealComponent_Troll(Deal deal)
@@ -417,11 +457,11 @@ class Species
     };
     internal static string NameGenerator_Dragonkin(Random rng)
     {
-        int a = rng.Next() % DRAGONKIN_FRONT.Count;
-        int b = rng.Next() % DRAGONKIN_MIDDLE.Count;
-        int c = rng.Next() % DRAGONKIN_END.Count;
-        int d = rng.Next() % DRAGONKIN_ADJ.Count;
-        return $"{DRAGONKIN_FRONT[a]}{DRAGONKIN_MIDDLE[b]}{DRAGONKIN_END[c]} the {DRAGONKIN_ADJ[d]}";
+        string a = PickFromArray("Dragonkin", 0, DRAGONKIN_FRONT.ToArray(), rng);
+        string b = PickFromArray("Dragonkin", 1, DRAGONKIN_MIDDLE.ToArray(), rng);
+        string c = PickFromArray("Dragonkin", 2, DRAGONKIN_END.ToArray(), rng);
+        string d = PickFromArray("Dragonkin", 3, DRAGONKIN_ADJ.ToArray(), rng);
+        return $"{a}{b}{c} the {d}";
     }
     static internal void DealComponent_Dragonkin(Deal deal)
     {
@@ -451,10 +491,10 @@ class Species
     };
     internal static string NameGenerator_Firbolg(Random rng)
     {
-        int a = rng.Next() % FIRBOLG_FRONT.Count;
-        int b = rng.Next() % FIRBOLG_MIDDLE.Count;
-        int c = rng.Next() % FIRBOLG_END.Count;
-        return $"{FIRBOLG_FRONT[a]}{FIRBOLG_MIDDLE[b]}{FIRBOLG_END[c]}";
+        string a = PickFromArray("Firbolg", 0, FIRBOLG_FRONT.ToArray(), rng);
+        string b = PickFromArray("Firbolg", 1, FIRBOLG_MIDDLE.ToArray(), rng);
+        string c = PickFromArray("Firbolg", 2, FIRBOLG_END.ToArray(), rng);
+        return $"{a}{b}{c}";
     }
     static internal void DealComponent_Firbolg(Deal deal)
     {
@@ -484,10 +524,10 @@ class Species
     };
     internal static string NameGenerator_Birdman(Random rng)
     {
-        int a = rng.Next() % BIRDMAN_FRONT.Count;
-        int b = rng.Next() % BIRDMAN_MIDDLE.Count;
-        int c = rng.Next() % BIRDMAN_END.Count;
-        return $"{BIRDMAN_FRONT[a]}{BIRDMAN_MIDDLE[b]}{BIRDMAN_END[c]}";
+        string a = PickFromArray("Birdman", 0, BIRDMAN_FRONT.ToArray(), rng);
+        string b = PickFromArray("Birdman", 1, BIRDMAN_MIDDLE.ToArray(), rng);
+        string c = PickFromArray("Birdman", 2, BIRDMAN_END.ToArray(), rng);
+        return $"{a}{b}{c}";
     }
     static internal void DealComponent_Birdman(Deal deal)
     {
@@ -535,9 +575,9 @@ class Species
     };
     internal static string NameGenerator_Pixie(Random rng)
     {
-        int a = rng.Next() % PIXIE_FRONT.Count;
-        int b = rng.Next() % PIXIE_END.Count;
-        return $"{PIXIE_FRONT[a]}{PIXIE_END[b]}";
+        string a = PickFromArray("Pixie", 0, PIXIE_FRONT.ToArray(), rng);
+        string b = PickFromArray("Pixie", 1, PIXIE_END.ToArray(), rng);
+        return $"{a}{b}";
     }
     static internal void DealComponent_Pixie(Deal deal)
     {
@@ -558,9 +598,9 @@ class Species
     };
     private static string NameGenerator_Centaur(Random rng)
     {
-        int a = rng.Next() % CENTAUR_FRONT.Count;
-        int b = rng.Next() % CENTAUR_END.Count;
-        return $"{CENTAUR_FRONT[a]}{CENTAUR_END[b]}";
+        string a = PickFromArray("Centaur", 0, CENTAUR_FRONT.ToArray(), rng);
+        string b = PickFromArray("Centaur", 1, CENTAUR_END.ToArray(), rng);
+        return $"{a}{b}";
     }
     private static void DealComponent_Centaur(Deal deal)
     {
@@ -587,9 +627,9 @@ class Species
     };
     private static string NameGenerator_Giant(Random rng)
     {
-        int a = rng.Next() % GIANT_ADJECTIVE.Count;
-        int b = rng.Next() % GIANT_NAME.Count;
-        return $"{GIANT_ADJECTIVE[a]} {GIANT_NAME[b]}";
+        string a = PickFromArray("Giant", 0, GIANT_ADJECTIVE.ToArray(), rng);
+        string b = PickFromArray("Giant", 1, GIANT_NAME.ToArray(), rng);
+        return $"{a} {b}";
     }
     private static void DealComponent_Giant(Deal deal)
     {
@@ -603,6 +643,93 @@ class Species
             case Bark.LeavingRich: return "I go now to play with taller gamblers.";
             default:
                 throw new Exception($"No giant text for bark={bark}");
+        }
+    }
+
+    internal static StaticSpeciesSaveElement GenerateStaticSpeciesSaveElement()
+    {
+        return new StaticSpeciesSaveElement(s_speciesNameSteppers);
+    }
+
+    internal static void SetStaticSpeciesData(StaticSpeciesSaveElement staticSpeciesEl)
+    {
+        s_speciesNameSteppers = staticSpeciesEl.SpeciesNameSteppers;
+    }
+}
+
+public class SpeciesSaveElement : SaveElement
+{
+    internal string Name { get; private set; }
+    public SpeciesSaveElement()
+    {
+        SaveVersion = 1;
+        Name = "???";
+    }
+    internal SpeciesSaveElement(Species species)
+    {
+        SaveVersion = 1;
+        Name = species.Name;
+    }
+    protected override void LoadData(uint loadVersion, FileAccess access)
+    {
+        if (loadVersion != SaveVersion)
+            throw new Exception($"No upgrade path from version {loadVersion} to {SaveVersion} for SpeciesElement");
+
+        if (loadVersion >= 1)
+        {
+            Name = access.GetPascalString();
+        }
+    }
+
+    protected override void SaveData(FileAccess access)
+    {
+        access.StorePascalString(Name);
+    }
+}
+
+public class StaticSpeciesSaveElement : SaveElement
+{
+    internal Dictionary<string, Tuple<uint, uint>> SpeciesNameSteppers;
+
+    public StaticSpeciesSaveElement()
+    {
+        SaveVersion = 1;
+        SpeciesNameSteppers = new Dictionary<string, Tuple<uint, uint>>();
+    }
+
+    public StaticSpeciesSaveElement(Dictionary<string, Tuple<uint, uint>> speciesNameSteppers)
+    {
+        SaveVersion = 1;
+        SpeciesNameSteppers = speciesNameSteppers;
+    }
+
+    protected override void LoadData(uint loadVersion, FileAccess access)
+    {
+        SpeciesNameSteppers.Clear();
+
+        if (loadVersion >= 1)
+        {
+            uint entries = access.Get32();
+            for (uint i = 0; i < entries; i++)
+            {
+                string key = access.GetPascalString();
+                uint index = access.Get32();
+                uint stepper = access.Get32();
+                SpeciesNameSteppers[key] = Tuple.Create(index, stepper);
+                GD.Print($"Loading {key} : {index}/{stepper}");
+            }
+        }
+    }
+
+    protected override void SaveData(FileAccess access)
+    {
+        access.Store32((uint) SpeciesNameSteppers.Count);
+        foreach (KeyValuePair<string, Tuple<uint, uint>> entry in SpeciesNameSteppers)
+        {
+            access.StorePascalString(entry.Key);
+            access.Store32(entry.Value.Item1);
+            access.Store32(entry.Value.Item2);
+            GD.Print($"saving {entry.Key} : {entry.Value.Item1}/{entry.Value.Item2}");
         }
     }
 }
