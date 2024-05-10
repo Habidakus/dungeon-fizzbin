@@ -18,6 +18,7 @@
 7th Player gets to pick which cards they discard, other bug fixes
 8th (1/2) Fixed bug with calculating Prison, added birdman
 9th Save file, name selection based on prime-advancement rather than pure random, initial achievement tracking
+10th (1/4) More work on the achievements
 
 total: 16.25 days
 

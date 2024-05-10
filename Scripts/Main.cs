@@ -487,7 +487,7 @@ public partial class Main : Node
             }
             else
             {
-                Achievments.TrackWinsAsSpecies(NonNPCPlayer.Species);
+                Achievments.TrackWinsAsSpecies(NonNPCPlayer.Species, bestHand._handValue._handRanking);
                 foreach(Player npcPlayer in _players.Where(a => a.IsNPC))
                 {
                     Achievments.TrackWinsAgainstSpecies(npcPlayer.Species, npcPlayer.HasFolded);
@@ -499,8 +499,6 @@ public partial class Main : Node
         hud.HighlightPosition(-1);
         Deal.Dump();
 
-        SaveFile.Save(new MainSaveElement(this), SaveFilePath);
-
         PlayersWhoAreLeaving = new List<int>();
         foreach (Player player in _players)
         {
@@ -510,12 +508,20 @@ public partial class Main : Node
                 if (100 + rnd.NextDouble() * 100 > (player.Wallet + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
+                    Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: true);
                 }
                 else if (rnd.NextDouble() * player.Wallet > (300 + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
+                    Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: false);
                 }
             }
+        }
+
+        SaveFile.Save(new MainSaveElement(this), SaveFilePath);
+        foreach (AchievementUnlock unlock in Achievments.AchievementsUnlocked.OrderBy(a=>a))
+        {
+            GD.Print(unlock);
         }
     }
 
@@ -542,7 +548,6 @@ public partial class Main : Node
             string bark = playerWhoIsLeaving.Species.GetLeavingText(playerWhoIsLeaving, becauseTheyArePoor);
             GetHUD().PlayerLeaves(playerIDToLeave, bark);
             _players.Remove(playerWhoIsLeaving);
-            Achievments.TrackSpeciesLeavingTable(playerWhoIsLeaving.Species, becauseTheyArePoor);
         }
         else
         {

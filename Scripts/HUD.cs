@@ -348,7 +348,7 @@ public partial class HUD : CanvasLayer
                 {
                     if (_selectedCardsAsText == null)
                     {
-                        throw new Exception($"Why is _selectedCardsAsText null when {Name}.Text={label.Text} is selected?");
+                        throw new Exception($"Why is _selectedCardsAsText null when {Name}.Text={label.Text} is selected? (note that _potentialBetValues={_potentialBetValues})");
                     }
 
                     if (visibleCard.FindChild("SelectionMark") is CanvasItem ci)
