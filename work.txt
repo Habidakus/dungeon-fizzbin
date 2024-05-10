@@ -17,14 +17,16 @@
 6th Player gets to pick which cards they pass
 7th Player gets to pick which cards they discard, other bug fixes
 8th (1/2) Fixed bug with calculating Prison, added birdman
-9th (1/2) Save file, name selection based on prime-advancement rather than pure random
+9th Save file, name selection based on prime-advancement rather than pure random, initial achievement tracking
 
-total: 15.75 days
+total: 16.25 days
 
 TODO:
 - Need to fix sorting after hand-rank, we need to compare all cards, in order of importance. We also need to compare second pair by rank if both cards of the first pair are the same rank (eg: 9966 vs 9955, can't have the 9955 win if the 9 was a better suit).
 - Achievements: See a <species> leave the table, win more than $ from <species> in a hand, win X times against a <species>
 - Need to put the "eye" icon on cards in the nonNPC player's discard pile (eg; when playing against humans)
+- Need to add the Why/Who/What pages
+- Need to upload to github
 
 felt green #277714
 card red #f03a17

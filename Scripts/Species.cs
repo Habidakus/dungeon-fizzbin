@@ -537,21 +537,11 @@ class Species
     {
         if (deal.MinimumHandToWinPot == HandValue.HandRanking.HighCard)
         {
-            GD.Print($"Birdman allowed to join because min hand is HighCard");
             return true;
         }
         else
         {
-            if (deal._suits.Count > 4)
-            {
-                GD.Print($"Birdman allowed because there are {deal._suits.Count} suits.");
-                return true;
-            }
-            else
-            {
-                GD.Print($"Birdman denied because there are only {deal._suits.Count} suits.");
-                return false;
-            }
+            return (deal._suits.Count > 4);
         }
     }
     static private string GetText_Birdman(Player _player, Bark bark)
@@ -716,7 +706,6 @@ public class StaticSpeciesSaveElement : SaveElement
                 uint index = access.Get32();
                 uint stepper = access.Get32();
                 SpeciesNameSteppers[key] = Tuple.Create(index, stepper);
-                GD.Print($"Loading {key} : {index}/{stepper}");
             }
         }
     }
@@ -729,7 +718,6 @@ public class StaticSpeciesSaveElement : SaveElement
             access.StorePascalString(entry.Key);
             access.Store32(entry.Value.Item1);
             access.Store32(entry.Value.Item2);
-            GD.Print($"saving {entry.Key} : {entry.Value.Item1}/{entry.Value.Item2}");
         }
     }
 }

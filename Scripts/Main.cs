@@ -24,6 +24,7 @@ public partial class Main : Node
         }
     }
 
+    internal AchievementManager Achievments { get; private set; } = new AchievementManager();
     internal int Dealer { get; private set; }
     internal int InitialBetter { get { return (Dealer + 1) % _players.Count; } }
     internal int CurrentBetter { get; private set; }
@@ -101,6 +102,7 @@ public partial class Main : Node
             MainSaveElement mainEl = new MainSaveElement();
             if (SaveFile.Load(mainEl, SaveFilePath))
             {
+                Achievments.Load(mainEl.AchievementsEl);
                 return new Player(Deal, mainEl.PlayerEl);
             }
         }
@@ -469,6 +471,8 @@ public partial class Main : Node
             }
         }
 
+        Achievments.TrackPlaysAsSpecies(NonNPCPlayer.Species, NonNPCPlayer.HasFolded);
+
         if (bestHand._handValue.Worth < minimumHandWorthToWinPot)
         {
             hud.SetFeltToLost(bestHand.PositionID);
@@ -477,6 +481,18 @@ public partial class Main : Node
         else
         {
             Deal.MovePotToPlayer(hud, bestHand._player);
+            if (bestHand.Player.IsNPC)
+            {
+                Achievments.TrackLossesToSpecies(bestHand.Player.Species, NonNPCPlayer.HasFolded);
+            }
+            else
+            {
+                Achievments.TrackWinsAsSpecies(NonNPCPlayer.Species);
+                foreach(Player npcPlayer in _players.Where(a => a.IsNPC))
+                {
+                    Achievments.TrackWinsAgainstSpecies(npcPlayer.Species, npcPlayer.HasFolded);
+                }
+            }
         }
 
         Deal.UpdatePot(hud);
@@ -490,6 +506,7 @@ public partial class Main : Node
         {
             if (player.IsNPC)
             {
+                Achievments.TrackGamesAgainstSpecies(player.Species);
                 if (100 + rnd.NextDouble() * 100 > (player.Wallet + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
@@ -521,9 +538,11 @@ public partial class Main : Node
             int playerIDToLeave = PlayersWhoAreLeaving[0];
             Player playerWhoIsLeaving = _players.Where(p => p.PositionID == playerIDToLeave).First();
             PlayersWhoAreLeaving.RemoveAt(0);
-            string bark = playerWhoIsLeaving.Species.GetLeavingText(playerWhoIsLeaving, playerWhoIsLeaving.Wallet < 250);
+            bool becauseTheyArePoor = playerWhoIsLeaving.Wallet < 250;
+            string bark = playerWhoIsLeaving.Species.GetLeavingText(playerWhoIsLeaving, becauseTheyArePoor);
             GetHUD().PlayerLeaves(playerIDToLeave, bark);
             _players.Remove(playerWhoIsLeaving);
+            Achievments.TrackSpeciesLeavingTable(playerWhoIsLeaving.Species, becauseTheyArePoor);
         }
         else
         {
@@ -587,19 +606,22 @@ public class MainSaveElement : SaveElement
 {
     internal PlayerSaveElement PlayerEl { get; private set; }
     internal StaticSpeciesSaveElement StaticSpeciesEl { get; private set; }
+    internal AchievementsSaveElement AchievementsEl { get; private set; }
 
     public MainSaveElement()
     {
-        SaveVersion = 2;
+        SaveVersion = 3;
         PlayerEl = new PlayerSaveElement();
         StaticSpeciesEl = Species.GenerateStaticSpeciesSaveElement();
+        AchievementsEl = new AchievementsSaveElement();
     }
 
     internal MainSaveElement(Main main)
     {
-        SaveVersion = 2;
+        SaveVersion = 3;
         PlayerEl = new PlayerSaveElement(main.NonNPCPlayer);
         StaticSpeciesEl = Species.GenerateStaticSpeciesSaveElement();
+        AchievementsEl = main.Achievments.GenerateAchievementsSaveElement();
     }
 
     protected override void LoadData(uint loadVersion, FileAccess access)
@@ -616,13 +638,18 @@ public class MainSaveElement : SaveElement
         }
 
         if (loadVersion >= 3)
-            throw new Exception($"No upgrade path from version {loadVersion} to {SaveVersion} for MainElement");
+        {
+            AchievementsEl.Load(access);
+        }
 
+        if (loadVersion >= 4)
+            throw new Exception($"No upgrade path from version {loadVersion} to {SaveVersion} for MainElement");
     }
 
     protected override void SaveData(FileAccess access)
     {
         PlayerEl.Save(access);
         StaticSpeciesEl.Save(access);
+        AchievementsEl.Save(access);
     }
 }
