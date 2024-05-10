@@ -204,7 +204,7 @@ class Species
             case Bark.LeavingPoor: return "I better go while I still have some coin.";
             case Bark.LeavingRich: return "My thanks, everyone, the bar calls to me.";
             default:
-                throw new Exception($"No elf text for bark={bark}");
+                throw new Exception($"No human text for bark={bark}");
         }
     }
 
