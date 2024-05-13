@@ -273,6 +273,44 @@ class ExposedCardHandler
 
         return false;
     }
+
+    internal void ForEachNPCThatCanViewCard(Card card, Action<int> functor)
+    {
+        if (_exposedCards != null && _exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            foreach (int positionID in exposedCard.PlayersWhoCanSee)
+            {
+                if (positionID > 0)
+                {
+                    functor(positionID);
+                }
+            }
+        }
+    }
+
+    internal bool IsCardVisibleToEntireTable(Card card)
+    {
+        if (_exposedCards != null && _exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            return (exposedCard.PlayersWhoCanSee.Count > 3);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    internal IEnumerable<int> ObserversOtherThanOwnerAndNonNPC(Card card, int ownerPositionID, int nonNPCPositionID)
+    {
+        if (_exposedCards != null && _exposedCards.TryGetValue(card, out ExposedCard? exposedCard))
+        {
+            return exposedCard.PlayersWhoCanSee.Where(a => a != ownerPositionID && a != nonNPCPositionID);
+        }
+        else
+        {
+            return Enumerable.Empty<int>();
+        }
+    }
 }
 
 class Hand : IComparable<Hand>
@@ -1219,7 +1257,9 @@ class Hand : IComparable<Hand>
             foreach (Card card in cardsToReveal)
             {
                 _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);
-                hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer);
+                int[] playersWhoCanSeeOtherThanOwnerAndNonNPC =
+                    ObserversOtherThanOwnerAndNonNPC(card, _player.Deal.NonNPCPlayer.PositionID).ToArray();
+                hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer, playersWhoCanSeeOtherThanOwnerAndNonNPC);
             }
         }
     }
@@ -1236,6 +1276,21 @@ class Hand : IComparable<Hand>
         }
 
         return retVal;
+    }
+
+    internal void ForEachNPCThatCanViewCard(Card card, Action<int> functor)
+    {
+        _exposedCards.ForEachNPCThatCanViewCard(card, functor);
+    }
+
+    internal bool IsCardVisibleToEntireTable(Card card)
+    {
+        return _exposedCards.IsCardVisibleToEntireTable(card);
+    }
+
+    internal IEnumerable<int> ObserversOtherThanOwnerAndNonNPC(Card card, int nonNPCPositionID)
+    {
+        return _exposedCards.ObserversOtherThanOwnerAndNonNPC(card, _player.PositionID, nonNPCPositionID);
     }
 }
 

@@ -223,11 +223,19 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void MoveCardToDiscard(int positionID, Card card, bool isVisibileToNonNPC)
+    internal void ClearAllCardIcons(Hand hand)
+    {
+        if (FindChild($"Hand{hand.PositionID}") is VisibleHand visibleHand)
+        {
+            visibleHand.ClearEyeIcons();
+        }
+    }
+
+    internal void MoveCardToDiscard(int positionID, Card card, List<int> playersWhoCanSeeThisDiscard, int nonNPCPositionID)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
-            visibleHand.AddDiscard(card, isVisibileToNonNPC);
+            visibleHand.AddDiscard(card, playersWhoCanSeeThisDiscard, positionID, nonNPCPositionID);
         }
     }
 
@@ -269,14 +277,16 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void ExposeCardToOtherPlayer(int positionID, Card card, Player viewingPlayer)
+    internal void ExposeCardToOtherPlayer(int positionID, Card card, Player viewingPlayer, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
-            if (viewingPlayer.IsNPC)
-                visibleHand.ExposeNonNPCCardToNPC(card);
-            else
+            if (!viewingPlayer.IsNPC)
                 visibleHand.ExposeCardToNonNPC(card);
+            
+            //else visibleHand.ExposeNonNPCCardToNPC(card, viewingPlayer.PositionID);
+
+            visibleHand.FineTuneVisibility(card, playersWhoCanSeeOtherThanOwnerAndNonNPC);
         }
     }
 
@@ -351,26 +361,24 @@ public partial class HUD : CanvasLayer
                         throw new Exception($"Why is _selectedCardsAsText null when {Name}.Text={label.Text} is selected? (note that _potentialBetValues={_potentialBetValues})");
                     }
 
-                    if (visibleCard.FindChild("SelectionMark") is CanvasItem ci)
+                    CanvasItem ci = VisibleHand.GetCardSelectionMark(visibleCard);
+                    if (ci.Visible)
                     {
-                        if (ci.Visible)
-                        {
-                            _selectedCardsAsText.RemoveAll(a => a.CompareTo(label.Text) == 0);
-                            ci.Hide();
-                        }
-                        else
-                        {
-                            _selectedCardsAsText.Add(label.Text);
-                            ci.Show();
-                        }
+                        _selectedCardsAsText.RemoveAll(a => a.CompareTo(label.Text) == 0);
+                        ci.Hide();
+                    }
+                    else
+                    {
+                        _selectedCardsAsText.Add(label.Text);
+                        ci.Show();
+                    }
 
-                        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
-                        {
-                            if (_selectedCardsDestination.Length > 0)
-                                UpdateConfirmationButtonText_Passing(confirmationButton);
-                            else
-                                UpdateConfirmationButtonText_Discard(confirmationButton);
-                        }
+                    if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
+                    {
+                        if (_selectedCardsDestination.Length > 0)
+                            UpdateConfirmationButtonText_Passing(confirmationButton);
+                        else
+                            UpdateConfirmationButtonText_Discard(confirmationButton);
                     }
                 }
             }

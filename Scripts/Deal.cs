@@ -201,7 +201,9 @@ class Deal
     internal void Reveal(Player player, HUD hud, string description)
     {
         player.HasRevealed = true;
-        hud.SetVisibleHand(GetPlayerHand(player), NonNPCPlayer);
+        Hand hand = GetPlayerHand(player);
+        hud.SetVisibleHand(hand, NonNPCPlayer);
+        hud.ClearAllCardIcons(hand);
         hud.SetBetAmount(player.PositionID, player.AmountBet, description);
     }
 
@@ -315,7 +317,6 @@ class Deal
         {
             if (HasPassingCards(hand))
             {
-                GD.Print($"We need to process passed cards because {hand._player.Name} still has cards that need to be handed out.");
                 positionID = hand.PositionID;
                 return true;
             }
@@ -366,8 +367,6 @@ class Deal
 
                 hand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
 
-                GD.Print($"{passingHand._player.Name} passed {string.Join(',', passingHand._passingCards)} to {hand._player.Name}");
-
                 passingHand._passingCards = null;
                 hud.SetVisibleHand(hand, NonNPCPlayer);
             }
@@ -388,7 +387,7 @@ class Deal
         hand._handValue = null;
         _discards.Add(new DiscardCards(card, playersWhoCanSeeThisDiscard, player.PositionID));
         hud.SetVisibleHand(hand, NonNPCPlayer);
-        hud.MoveCardToDiscard(player.PositionID, card, playersWhoCanSeeThisDiscard.Contains(NonNPCPlayer.PositionID));
+        hud.MoveCardToDiscard(player.PositionID, card, playersWhoCanSeeThisDiscard, NonNPCPlayer.PositionID);
     }
 
     internal bool ProgressReplaceDiscard(HUD hud)
@@ -474,7 +473,9 @@ class Deal
                         if (hand.PositionID != seer.PositionID)
                         {
                             hand._exposedCards.Add(card, seer.PositionID, canDiscard: false);
-                            hud.ExposeCardToOtherPlayer(hand.PositionID, card, seer);
+                            int[] playersWhoCanSeeOtherThanOwnerAndNonNPC = 
+                                hand.ObserversOtherThanOwnerAndNonNPC(card, NonNPCPlayer.PositionID).ToArray();
+                            hud.ExposeCardToOtherPlayer(hand.PositionID, card, seer, playersWhoCanSeeOtherThanOwnerAndNonNPC);
                         }
                     }
                 }

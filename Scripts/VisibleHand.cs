@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 #nullable enable
 
 public partial class VisibleHand : Node2D
@@ -34,45 +35,92 @@ public partial class VisibleHand : Node2D
         }
     }
 
+    private static Label GetCardLabel(Control visibleCard)
+    {
+        if (visibleCard.FindChild("Label", recursive: false) is Label retVal)
+            return retVal;
+
+        throw new Exception($"Visible Card {visibleCard.Name} has no child Label");
+    }
+
+    private static TextureRect GetCardBackside(Control visibleCard)
+    {
+        if (visibleCard.FindChild("Backside", recursive: false) is TextureRect retVal)
+            return retVal;
+
+        throw new Exception($"Visible Card {visibleCard.Name} has no child Backside");
+    }
+
+    private static TextureRect GetCardVisibiltityPerPosition(Control visibleCard, int positionID)
+    {
+        string nodeName = $"SeenByPlayer{positionID}";
+        if (visibleCard.FindChild(nodeName, recursive: false) is TextureRect retVal)
+            return retVal;
+
+        throw new Exception($"Visible Card {visibleCard.Name} has no child {nodeName}");
+    }
+
+    private static TextureRect GetCardVisibiltityAll(Control visibleCard)
+    {
+        string nodeName = $"SeenByPlayerBig";
+        if (visibleCard.FindChild(nodeName, recursive: false) is TextureRect retVal)
+            return retVal;
+
+        throw new Exception($"Visible Card {visibleCard.Name} has no child {nodeName}");
+    }
+
+    internal static CanvasItem GetCardSelectionMark(Control visibleCard)
+    {
+        if (visibleCard.FindChild("SelectionMark", recursive: false) is CanvasItem retVal)
+            return retVal;
+
+        throw new Exception($"Visible Card {visibleCard.Name} has no child SelectionMark");
+    }
+
     private static void ConfigureCardExposure(Control visibleCard, bool exposed, Card card)
     {
         if (visibleCard == null)
             return;
 
-        if (visibleCard.GetChild(0) is Label cardLabel)
-        {
-            cardLabel.Visible = exposed;
-            cardLabel.Text = card.ToString();
-            //cardLabel.ResetSize();
-            if (cardLabel.Visible)
-            {
-                //visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
-                //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
-            }
-        }
-        else
-        {
-            throw new Exception($"VisibleCard {visibleCard} has no child label");
-        }
+        Label cardLabel = GetCardLabel(visibleCard);
+        cardLabel.Visible = exposed;
+        cardLabel.Text = card.ToString();
 
-        if (visibleCard.GetChild(1) is TextureRect cardBack)
-        {
-            cardBack.Visible = !exposed;
-            if (cardBack.Visible)
-            {
-                //visibleCard.CustomMinimumSize = cardBack.Size + new Vector2(4, 4);
-            }
-        }
-        else
-        {
-            throw new Exception($"VisibleCard {visibleCard} has no child label");
-        }
+        TextureRect cardBack = GetCardBackside(visibleCard);
+        cardBack.Visible = !exposed;
 
         //visibleCard.UpdateMinimumSize();
         //visibleCard.ResetSize();
     }
 
-    internal void ExposeNonNPCCardToNPC(Card card)
+    //internal void ExposeNonNPCCardToNPC(Card card, int[] positionIDs)
+    //{
+    //    if (FindChild("Cards") is Control cards)
+    //    {
+    //        Godot.Collections.Array<Node> children = cards.GetChildren();
+    //        foreach (Node child in children)
+    //        {
+    //            if (child is Control visibleCard)
+    //            {
+    //                Label cardLabel = GetCardLabel(visibleCard);
+    //                if (cardLabel.Text == card.ToString() && cardLabel.Visible == true)
+    //                {
+    //                    TextureRect seenByNPC = GetCardSeenByPlayer(visibleCard, positionID);
+    //                    //seenByOthers.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+    //                    //seenByOthers.SizeFlagsVertical = Control.SizeFlags.Fill;
+    //                    //seenByOthers.UpdateMinimumSize();
+    //                    seenByNPC.Show();
+    //                }
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        throw new Exception($"{Name} does not have a child Cards");
+    //    }
+    //}
+
+    internal void FineTuneVisibility(Card card, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
     {
         if (FindChild("Cards") is Control cards)
         {
@@ -81,27 +129,51 @@ public partial class VisibleHand : Node2D
             {
                 if (child is Control visibleCard)
                 {
-                    if (visibleCard.GetChild(0) is Label cardLabel)
+                    Label cardLabel = GetCardLabel(visibleCard);
+                    if (cardLabel.Text == card.ToString() && cardLabel.Visible == true)
                     {
-                        if (cardLabel.Text == card.ToString() && cardLabel.Visible == true)
-                        {
-                            if (visibleCard.GetChild(2) is Control seenByOthers)
-                            {
-                                //seenByOthers.Position = visibleCard.Position;
-                                seenByOthers.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-                                seenByOthers.SizeFlagsVertical = Control.SizeFlags.Fill;
-                                seenByOthers.UpdateMinimumSize();
-                                seenByOthers.Show();
-                            }
-                            //cardLabel.TextDirection = Control.TextDirection.Rtl;
-                        }
+                        FineTuneVisibility(visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
                     }
                 }
             }
         }
+    }
+
+    private static void BlinkCard(CanvasItem ci)
+    {
+        Tween tween = ci.GetTree().CreateTween().SetLoops();
+        tween.TweenProperty(ci, "modulate:a", 0f, 1.0f);
+        tween.TweenProperty(ci, "modulate:a", 1f, 1.0f);
+    }
+
+    private static void FineTuneVisibility(Control visibleCard, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
+    {
+        if (playersWhoCanSeeOtherThanOwnerAndNonNPC.IsEmpty())
+        {
+            ; // Do nothing, just leave this card without any observation marks
+        }
+        else if (playersWhoCanSeeOtherThanOwnerAndNonNPC.Count() >= 3)
+        {
+            TextureRect bigEyeIcon = GetCardVisibiltityAll(visibleCard);
+            bigEyeIcon.Show();
+            BlinkCard(bigEyeIcon);
+
+            for (int j = 1; j< 5; ++j)
+            {
+                GetCardVisibiltityPerPosition(visibleCard, j).Hide();
+            }
+        }
         else
         {
-            throw new Exception($"{Name} does not have a child Cards");
+            if (GetCardVisibiltityAll(visibleCard).Visible == false)
+            {
+                foreach (int positionID in playersWhoCanSeeOtherThanOwnerAndNonNPC)
+                {
+                    TextureRect smallEyeIcon = GetCardVisibiltityPerPosition(visibleCard, positionID);
+                    smallEyeIcon.Show();
+                    BlinkCard(smallEyeIcon);
+                }
+            }
         }
     }
 
@@ -114,24 +186,13 @@ public partial class VisibleHand : Node2D
             {
                 if (child is Control visibleCard)
                 {
-                    if (visibleCard.GetChild(0) is Label cardLabel)
+                    Label cardLabel = GetCardLabel(visibleCard);
+                    if (cardLabel.Text == card.ToString() && cardLabel.Visible == false)
                     {
-                        if (cardLabel.Text == card.ToString() && cardLabel.Visible == false)
-                        {
-                            if (visibleCard.GetChild(1) is TextureRect cardBack)
-                            {
-                                //cardLabel.Visible = true;
-                                //cardBack.Visible = false;
-                                cardBack.Hide();
-                                cardLabel.Show();
-                                cardLabel.ResetSize();
-                                if (cardLabel.Visible)
-                                {
-                                    //visibleCard.CustomMinimumSize = cardLabel.Size + new Vector2(24, 12);
-                                    //GD.Print($"9Rect.size={visibleCard.Size} 9Rect.pos={visibleCard.Position} Label.size={cardLabel.Size} Label.pos={cardLabel.Position}");
-                                }
-                            }
-                        }
+                        TextureRect cardBack = GetCardBackside(visibleCard);
+                        cardBack.Hide();
+                        cardLabel.Show();
+                        cardLabel.ResetSize();
                     }
                 }
             }
@@ -270,20 +331,39 @@ public partial class VisibleHand : Node2D
                     {
                         //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                         cards.AddChild(visibleCard);
-                        ConfigureCardExposure(visibleCard, hand.IsVisible(card, nonNPCPlayer), card);
-                    }
-                }
-
-                if (hand.PositionID == nonNPCPlayer.PositionID)
-                {
-                    foreach (Card card in hand._cards)
-                    {
-                        if (hand.IsVisibleToAnyoneElse(card, nonNPCPlayer.PositionID))
+                        bool exposedToNonNPC = hand.IsVisible(card, nonNPCPlayer);
+                        ConfigureCardExposure(visibleCard, exposedToNonNPC, card);
+                        if (exposedToNonNPC)
                         {
-                            ExposeNonNPCCardToNPC(card);
+                            int[] playersWhoCanSeeOtherThanOwnerAndNonNPC =
+                                hand.ObserversOtherThanOwnerAndNonNPC(card, nonNPCPlayer.PositionID).ToArray();
+                            FineTuneVisibility(visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
                         }
                     }
                 }
+
+                //if (hand.PositionID == nonNPCPlayer.PositionID)
+                //{
+                //    foreach (Card card in hand._cards)
+                //    {
+                //        if (hand.IsCardVisibleToEntireTable(card))
+                //        {
+                //            // Do nothing, the card should be visible to everyone
+                //            GD.Print($"MAKE SURE {card} in hand #{hand.PositionID} hand is visible");
+                //        }
+                //        else if (hand.IsVisible(card, nonNPCPlayer) && hand.Player.PositionID != nonNPCPlayer.PositionID)
+                //        {
+                //            ExposeNonNPCCardToNPC(card, 0);
+                //        }
+                //        else
+                //        {
+                //            hand.ForEachNPCThatCanViewCard(card, npcPositionId =>
+                //            {
+                //                ExposeNonNPCCardToNPC(card, npcPositionId);
+                //            });
+                //        }
+                //    }
+                //}
             }
             else
             {
@@ -296,7 +376,7 @@ public partial class VisibleHand : Node2D
         }
     }
 
-    internal void AddDiscard(Card discard, bool isVisibleToNonNPC)
+    internal void AddDiscard(Card discard, List<int> playersWhoCanSeeThisDiscard, int handPositionId, int nonNPCPositionID)
     {
         if (FindChild("Discards") is BoxContainer discardBox)
         {
@@ -315,7 +395,13 @@ public partial class VisibleHand : Node2D
                 {
                     //visibleCard.SizeFlagsHorizontal = Control.SizeFlags.Fill;
                     discardBox.AddChild(visibleCard);
+                    bool isVisibleToNonNPC = playersWhoCanSeeThisDiscard.Contains(nonNPCPositionID);
                     ConfigureCardExposure(visibleCard, isVisibleToNonNPC, discard);
+                    if (isVisibleToNonNPC)
+                    {
+                        int[] playersWhoCanSeeOtherThanOwnerAndNonNPC = playersWhoCanSeeThisDiscard.Where(a => a != handPositionId && a != nonNPCPositionID).ToArray();
+                        FineTuneVisibility(visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
+                    }
                 }
             }
             else
@@ -520,11 +606,7 @@ public partial class VisibleHand : Node2D
             {
                 if (child is Control fc)
                 {
-                    if (fc.FindChild("SelectionMark") is CanvasItem ci)
-                    {
-                        ci.Hide();
-                    }
-
+                    GetCardSelectionMark(fc).Hide();
                     fc.GuiInput += (a) => cardSelectionGuiHandler(a, fc);
                 }
             }
@@ -540,12 +622,26 @@ public partial class VisibleHand : Node2D
             {
                 if (child is Control fc)
                 {
-                    if (fc.FindChild("SelectionMark") is CanvasItem ci)
-                    {
-                        ci.Hide();
-                    }
+                    GetCardSelectionMark(fc).Hide();
+                }
+            }
+        }
+    }
 
-                    //fc.GuiInput -= (a) => cardSelectionGuiHandler(a, fc);
+    internal void ClearEyeIcons()
+    {
+        if (FindChild("Cards") is Control cards)
+        {
+            Godot.Collections.Array<Node> children = cards.GetChildren();
+            foreach (Node child in children)
+            {
+                if (child is Control visibleCard)
+                {
+                    GetCardVisibiltityAll(visibleCard).Hide();
+                    for (int j = 1; j < 5; ++j)
+                    {
+                        GetCardVisibiltityPerPosition(visibleCard, j).Hide();
+                    }
                 }
             }
         }

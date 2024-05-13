@@ -51,10 +51,12 @@ class Species
     private static void InitSpeciesList()
     {
         AllSpecies = new List<Species>() {
+            //new Species("BLANK1", 1, 0, DealComponent_DoNothing, null, null, null),
+            //new Species("BLANK2", 1, 0, DealComponent_DoNothing, null, null, null),
             new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human, null, GetText_Human),
             new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
-            new Species("Dwarf", 0.25, 0, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
             new Species("Goblin", 0.5, 0, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin, GetText_Greenskin),
+            new Species("Dwarf", 0.25, 5, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
             new Species("Dragonkin", 1, 5, DealComponent_Dragonkin, NameGenerator_Dragonkin, null, GetText_Dragonkin),
             new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll, GetText_Greenskin),
             new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
@@ -177,6 +179,9 @@ class Species
         s_speciesNameSteppers[lookupHash] = Tuple.Create(nextSelection, primeStepper);
 
         return retVal;
+    }
+    static internal void DealComponent_DoNothing(Deal deal)
+    {
     }
 
     // -------------------------------- HUMAN --------------------------------

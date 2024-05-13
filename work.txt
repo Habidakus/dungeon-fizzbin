@@ -19,6 +19,7 @@
 8th (1/2) Fixed bug with calculating Prison, added birdman
 9th Save file, name selection based on prime-advancement rather than pure random, initial achievement tracking
 10th (1/4) More work on the achievements
+13th Better visuals on who can see your card(s)
 
 total: 16.25 days
 
@@ -28,6 +29,7 @@ TODO:
 - Need to put the "eye" icon on cards in the nonNPC player's discard pile (eg; when playing against humans)
 - Need to add the Why/Who/What pages
 - Need to upload to github
+- If you never put any money in past ante, it's not an intersting game achievement.
 
 felt green #277714
 card red #f03a17
