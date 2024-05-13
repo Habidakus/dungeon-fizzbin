@@ -371,6 +371,15 @@ public partial class HUD : CanvasLayer
                     {
                         _selectedCardsAsText.Add(label.Text);
                         ci.Show();
+                        if (ci is Node2D scaleableNode)
+                        {
+                            Tween tween = scaleableNode.GetTree().CreateTween();
+                            tween.TweenProperty(scaleableNode, "scale", new Vector2(3, 3), 0);
+                            tween.TweenProperty(scaleableNode, "modulate:a", 0f, 0);
+                            tween.TweenProperty(scaleableNode, "scale", new Vector2(1, 1), 0.333).SetEase(Tween.EaseType.Out);
+                            tween.Parallel();
+                            tween.TweenProperty(scaleableNode, "modulate:a", 1f, 0.2).SetEase(Tween.EaseType.Out);
+                        }
                     }
 
                     if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
