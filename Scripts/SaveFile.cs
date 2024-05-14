@@ -26,7 +26,7 @@ public class SaveFile
             if (access != null)
             {
                 baseElement.Save(access);
-                GD.Print($"Saved to {access.GetPathAbsolute()}");
+                //GD.Print($"Saved to {access.GetPathAbsolute()}");
             }
             else
             {

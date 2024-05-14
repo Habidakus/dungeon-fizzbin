@@ -173,7 +173,7 @@ class Deal
 
     public void Dump()
     {
-        GD.Print($"Sorted hands (pixie={PixieCompare}):");
+        GD.Print($"Sorted hands:");
         foreach(Hand hand in _hands.OrderBy(a => a).Reverse())
         {
             GD.Print(hand);
@@ -372,7 +372,6 @@ class Deal
             }
             else
             {
-                GD.Print($"{passingHand._player.Name}'s hand hasn't any passed cards");
                 throw new Exception($"{passingHand._player.Name}'s hand hasn't any passed cards");
             }
         }

@@ -103,6 +103,12 @@ public partial class Main : Node
             if (SaveFile.Load(mainEl, SaveFilePath))
             {
                 Achievments.Load(mainEl.AchievementsEl);
+
+                foreach (Species species in Species.GetUnlockedSpecies(Achievments))
+                {
+                    GD.Print($"Unlocked species: {species.Name}");
+                }
+
                 return new Player(Deal, mainEl.PlayerEl);
             }
         }
@@ -497,7 +503,7 @@ public partial class Main : Node
 
         Deal.UpdatePot(hud);
         hud.HighlightPosition(-1);
-        Deal.Dump();
+        //Deal.Dump();
 
         PlayersWhoAreLeaving = new List<int>();
         foreach (Player player in _players)
@@ -519,10 +525,10 @@ public partial class Main : Node
         }
 
         SaveFile.Save(new MainSaveElement(this), SaveFilePath);
-        foreach (AchievementUnlock unlock in Achievments.AchievementsUnlocked.OrderBy(a=>a))
-        {
-            GD.Print(unlock);
-        }
+        //foreach (AchievementUnlock unlock in Achievments.AchievementsUnlocked.OrderBy(a=>a))
+        //{
+        //    GD.Print(unlock);
+        //}
     }
 
     internal bool SomeoneNeedsToLeaveGame(out int highlightPositionId)

@@ -29,7 +29,6 @@ public partial class StateChangeButton : NinePatchRect
 
     public void Initialize(state_machine sm)
     {
-        GD.Print($"Initializing {Name} with {sm.Name}");
         Default = Texture;
         _state_machine = sm;
     }
