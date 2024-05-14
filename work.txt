@@ -20,6 +20,7 @@
 9th Save file, name selection based on prime-advancement rather than pure random, initial achievement tracking
 10th (1/4) More work on the achievements
 13th Better visuals on who can see your card(s)
+14th (1/4) Cleaned out debug print lines, started work on species unlock, cleaned up visual hand UX
 
 total: 16.25 days
 
