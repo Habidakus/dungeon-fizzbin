@@ -83,6 +83,35 @@ public class AchievementManager
         _achievements = achievementsEl._achievements;
     }
 
+    static readonly float s_minUnlock = 5f;
+    static readonly Dictionary<Categories, float> s_unlockFractions = new Dictionary<Categories, float>()
+    {
+        { Categories.CAT_PLAY_AGAINST, 0.1f },
+        { Categories.CAT_FORCED_US_TO_FOLD, 0.1f },
+        { Categories.CAT_LOST_TO_IN_A_SHOWDOWN, 0.2f },
+        { Categories.CAT_WE_FORCED_THEM_TO_FOLD, 0.1f },
+        { Categories.CAT_WE_WON_AGAINST, 0.35f },
+        { Categories.CAT_THEY_LEFT_WITH_NO_MONEY, 0.10f },
+        { Categories.CAT_THEY_LEFT_WITH_OUR_MONEY, 0.10f },
+    };
+
+    internal float GetUnlockedFraction(Species species)
+    {
+        float total = 0;
+        foreach (Achievement ach in _achievements.Values)
+        {
+            if (ach.SubCat == species.Name)
+            {
+                if (s_unlockFractions.TryGetValue(ach.Category, out float multiplier))
+                {
+                    total += multiplier * ach.Count;
+                }
+            }
+        }
+
+        return total / s_minUnlock;
+    }
+
     private AchievementUnlock? GetUnlock(Achievement ach)
     {
         switch (ach.Category)
@@ -102,7 +131,7 @@ public class AchievementManager
             case Categories.CAT_THEY_LEFT_WITH_OUR_MONEY:
                 return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Saw # {ach.SubCat} leave the table with our money");
             case Categories.CAT_WE_PLAYED_A_HAND_AND_FOLDED:
-                break;
+                return AchievementUnlock.Generate(ach, new uint[] { 100, 500, 2500 }, $"Folded # times as a {ach.SubCat}");
             case Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST:
                 break;
             case Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON:
@@ -123,11 +152,7 @@ public class AchievementManager
             foreach (Achievement ach in _achievements.Values.OrderBy(a => a))
             {
                 AchievementUnlock? unlock = GetUnlock(ach);
-                if (unlock == null)
-                {
-                    GD.Print(ach);
-                }
-                else
+                if (unlock != null)
                 {
                     yield return unlock;
                 }
@@ -284,10 +309,10 @@ public class AchievementsSaveElement : SaveElement
             }
         }
 
-        foreach (Achievement? ach in _achievements.Values.OrderBy(a => a))
-        {
-            GD.Print(ach);
-        }
+        //foreach (Achievement? ach in _achievements.Values.OrderBy(a => a))
+        //{
+        //    GD.Print(ach);
+        //}
 
         if (loadVersion > SaveVersion)
         {

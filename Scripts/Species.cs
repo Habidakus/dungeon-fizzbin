@@ -88,6 +88,30 @@ class Species
         }
     }
 
+    internal static IEnumerable<Species> GetUnlockedSpecies(AchievementManager achievementManager)
+    {
+        if (AllSpecies == null)
+        {
+            InitSpeciesList();
+        }
+
+        foreach (var species in AllSpecies!)
+        {
+            float unlockedFraction = achievementManager.GetUnlockedFraction(species);
+            if (unlockedFraction >= 1)
+            {
+                yield return species;
+            }
+            //else
+            //{
+            //    GD.Print($"unlock percent: {100.0 * unlockedFraction:F2}% for {species.Name}");
+            //}
+        }
+
+        yield break;
+    }
+
+
     internal string GetLeavingText(Player player, bool becauseTheyArePoor)
     {
         Bark bark = becauseTheyArePoor ? Bark.LeavingPoor : Bark.LeavingRich;
