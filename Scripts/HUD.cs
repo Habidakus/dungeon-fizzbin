@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -110,9 +109,30 @@ public partial class HUD : CanvasLayer
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
 	{
+        lock (_popUpUnlocks)
+        {
+            if (_popUpUnlocks.Count > 0)
+            {
+                if (_popUpWait > 0)
+                {
+                    _popUpWait -= delta;
+                    if (_popUpWait <= 0)
+                    {
+                        _popUpUnlocks.RemoveAt(0);
+                        _popUpWait = 0;
+                    }
+                }
+                else
+                {
+                    _popUpWait = 5;
+                    ShowNextPopUpAchievement();
+                }
+
+            }
+        }
     }
 
-	public void StartState(string state)
+public void StartState(string state)
 	{
 		switch (state)
         {
@@ -727,22 +747,7 @@ public partial class HUD : CanvasLayer
             foreach (AchievementUnlock achUnlock in achievementUnlocks)
             {
                 Node vAch = VisibleAchievement.Instantiate();
-                if (vAch.FindChild("Image") is TextureRect imageRect)
-                {
-                    if (achUnlock.IsBronze)
-                        imageRect.Texture = BronzeAchievement;
-                    else if (achUnlock.IsSilver)
-                        imageRect.Texture = SilverAchievement;
-                    else if (achUnlock.IsGold)
-                        imageRect.Texture = GoldAchievement;
-                    else
-                        throw new Exception($"Bad achievement level for {achUnlock}");
-                }
-
-                if (vAch.FindChild("Text") is RichTextLabel richText)
-                {
-                    richText.Text = achUnlock.Text;
-                }
+                ConfigureAchievementBox(achUnlock, vAch);
 
                 achievementBox.AddChild(vAch);
             }
@@ -814,5 +819,51 @@ public partial class HUD : CanvasLayer
 
         //AchievementsPage.UpdateMinimumSize();
         //AchievementsPage.ResetSize();
+    }
+
+    private void ConfigureAchievementBox(AchievementUnlock unlock, Node visibileAchievementNode)
+    {
+        if (visibileAchievementNode.FindChild("Image") is TextureRect imageRect)
+        {
+            if (unlock.IsBronze)
+                imageRect.Texture = BronzeAchievement;
+            else if (unlock.IsSilver)
+                imageRect.Texture = SilverAchievement;
+            else if (unlock.IsGold)
+                imageRect.Texture = GoldAchievement;
+            else
+                throw new Exception($"Bad achievement level for {unlock}");
+        }
+
+        if (visibileAchievementNode.FindChild("Text") is RichTextLabel richText)
+        {
+            richText.Text = unlock.Text;
+        }
+    }
+
+    private double _popUpWait = 0;
+    private List<AchievementUnlock> _popUpUnlocks = new List<AchievementUnlock>();
+    internal void ShowAchievementPopUp(AchievementUnlock postUnlock)
+    {
+        lock (_popUpUnlocks)
+        {
+            _popUpUnlocks.Add(postUnlock);
+        }
+    }
+
+    private void ShowNextPopUpAchievement()
+    {
+
+        // 868, -59
+        // 868, 8
+        if (FindChild("PopUpAchievement") is Control visiblePopUpAchievement)
+        {
+            visiblePopUpAchievement.Position = new Vector2(868, -59);
+            ConfigureAchievementBox(_popUpUnlocks[0], visiblePopUpAchievement);
+            Tween tween = GetTree().CreateTween();
+            tween.TweenProperty(visiblePopUpAchievement, "position", new Vector2(868, 8), 1);
+            tween.TweenInterval(3);
+            tween.TweenProperty(visiblePopUpAchievement, "position", new Vector2(868, -59), 1);
+        }
     }
 }

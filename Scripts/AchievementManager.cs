@@ -25,6 +25,14 @@ public class AchievementUnlock : IComparable<AchievementUnlock>
         _text = text;
     }
 
+    internal bool IsGreaterThan(AchievementUnlock? other)
+    {
+        if (other == null)
+            return true;
+
+        return _levelReached > other._levelReached;
+    }
+
     public static AchievementUnlock? Generate(Achievement ach, uint[] levels, string text)
     {
         int levelReached = -1;
@@ -124,7 +132,7 @@ public class AchievementManager
         return total / s_minUnlock;
     }
 
-    private AchievementUnlock? GetUnlock(Achievement ach)
+    internal AchievementUnlock? GetUnlock(Achievement ach)
     {
         switch (ach.Category)
         {
@@ -197,55 +205,55 @@ public class AchievementManager
         }
     }
 
-    internal void TrackGamesAgainstSpecies(Species species)
+    internal void TrackGamesAgainstSpecies(Species species, Main main)
     {
-        GetAchievement(species, Categories.CAT_PLAY_AGAINST).Increase();
+        GetAchievement(species, Categories.CAT_PLAY_AGAINST).Increase(main);
     }
 
-    internal void TrackLossesToSpecies(Species species, bool hasFolded)
-    {
-        if (hasFolded)
-        {
-            GetAchievement(species, Categories.CAT_FORCED_US_TO_FOLD).Increase();
-        }
-        else
-        {
-            GetAchievement(species, Categories.CAT_LOST_TO_IN_A_SHOWDOWN).Increase();
-        }
-    }
-
-    internal void TrackWinsAgainstSpecies(Species species, bool hasFolded)
+    internal void TrackLossesToSpecies(Species species, bool hasFolded, Main main)
     {
         if (hasFolded)
         {
-            GetAchievement(species, Categories.CAT_WE_FORCED_THEM_TO_FOLD).Increase();
+            GetAchievement(species, Categories.CAT_FORCED_US_TO_FOLD).Increase(main);
         }
         else
         {
-            GetAchievement(species, Categories.CAT_WE_WON_AGAINST).Increase();
+            GetAchievement(species, Categories.CAT_LOST_TO_IN_A_SHOWDOWN).Increase(main);
         }
     }
 
-    internal void TrackSpeciesLeavingTable(Species species, bool becauseTheyArePoor)
+    internal void TrackWinsAgainstSpecies(Species species, bool hasFolded, Main main)
+    {
+        if (hasFolded)
+        {
+            GetAchievement(species, Categories.CAT_WE_FORCED_THEM_TO_FOLD).Increase(main);
+        }
+        else
+        {
+            GetAchievement(species, Categories.CAT_WE_WON_AGAINST).Increase(main);
+        }
+    }
+
+    internal void TrackSpeciesLeavingTable(Species species, bool becauseTheyArePoor, Main main)
     {
         if (becauseTheyArePoor)
-            GetAchievement(species, Categories.CAT_THEY_LEFT_WITH_NO_MONEY).Increase();
+            GetAchievement(species, Categories.CAT_THEY_LEFT_WITH_NO_MONEY).Increase(main);
         else
-            GetAchievement(species, Categories.CAT_THEY_LEFT_WITH_OUR_MONEY).Increase();
+            GetAchievement(species, Categories.CAT_THEY_LEFT_WITH_OUR_MONEY).Increase(main);
     }
 
-    internal void TrackPlaysAsSpecies(Species species, bool hasFolded)
+    internal void TrackPlaysAsSpecies(Species species, bool hasFolded, Main main)
     {
         if (hasFolded)
-            GetAchievement(species, Categories.CAT_WE_PLAYED_A_HAND_AND_FOLDED).Increase();
+            GetAchievement(species, Categories.CAT_WE_PLAYED_A_HAND_AND_FOLDED).Increase(main);
         else
-            GetAchievement(species, Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST).Increase();
+            GetAchievement(species, Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST).Increase(main);
     }
 
-    internal void TrackWinsAsSpecies(Species species, HandValue.HandRanking ranking)
+    internal void TrackWinsAsSpecies(Species species, HandValue.HandRanking ranking, Main main)
     {
-        GetAchievement(species, Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON).Increase();
-        GetAchievement(ranking, Categories.CAT_WE_WON_WITH_A_RANKING).Increase();
+        GetAchievement(species, Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON).Increase(main);
+        GetAchievement(ranking, Categories.CAT_WE_WON_WITH_A_RANKING).Increase(main);
     }
 }
 
@@ -262,9 +270,15 @@ public class Achievement : IComparable<Achievement>
         Count = count;
     }
 
-    public void Increase()
+    public void Increase(Main main)
     {
+        AchievementUnlock? priorUnlock = main.Achievments.GetUnlock(this);
         Count += 1;
+        AchievementUnlock? postUnlock = main.Achievments.GetUnlock(this);
+        if (postUnlock != null && postUnlock.IsGreaterThan(priorUnlock))
+        {
+            main.GetHUD().ShowAchievementPopUp(postUnlock);
+        }
     }
 
     public override string ToString()

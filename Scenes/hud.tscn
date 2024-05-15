@@ -79,7 +79,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -343,6 +342,7 @@ theme_override_font_sizes/font_size = 22
 text = "Quit"
 
 [node name="AchievementsPage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -445,6 +445,16 @@ horizontal_alignment = 1
 [node name="Label2" type="Label" parent="AchievementsPage/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="PopUpAchievement" parent="." instance=ExtResource("7_2eio4")]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -285.0
+offset_top = -59.0
+offset_right = -9.0
+offset_bottom = -4.0
+grow_horizontal = 0
 
 [connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]

@@ -493,7 +493,7 @@ public partial class Main : Node
             }
         }
 
-        Achievments.TrackPlaysAsSpecies(NonNPCPlayer.Species, NonNPCPlayer.HasFolded);
+        Achievments.TrackPlaysAsSpecies(NonNPCPlayer.Species, NonNPCPlayer.HasFolded, this);
 
         if (bestHand._handValue.Worth < minimumHandWorthToWinPot)
         {
@@ -505,14 +505,14 @@ public partial class Main : Node
             Deal.MovePotToPlayer(hud, bestHand._player);
             if (bestHand.Player.IsNPC)
             {
-                Achievments.TrackLossesToSpecies(bestHand.Player.Species, NonNPCPlayer.HasFolded);
+                Achievments.TrackLossesToSpecies(bestHand.Player.Species, NonNPCPlayer.HasFolded, this);
             }
             else
             {
-                Achievments.TrackWinsAsSpecies(NonNPCPlayer.Species, bestHand._handValue._handRanking);
+                Achievments.TrackWinsAsSpecies(NonNPCPlayer.Species, bestHand._handValue._handRanking, this);
                 foreach(Player npcPlayer in _players.Where(a => a.IsNPC))
                 {
-                    Achievments.TrackWinsAgainstSpecies(npcPlayer.Species, npcPlayer.HasFolded);
+                    Achievments.TrackWinsAgainstSpecies(npcPlayer.Species, npcPlayer.HasFolded, this);
                 }
             }
         }
@@ -526,16 +526,16 @@ public partial class Main : Node
         {
             if (player.IsNPC)
             {
-                Achievments.TrackGamesAgainstSpecies(player.Species);
+                Achievments.TrackGamesAgainstSpecies(player.Species, this);
                 if (100 + rnd.NextDouble() * 100 > (player.Wallet + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
-                    Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: true);
+                    Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: true, this);
                 }
                 else if (rnd.NextDouble() * player.Wallet > (300 + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
-                    Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: false);
+                    Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: false, this);
                 }
             }
         }
