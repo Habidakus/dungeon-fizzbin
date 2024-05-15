@@ -1,14 +1,17 @@
 using Godot;
-using System;
 using System.Linq;
+
+#nullable enable
 
 public partial class sms_achievements : state_machine_state
 {
-    private AchievementUnlock[] _unlockedAchievements;
 
     public override void EnterState()
     {
-        _unlockedAchievements = GetMainNode().Achievments.AchievementsUnlocked.ToArray();
+        AchievementManager achievments = GetMainNode().Achievments;
+        GetHUD().SetAchievmentsAndUnlocks(
+            achievments.AchievementsUnlocked.ToArray(),
+            Species.GetUnlockedSpeciesAndFraction(achievments).ToArray());
     }
 
     public override void Update(double delta)

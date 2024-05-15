@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +13,14 @@ public partial class HUD : CanvasLayer
     public Texture2D? NineGridButton_Default = null;
     [Export]
     public Texture2D? NineGridButton_Hover = null;
+    [Export]
+    public Texture2D? GoldAchievement = null;
+    [Export]
+    public Texture2D? SilverAchievement = null;
+    [Export]
+    public Texture2D? BronzeAchievement = null;
+    [Export]
+    public PackedScene? VisibleAchievement = null;
 
     private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
@@ -95,6 +104,7 @@ public partial class HUD : CanvasLayer
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
+        AchievementsPage.Hide();
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -702,5 +712,107 @@ public partial class HUD : CanvasLayer
         {
             confirmationButton.Hide();
         }
+    }
+
+    internal void SetAchievmentsAndUnlocks(AchievementUnlock[] achievementUnlocks, Tuple<Species, float>[] speciesUnlocks)
+    {
+        if (VisibleAchievement == null)
+            throw new Exception($"VisibleAchievement value not set for {Name}");
+
+        if (AchievementsPage.FindChild("AchievementBox") is Control achievementBox)
+        {
+            foreach (var child in achievementBox.GetChildren())
+                achievementBox.RemoveChild(child);
+
+            foreach (AchievementUnlock achUnlock in achievementUnlocks)
+            {
+                Node vAch = VisibleAchievement.Instantiate();
+                if (vAch.FindChild("Image") is TextureRect imageRect)
+                {
+                    if (achUnlock.IsBronze)
+                        imageRect.Texture = BronzeAchievement;
+                    else if (achUnlock.IsSilver)
+                        imageRect.Texture = SilverAchievement;
+                    else if (achUnlock.IsGold)
+                        imageRect.Texture = GoldAchievement;
+                    else
+                        throw new Exception($"Bad achievement level for {achUnlock}");
+                }
+
+                if (vAch.FindChild("Text") is RichTextLabel richText)
+                {
+                    richText.Text = achUnlock.Text;
+                }
+
+                achievementBox.AddChild(vAch);
+            }
+
+            achievementBox.UpdateMinimumSize();
+            achievementBox.ResetSize();
+        }
+
+        if (AchievementsPage.FindChild("UnlocksBox") is Control unlocksBox)
+        {
+            foreach (var child in unlocksBox.GetChildren())
+                unlocksBox.RemoveChild(child);
+
+            Label unlockedLabel = new Label();
+            Label inProgressLabel = new Label();
+            int unknownCount = 0;
+
+            foreach (var speciesUnlock in speciesUnlocks)
+            {
+                if (speciesUnlock.Item2 == 0)
+                    unknownCount += 1;
+                else if (speciesUnlock.Item2 >= 1)
+                {
+                    if (string.IsNullOrEmpty(unlockedLabel.Text))
+                        unlockedLabel.Text = $"Unlocked: {speciesUnlock.Item1.Name}";
+                    else
+                        unlockedLabel.Text += $", {speciesUnlock.Item1.Name}";
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(inProgressLabel.Text))
+                        inProgressLabel.Text = $"In Progress: {speciesUnlock.Item1.Name} {Math.Round(speciesUnlock.Item2 * 100)}%";
+                    else
+                        inProgressLabel.Text += $", {speciesUnlock.Item1.Name} {Math.Round(speciesUnlock.Item2 * 100)}%";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(unlockedLabel.Text))
+                unlocksBox.AddChild(unlockedLabel);
+            if (!string.IsNullOrEmpty(inProgressLabel.Text))
+                unlocksBox.AddChild(inProgressLabel);
+            if (unknownCount > 0)
+            {
+                Label unknownLabel = new Label();
+                unknownLabel.Text = $"{unknownCount} x Unknown";
+                unlocksBox.AddChild(unknownLabel);
+            }
+
+            //Tuple<Species, float>[] sortedSpeciesUnlocks = speciesUnlocks.OrderByDescending(a => a.Item2).ToArray();
+            //foreach (Tuple<Species, float> speciesUnlock in sortedSpeciesUnlocks)
+            //{
+            //    Label label = new Label();
+            //    string comma = speciesUnlock != sortedSpeciesUnlocks.Last() ? ", " : "";
+
+            //    if (speciesUnlock.Item2 == 0)
+            //        label.Text = $"UNKNOWN{comma}";
+            //    else if (speciesUnlock.Item2 >= 1)
+            //        label.Text = $"{speciesUnlock.Item1.Name}: Unlocked{comma}";
+            //    else
+            //        label.Text = $"{speciesUnlock.Item1.Name}: {Math.Round(100.0 * speciesUnlock.Item2)}%{comma}";
+
+            //    unlocksBox.AddChild(label);
+            //}
+
+            //unlocksBox.Size = new Vector2(1152 - unlocksBox.Position.X, unlocksBox.Size.Y);
+            //unlocksBox.UpdateMinimumSize();
+            //unlocksBox.ResetSize();
+        }
+
+        //AchievementsPage.UpdateMinimumSize();
+        //AchievementsPage.ResetSize();
     }
 }

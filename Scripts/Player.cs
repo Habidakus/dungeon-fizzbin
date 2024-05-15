@@ -1,12 +1,13 @@
 ﻿using Godot;
 using System;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
 
 #nullable enable
 
 class Player
 {
+    internal static int InitialWallet { get { return 200; } }
+
     internal int PositionID { get; private set; }
     internal bool IsNPC { get; private set; }
     internal bool HasDiscarded { get; set; }
@@ -38,7 +39,7 @@ class Player
         }
         else
         {
-            Wallet = 200;
+            Wallet = InitialWallet;
             Species = Species.Human;
         }
 
@@ -53,7 +54,7 @@ class Player
     {
         Deal = deal;
         PositionID = positionID;
-        Wallet = 200;
+        Wallet = InitialWallet;
         IsNPC = true;
         Species = Species.PickSpecies(rng, speciesAlreadyAtTable, deal);
         Name = Species.GenerateRandomName(rng, PositionID);
@@ -63,7 +64,7 @@ class Player
     {
         Deal = deal;
         PositionID = positionID;
-        Wallet = 200;
+        Wallet = InitialWallet;
         IsNPC = (PositionID != 0);
         Species = species;
 
@@ -305,6 +306,7 @@ public class PlayerSaveElement : SaveElement
     public PlayerSaveElement()
     {
         SaveVersion = 1;
+        Wallet = Player.InitialWallet;
         SpeciesEl = new SpeciesSaveElement();
     }
     internal PlayerSaveElement(Player player)

@@ -1503,9 +1503,9 @@ class HandValue /*: IComparable<HandValue>*/
         return $"{ToString()} ({_highCard}) ({_fractionalValue:F2})";
     }
 
-    public override string ToString()
+    public static string GetPlayerFacingTextForHandRanking(HandRanking handRanking)
     {
-        switch (_handRanking)
+        switch (handRanking)
         {
             case HandRanking.FiveOfAKind: return "Five of a Kind";
             case HandRanking.RoyalFlush: return "Royal Flush";
@@ -1521,8 +1521,13 @@ class HandValue /*: IComparable<HandValue>*/
             case HandRanking.TwoOfAKind: return "A Pair";
             case HandRanking.HighCard: return "High Card";
             default:
-                return $"MISSING \"{_handRanking}\"";
+                return $"MISSING \"{handRanking}\"";
         }
+    }
+
+    public override string ToString()
+    {
+        return GetPlayerFacingTextForHandRanking(_handRanking);
     }
 
     internal HandValue(List<Card> cards)

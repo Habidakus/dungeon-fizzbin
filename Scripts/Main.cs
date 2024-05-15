@@ -23,8 +23,35 @@ public partial class Main : Node
             return _deal;
         }
     }
+    private MainSaveElement? _baseSaveNode = null;
+    internal MainSaveElement LoadedSaveFile
+    {
+        get
+        {
+            if (_baseSaveNode == null)
+            {
+                _baseSaveNode = new MainSaveElement();
+                SaveFile.Load(_baseSaveNode, SaveFilePath);
+            }
 
-    internal AchievementManager Achievments { get; private set; } = new AchievementManager();
+            return _baseSaveNode;
+        }
+    }
+
+    private AchievementManager? _achievements = null;
+    internal AchievementManager Achievments 
+    {
+        get 
+        {
+            if (_achievements == null)
+            {
+                _achievements = new AchievementManager();
+                _achievements.Load(LoadedSaveFile.AchievementsEl);
+            }
+
+            return _achievements;
+        }
+    }
     internal int Dealer { get; private set; }
     internal int InitialBetter { get { return (Dealer + 1) % _players.Count; } }
     internal int CurrentBetter { get; private set; }
@@ -99,18 +126,7 @@ public partial class Main : Node
     {
         if (positionID == 0)
         {
-            MainSaveElement mainEl = new MainSaveElement();
-            if (SaveFile.Load(mainEl, SaveFilePath))
-            {
-                Achievments.Load(mainEl.AchievementsEl);
-
-                foreach (Species species in Species.GetUnlockedSpecies(Achievments))
-                {
-                    GD.Print($"Unlocked species: {species.Name}");
-                }
-
-                return new Player(Deal, mainEl.PlayerEl);
-            }
+            return new Player(Deal, LoadedSaveFile.PlayerEl);
         }
 
         return new Player(positionID, rnd, SpeciesAtTable, Deal);
@@ -525,10 +541,6 @@ public partial class Main : Node
         }
 
         SaveFile.Save(new MainSaveElement(this), SaveFilePath);
-        //foreach (AchievementUnlock unlock in Achievments.AchievementsUnlocked.OrderBy(a=>a))
-        //{
-        //    GD.Print(unlock);
-        //}
     }
 
     internal bool SomeoneNeedsToLeaveGame(out int highlightPositionId)

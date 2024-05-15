@@ -88,6 +88,22 @@ class Species
         }
     }
 
+    internal static IEnumerable<Tuple<Species,float>> GetUnlockedSpeciesAndFraction(AchievementManager achievementManager)
+    {
+        if (AllSpecies == null)
+        {
+            InitSpeciesList();
+        }
+
+        foreach (Species species in AllSpecies!)
+        {
+            float unlockedFraction = achievementManager.GetUnlockedFraction(species);
+            yield return Tuple.Create(species, unlockedFraction);
+        }
+
+        yield break;
+    }
+
     internal static IEnumerable<Species> GetUnlockedSpecies(AchievementManager achievementManager)
     {
         if (AllSpecies == null)
@@ -95,17 +111,13 @@ class Species
             InitSpeciesList();
         }
 
-        foreach (var species in AllSpecies!)
+        foreach (Species species in AllSpecies!)
         {
             float unlockedFraction = achievementManager.GetUnlockedFraction(species);
             if (unlockedFraction >= 1)
             {
                 yield return species;
             }
-            //else
-            //{
-            //    GD.Print($"unlock percent: {100.0 * unlockedFraction:F2}% for {species.Name}");
-            //}
         }
 
         yield break;
@@ -211,10 +223,10 @@ class Species
     // -------------------------------- HUMAN --------------------------------
 
     static private List<string> HUMAN_FIRST_NAMES = new List<string>() {
-        "Agatha", "Bartholomew", "Cassandra", "Derrick", "Edmund", "Felicity", "Gawain", "Hannabel", "Ishmael", "Jesmond", "Nowell", "Samara",
+        "Agatha", "Bartholomew", "Cassandra", "Derrick", "Edmund", "Felicity", "Gawain", "Hannabel", "Ishmael", "Jesmond", "Nowell", "Samara", "Victor",
     };
     static private List<string> HUMAN_LAST_NAMES = new List<string>() {
-        "Yorke", "Whitgyft", "Unthank", "Tonstall", "Smith", "Ruddok", "Plumton", "Norfolk", "Abbot", "Bishop",
+        "Yorke", "Whitgyft", "Unthank", "Tonstall", "Smith", "Ruddok", "Plumton", "Norfolk", "Abbot", "Bishop", "Grimm",
     };
     internal static string NameGenerator_Human(Random rng)
     {
@@ -682,7 +694,7 @@ public class SpeciesSaveElement : SaveElement
     public SpeciesSaveElement()
     {
         SaveVersion = 1;
-        Name = "???";
+        Name = Species.Human.Name;
     }
     internal SpeciesSaveElement(Species species)
     {

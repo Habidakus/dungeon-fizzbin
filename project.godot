@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="Fantasy Fizzbin"
+config/name="Dungeon Fizzbin"
 run/main_scene="res://Scenes/main.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://Art/cardBack.png"
 
 [dotnet]
 

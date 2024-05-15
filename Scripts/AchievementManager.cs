@@ -11,6 +11,11 @@ public class AchievementUnlock : IComparable<AchievementUnlock>
     private int _levelReached;
     private string _text;
 
+    public string Text { get { return _text; } }
+    public bool IsBronze { get { return _levelReached == 0; } }
+    public bool IsSilver { get { return _levelReached == 1; } }
+    public bool IsGold { get { return _levelReached == 2; } }
+
     static string[] levelsAsText = new string[] { "Bronze", "Silver", "Gold" };
 
     public AchievementUnlock(Achievement ach, int levelReached, string text)
@@ -34,7 +39,14 @@ public class AchievementUnlock : IComparable<AchievementUnlock>
         if (levelReached < 0)
             return null;
 
-        return new AchievementUnlock(ach, levelReached, text.Replace("#", levels[levelReached].ToString()));
+        uint count = levels[levelReached];
+        string unlockText = text;
+        if (count > 1)
+            unlockText = unlockText.Replace("#", count.ToString());
+        else
+            unlockText = unlockText.Replace("#", "one");
+        unlockText = unlockText.Replace("GAMES", count > 1 ? "games" : "game");
+        return new AchievementUnlock(ach, levelReached, unlockText);
     }
 
     public int CompareTo(AchievementUnlock? other)
@@ -125,7 +137,7 @@ public class AchievementManager
             case Categories.CAT_WE_FORCED_THEM_TO_FOLD:
                 return AchievementUnlock.Generate(ach, new uint[] { 10, 100, 500 }, $"Saw # {ach.SubCat} fold against us");
             case Categories.CAT_WE_WON_AGAINST:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # games against a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # GAMES against a {ach.SubCat}");
             case Categories.CAT_THEY_LEFT_WITH_NO_MONEY:
                 return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Saw # {ach.SubCat} leave the table broken");
             case Categories.CAT_THEY_LEFT_WITH_OUR_MONEY:
@@ -135,9 +147,9 @@ public class AchievementManager
             case Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST:
                 break;
             case Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # games as a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # GAMES as a {ach.SubCat}");
             case Categories.CAT_WE_WON_WITH_A_RANKING:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # games with a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # GAMES with a {ach.SubCat}");
             default:
                 throw new NotImplementedException($"There is no Unlock implemented for achievement category {ach.Category}");
         }
@@ -167,7 +179,7 @@ public class AchievementManager
 
     private Achievement GetAchievement(HandValue.HandRanking ranking, Categories category)
     {
-        return GetAchievement(category, ranking.ToString());
+        return GetAchievement(category, HandValue.GetPlayerFacingTextForHandRanking(ranking));
     }
 
     private Achievement GetAchievement(Categories category, string subCat)
