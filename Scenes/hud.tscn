@@ -22,6 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TitlePage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -70,6 +71,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -98,7 +100,6 @@ position = Vector2(576, 324)
 _visibleCardScene = ExtResource("6_qtayb")
 
 [node name="NextHandMenu" type="VBoxContainer" parent="PlayPage"]
-visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -275,6 +276,40 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Achievements" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
+custom_minimum_size = Vector2(235, 0)
+layout_mode = 2
+patch_margin_left = 20
+patch_margin_right = 20
+State = "Achievements"
+
+[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/Achievements"]
+custom_minimum_size = Vector2(175, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "Achievements"
+horizontal_alignment = 1
+
+[node name="padding2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="QuitButton2" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
 layout_mode = 2
 patch_margin_left = 20
@@ -297,6 +332,71 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 22
 text = "Quit"
+
+[node name="AchievementsPage" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AchievementsPage"]
+layout_mode = 1
+offset_right = 1152.0
+offset_bottom = 193.0
+
+[node name="AchievementBox" type="GridContainer" parent="AchievementsPage/VBoxContainer"]
+layout_mode = 2
+columns = 4
+
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/AchievementBox"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Achievements:
+"
+
+[node name="HSeparator" type="HSeparator" parent="AchievementsPage/VBoxContainer"]
+layout_mode = 2
+
+[node name="UnlocksBox" type="FlowContainer" parent="AchievementsPage/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/UnlocksBox"]
+layout_mode = 2
+text = "Species Unlocks
+"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AchievementsPage/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackButton" parent="AchievementsPage/VBoxContainer/HBoxContainer" instance=ExtResource("7_bfjw0")]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+State = "Menu"
+
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer/BackButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -63.5
+offset_top = -15.5
+offset_right = 63.5
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "Back"
+horizontal_alignment = 1
 
 [connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]

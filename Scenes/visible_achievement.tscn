@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://whhs3vhsqldk"]
+
+[ext_resource type="Texture2D" uid="uid://bncymmiotr2pw" path="res://Art/Gold.png" id="1_kqtfk"]
+
+[node name="ViewableAchievement" type="Control"]
+custom_minimum_size = Vector2(284, 55)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 284.0
+offset_bottom = 55.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(284, 55)
+layout_mode = 0
+offset_right = 284.0
+offset_bottom = 55.0
+
+[node name="Image" type="TextureRect" parent="VBoxContainer"]
+layout_mode = 2
+texture = ExtResource("1_kqtfk")
+expand_mode = 2
+
+[node name="Text" type="RichTextLabel" parent="VBoxContainer"]
+custom_minimum_size = Vector2(194, 55)
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "This is some explanation text..."

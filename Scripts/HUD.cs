@@ -17,6 +17,7 @@ public partial class HUD : CanvasLayer
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
     private Control NextHandMenu { get { return GetChildControl(PlayPage, "NextHandMenu"); } }
+    private Control AchievementsPage { get { return GetChildControl("AchievementsPage"); } }
     private PotBackground PotBackground
     {
         get
@@ -86,8 +87,10 @@ public partial class HUD : CanvasLayer
     {
         InitializeStateChangeButton(MenuPage, "PlayButton2");
         InitializeStateChangeButton(MenuPage, "QuitButton2");
+        InitializeStateChangeButton(MenuPage, "Achievements");
         InitializeStateChangeButton(PlayPage, "PlayAnotherHand");
         InitializeStateChangeButton(PlayPage, "LeaveTable");
+        InitializeStateChangeButton(AchievementsPage, "BackButton");
 
         TitlePage.Hide();
         MenuPage.Hide();
@@ -110,6 +113,9 @@ public partial class HUD : CanvasLayer
 				break;
             case "Menu":
                 MenuPage.Show();
+                break;
+            case "Achievements":
+                AchievementsPage.Show();
                 break;
             case "Play_Deal":
             case "Play_Loop":
@@ -144,6 +150,9 @@ public partial class HUD : CanvasLayer
                 break;
             case "Menu":
                 MenuPage.Hide();
+                break;
+            case "Achievements":
+                AchievementsPage.Hide();
                 break;
             case "Play_Deal":
             case "Play_Loop":
