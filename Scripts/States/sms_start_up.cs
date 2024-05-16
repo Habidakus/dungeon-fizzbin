@@ -6,7 +6,7 @@ public partial class sms_start_up : state_machine_state
     private Timer _timer = new Timer();
     private double _countDown = 2;
 
-    public override void EnterState()
+    public override void EnterState(Object additionalInfo = null)
     {
         //GetTree().Paused = true;
         _countDown = 2;

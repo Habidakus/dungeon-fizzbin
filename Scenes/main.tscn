@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://cyg6udbgcsgle"]
+[gd_scene load_steps=23 format=3 uid="uid://cyg6udbgcsgle"]
 
 [ext_resource type="PackedScene" uid="uid://xk13m276r8fe" path="res://Scenes/state_machine.tscn" id="1_cfnxq"]
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_rrlci"]
@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://Scripts/States/sms_play_offer_another_hand.cs" id="18_qkhen"]
 [ext_resource type="Script" path="res://Scripts/States/sms_achievements.cs" id="20_egsis"]
 [ext_resource type="Script" path="res://Scripts/States/sms_playAsNewSpecies.cs" id="21_n456a"]
+[ext_resource type="Script" path="res://Scripts/States/sms_change_species.cs" id="22_0uwum"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_rrlci")
@@ -81,3 +82,6 @@ script = ExtResource("20_egsis")
 
 [node name="PlayAsNewSpecies" parent="StateMachine" instance=ExtResource("2_sdobx")]
 script = ExtResource("21_n456a")
+
+[node name="ChangeSpecies" parent="StateMachine" instance=ExtResource("2_sdobx")]
+script = ExtResource("22_0uwum")

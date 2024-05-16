@@ -34,7 +34,7 @@ public partial class state_machine : Node
 		}
 	}
 
-	public void SwitchState(string stateName)
+	public void SwitchState(string stateName, Object additionalInfo = null)
 	{
 		if (_current_state != null)
 		{
@@ -52,7 +52,7 @@ public partial class state_machine : Node
 		//GD.Print($"Switching to state {stateName}");
 
         GetHUD().StartState(_current_state.Name.ToString(), GetMainNode());
-        _current_state.EnterState();
+        _current_state.EnterState(additionalInfo);
     }
 
 	public Main GetMainNode()

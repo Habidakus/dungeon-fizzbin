@@ -9,7 +9,8 @@ public partial class sms_play_someone_bets : state_machine_state
     private double _wait = 0.2;
     private int _positionId = -1;
     private double _betFloor = 0;
-    public override void EnterState()
+
+    public override void EnterState(Object? additionalInfo = null)
     {
         _positionId = -1;
         _betFloor = 0;

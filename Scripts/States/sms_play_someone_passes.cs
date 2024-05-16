@@ -9,7 +9,8 @@ public partial class sms_play_someone_passes : state_machine_state
     private double _delay = 1;
     private bool _confirmed = false;
     private int _positionID = -1;
-    public override void EnterState()
+
+    public override void EnterState(Object? additionalInfo = null)
     {
         _confirmed = false;
         _positionID = -1;

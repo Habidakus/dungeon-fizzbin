@@ -105,7 +105,7 @@ public class AchievementManager
         _achievements = achievementsEl._achievements;
     }
 
-    static readonly float s_minUnlock = 5f;
+    static readonly float s_minUnlock = 3.33f;
     static readonly Dictionary<Categories, float> s_unlockFractions = new Dictionary<Categories, float>()
     {
         { Categories.CAT_PLAY_AGAINST, 0.1f },

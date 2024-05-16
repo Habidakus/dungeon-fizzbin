@@ -12,6 +12,7 @@ public partial class StateChangeButton : NinePatchRect
 
     public Texture2D? Default = null;
     private state_machine? _state_machine = null;
+    private Object? _additional_info = null;
     
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -27,10 +28,11 @@ public partial class StateChangeButton : NinePatchRect
 	{
 	}
 
-    public void Initialize(state_machine sm)
+    public void Initialize(state_machine sm, Object? additionalInfo = null)
     {
         Default = Texture;
         _state_machine = sm;
+        _additional_info = additionalInfo;
     }
 
     public void OnMouseEnter()
@@ -63,7 +65,7 @@ public partial class StateChangeButton : NinePatchRect
                 {
                     if (_state_machine != null)
                     {
-                        _state_machine.SwitchState(State);
+                        _state_machine.SwitchState(State, _additional_info);
                     }
                     else
                     {

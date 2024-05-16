@@ -3,7 +3,7 @@ using System;
 
 public partial class state_machine_state : Node
 {
-    public virtual void EnterState()
+    public virtual void EnterState(Object additionalInfo = null)
     {
     }
 

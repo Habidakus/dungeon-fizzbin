@@ -6,7 +6,7 @@ using System;
 public partial class sms_play_deal : state_machine_state
 {
     bool _run = false;
-    public override void EnterState()
+    public override void EnterState(Object? additionalInfo = null)
     {
         _run = false;
     }

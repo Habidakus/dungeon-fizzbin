@@ -23,6 +23,8 @@ public partial class HUD : CanvasLayer
     public Texture2D? BronzeAchievement = null;
     [Export]
     public PackedScene? VisibleAchievement = null;
+    [Export]
+    public PackedScene? SpeciesSelectButton = null;
 
     private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
@@ -186,6 +188,8 @@ public partial class HUD : CanvasLayer
             case "PlayAsNewSpecies":
                 PlayAsNewSpeciesPage.Show();
                 break;
+            case "ChangeSpecies":
+                break;
             case "Play_Deal":
             case "Play_Loop":
             case "Play_Someone_Passes":
@@ -225,6 +229,8 @@ public partial class HUD : CanvasLayer
                 break;
             case "PlayAsNewSpecies":
                 PlayAsNewSpeciesPage.Hide();
+                break;
+            case "ChangeSpecies":
                 break;
             case "Play_Deal":
             case "Play_Loop":
@@ -878,6 +884,7 @@ public partial class HUD : CanvasLayer
         // 868, 8
         if (FindChild("PopUpAchievement") is Control visiblePopUpAchievement)
         {
+            visiblePopUpAchievement.Show();
             visiblePopUpAchievement.Position = new Vector2(868, -59);
             ConfigureAchievementBox(_popUpUnlocks[0], visiblePopUpAchievement);
             Tween tween = GetTree().CreateTween();
@@ -889,6 +896,38 @@ public partial class HUD : CanvasLayer
 
     internal void SetSelectSpecies(Species[] species)
     {
-        //throw new NotImplementedException();
+        if (SpeciesSelectButton == null)
+            throw new Exception("Species Select Button not defined for HUD");
+
+        if (PlayAsNewSpeciesPage.FindChild("ButtonContainer") is GridContainer buttonContainer)
+        {
+            foreach (Node? child in buttonContainer.GetChildren())
+            {
+                if (child != null)
+                    buttonContainer.RemoveChild(child);
+            }
+
+            foreach (Species sp in species)
+            {
+                if (SpeciesSelectButton.Instantiate() is StateChangeButton newButton)
+                {
+                    Label label = new Label();
+                    label.SetAnchorsPreset(Control.LayoutPreset.Center);
+                    label.AddThemeColorOverride("font_color", new Color(0, 0, 0));
+                    label.AddThemeFontSizeOverride("font_size", 22);
+                    label.Text = sp.Name;
+                    label.ResetSize();
+                    label.CustomMinimumSize = label.Size;
+                    newButton.CustomMinimumSize = label.Size + new Vector2(80, 20);
+                    newButton.State = "ChangeSpecies";
+                    label.Position = Vector2.Zero - (new Vector2(8, 7) + (label.Size / 2));
+                    newButton.Initialize(StateMachine, sp);
+                    newButton.AddChild(label);
+                    buttonContainer.AddChild(newButton);
+                }
+            }
+
+            buttonContainer.ResetSize();
+        }
     }
 }

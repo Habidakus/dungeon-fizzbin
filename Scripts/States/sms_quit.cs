@@ -3,7 +3,7 @@ using System;
 
 public partial class sms_quit : state_machine_state
 {
-    public override void EnterState()
+    public override void EnterState(Object additionalInfo = null)
     {
         GetTree().Quit();
     }

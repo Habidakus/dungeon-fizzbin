@@ -7,7 +7,8 @@ public partial class sms_play_resolve_passandriver : state_machine_state
 {
     private double _wait = 0;
     private const double _delay = 0.5;
-    public override void EnterState()
+
+    public override void EnterState(Object? additionalInfo = null)
     {
         _wait = _delay;
     }

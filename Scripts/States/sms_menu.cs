@@ -3,7 +3,7 @@ using System;
 
 public partial class sms_menu : state_machine_state
 {
-    public override void EnterState()
+    public override void EnterState(Object additionalInfo = null)
     {
         //GetTree().Paused = false;
     }

@@ -5,7 +5,7 @@ using System;
 
 public partial class sms_play_loop : state_machine_state
 {
-    public override void EnterState()
+    public override void EnterState(Object? additionalInfo = null)
     {
     }
 

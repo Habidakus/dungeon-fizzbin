@@ -7,7 +7,7 @@ public partial class sms_play_animate_discards : state_machine_state
 {
     private double wait;
     private const double duration = 0.5;
-    public override void EnterState()
+    public override void EnterState(Object? additionalInfo = null)
     {
         wait = duration;
     }

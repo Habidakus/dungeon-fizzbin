@@ -6,7 +6,8 @@ using System;
 public partial class sms_play_someone_discards : state_machine_state
 {
     private int _positionID = -1;
-    public override void EnterState()
+
+    public override void EnterState(Object? additionalInfo = null)
     {
         _positionID = -1;
         GetMainNode().ForceSomeoneToDiscard(ConfirmDiscardEvent);

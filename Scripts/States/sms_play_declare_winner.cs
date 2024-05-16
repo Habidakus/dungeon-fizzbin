@@ -8,7 +8,7 @@ public partial class sms_play_declare_winner : state_machine_state
     double delay = 2.5;
     double wait;
 
-    public override void EnterState()
+    public override void EnterState(Object? additionalInfo = null)
     {
         GetMainNode().AwardWinner();
         wait = delay;

@@ -67,7 +67,7 @@ class Species
             new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
-            new Species("Birdman", 1, 20, DealComponent_Birdman, NameGenerator_Birdman, CanAdd_Birdman, GetText_Birdman),
+            new Species("Birdman", 0.5, 20, DealComponent_Birdman, NameGenerator_Birdman, CanAdd_Birdman, GetText_Birdman),
             new Species("Firbolg", 1, 30, DealComponent_Firbolg, NameGenerator_Firbolg, null, GetText_Firbolg),
             //new Species("Golem", 1, 30),
             //new Species("Lich", 0.25, 30),

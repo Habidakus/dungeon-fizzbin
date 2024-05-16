@@ -79,6 +79,18 @@ public partial class Main : Node
         Dealer = (1 + Dealer) % TableSize;
     }
 
+    internal void ChangeSpecies(Species species)
+    {
+        if (_deal == null)
+        {
+            _deal = new Deal(CarryoverPot);
+            CarryoverPot = 0;
+        }
+
+        _players.Clear();
+        _players.Add(new Player(Deal, species));
+    }
+
     internal void StartFreshDeal()
     {
         //Test();
