@@ -6,7 +6,7 @@ using System;
 public partial class sms_play_player_leaves_game : state_machine_state
 {
     private double _wait = 0;
-    private const double _delay = 7.5;
+    private const double _delay = 5;
     public override void EnterState()
     {
         GetMainNode().HavePlayerLeave();

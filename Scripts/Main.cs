@@ -1,4 +1,5 @@
 using Godot;
+using GodotPlugins.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -484,6 +485,8 @@ public partial class Main : Node
             throw new Exception($"Why does {bestHand} have no hand value in AwardWinner()?");
         }
 
+        HashSet<Species> unlockedSpeciesBeforeAchievementTracking = Species.GetUnlockedSpecies(Achievments).ToHashSet();
+
         double minimumHandWorthToWinPot = (double)Deal.MinimumHandToWinPot;
         if (!bestHand.Player.HasRevealed)
         {
@@ -519,14 +522,22 @@ public partial class Main : Node
 
         Deal.UpdatePot(hud);
         hud.HighlightPosition(-1);
-        //Deal.Dump();
 
         PlayersWhoAreLeaving = new List<int>();
+
+        // We only want to mark each species once per hand
+        HashSet<Species> trackedSpecies = new HashSet<Species>();
+
         foreach (Player player in _players)
         {
             if (player.IsNPC)
             {
-                Achievments.TrackGamesAgainstSpecies(player.Species, this);
+                if (trackedSpecies.Contains(player.Species))
+                {
+                    Achievments.TrackGamesAgainstSpecies(player.Species, this);
+                    trackedSpecies.Add(player.Species);
+                }
+
                 if (100 + rnd.NextDouble() * 100 > (player.Wallet + CarryoverPot))
                 {
                     PlayersWhoAreLeaving.Add(player.PositionID);
@@ -538,6 +549,14 @@ public partial class Main : Node
                     Achievments.TrackSpeciesLeavingTable(player.Species, becauseTheyArePoor: false, this);
                 }
             }
+        }
+
+        HashSet<Species> unlockedSpeciesAfterAchievementTracking = Species.GetUnlockedSpecies(Achievments).ToHashSet();
+        foreach (Species newlyUnlockedSpecies in unlockedSpeciesAfterAchievementTracking.Where(a => !unlockedSpeciesBeforeAchievementTracking.Contains(a)))
+        {
+            Achievement speciesUnlockAchievement = new Achievement(AchievementManager.Categories.UNLOCK_SPECIES, newlyUnlockedSpecies.Name, 1);
+            AchievementUnlock unlockPopup = new AchievementUnlock(speciesUnlockAchievement, -1, $"You have unlocked playing as {newlyUnlockedSpecies.Name}");
+            GetHUD().ShowAchievementPopUp(unlockPopup);
         }
 
         SaveFile.Save(new MainSaveElement(this), SaveFilePath);

@@ -51,7 +51,7 @@ public partial class state_machine : Node
 
 		//GD.Print($"Switching to state {stateName}");
 
-        GetHUD().StartState(_current_state.Name.ToString());
+        GetHUD().StartState(_current_state.Name.ToString(), GetMainNode());
         _current_state.EnterState();
     }
 

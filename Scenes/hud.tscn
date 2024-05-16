@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=13 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
 [ext_resource type="PackedScene" uid="uid://ci4dydx2sl63t" path="res://Scenes/pot.tscn" id="3_0m0fb"]
 [ext_resource type="Texture2D" uid="uid://0k1ihafmqhqf" path="res://Art/ButtonHover.png" id="3_m1pt8"]
+[ext_resource type="Texture2D" uid="uid://casny3bj57bv6" path="res://Art/NewSpeciesUnlock.png" id="4_ey0ob"]
 [ext_resource type="Texture2D" uid="uid://u3mwu4hycy5e" path="res://Art/ButtonDefault.png" id="4_lpgy3"]
 [ext_resource type="Texture2D" uid="uid://bncymmiotr2pw" path="res://Art/Gold.png" id="4_ti031"]
 [ext_resource type="Texture2D" uid="uid://coimq1vbwm0oa" path="res://Art/Silver.png" id="5_4w2wm"]
@@ -16,6 +17,7 @@
 script = ExtResource("1_yllrm")
 NineGridButton_Default = ExtResource("4_lpgy3")
 NineGridButton_Hover = ExtResource("3_m1pt8")
+SpeciesUnlockAchievement = ExtResource("4_ey0ob")
 GoldAchievement = ExtResource("4_ti031")
 SilverAchievement = ExtResource("5_4w2wm")
 BronzeAchievement = ExtResource("6_tkyqm")
@@ -79,6 +81,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -310,6 +313,40 @@ theme_override_font_sizes/font_size = 22
 text = "Achievements"
 horizontal_alignment = 1
 
+[node name="padding3" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NewPlayer" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
+custom_minimum_size = Vector2(235, 0)
+layout_mode = 2
+patch_margin_left = 20
+patch_margin_right = 20
+State = "PlayAsNewSpecies"
+
+[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/NewPlayer"]
+custom_minimum_size = Vector2(175, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "New Species"
+horizontal_alignment = 1
+
 [node name="padding2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -352,8 +389,8 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="AchievementsPage"]
 layout_mode = 1
-offset_right = 1152.0
-offset_bottom = 581.0
+offset_right = 1154.0
+offset_bottom = 567.0
 
 [node name="Label" type="Label" parent="AchievementsPage/VBoxContainer"]
 layout_mode = 2
@@ -362,8 +399,10 @@ text = "Achievements:
 "
 
 [node name="HBoxContainer" type="HBoxContainer" parent="AchievementsPage/VBoxContainer"]
-custom_minimum_size = Vector2(0, 300)
+custom_minimum_size = Vector2(0, 350)
 layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.15
 
 [node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(16, 0)
@@ -387,6 +426,7 @@ text = "Species Unlocks:
 "
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="AchievementsPage/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 
 [node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer2"]
@@ -394,7 +434,7 @@ custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
 
 [node name="UnlocksMargin" type="ScrollContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer2"]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -409,8 +449,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -576.0
-offset_top = -60.0
+offset_top = -69.0
 offset_right = 576.0
+offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -447,6 +488,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="PopUpAchievement" parent="." instance=ExtResource("7_2eio4")]
+visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -455,6 +497,77 @@ offset_top = -59.0
 offset_right = -9.0
 offset_bottom = -4.0
 grow_horizontal = 0
+
+[node name="PlayAsNewSpecies" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="PlayAsNewSpecies"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 453.0
+offset_bottom = 31.0
+text = "Select species to play as (you will start with a fresh stake):"
+
+[node name="GridContainer" type="GridContainer" parent="PlayAsNewSpecies"]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 40.0
+offset_right = 1120.0
+offset_bottom = 556.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PlayAsNewSpecies"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -576.0
+offset_top = -69.0
+offset_right = 576.0
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Label3" type="Label" parent="PlayAsNewSpecies/HBoxContainer"]
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackButton" parent="PlayAsNewSpecies/HBoxContainer" instance=ExtResource("7_bfjw0")]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+patch_margin_left = 50
+patch_margin_right = 50
+State = "Menu"
+
+[node name="Label" type="Label" parent="PlayAsNewSpecies/HBoxContainer/BackButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.0
+offset_top = -15.5
+offset_right = 26.0
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "Cancel"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PlayAsNewSpecies/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]

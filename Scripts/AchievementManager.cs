@@ -12,6 +12,7 @@ public class AchievementUnlock : IComparable<AchievementUnlock>
     private string _text;
 
     public string Text { get { return _text; } }
+    public bool IsSpeciesUnlock { get { return _levelReached == -1; } }
     public bool IsBronze { get { return _levelReached == 0; } }
     public bool IsSilver { get { return _levelReached == 1; } }
     public bool IsGold { get { return _levelReached == 2; } }
@@ -89,6 +90,7 @@ public class AchievementManager
         CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST,
         CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON,
         CAT_WE_WON_WITH_A_RANKING,
+        UNLOCK_SPECIES, // Used only to display unlock popup
     }
 
     private Dictionary<Tuple<Categories, string>, Achievement> _achievements = new();
@@ -117,6 +119,12 @@ public class AchievementManager
 
     internal float GetUnlockedFraction(Species species)
     {
+        if (species == Species.Human)
+        {
+            // Human is always unlocked.
+            return 1f;
+        }
+
         float total = 0;
         foreach (Achievement ach in _achievements.Values)
         {
@@ -137,7 +145,7 @@ public class AchievementManager
         switch (ach.Category)
         {
             case Categories.CAT_PLAY_AGAINST:
-                return AchievementUnlock.Generate(ach, new uint[] { 10, 100, 500 }, $"Played # interesting hands against a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 10, 100, 500 }, $"Played # interesting hands with {ach.SubCat}");
             case Categories.CAT_FORCED_US_TO_FOLD:
                 break;
             case Categories.CAT_LOST_TO_IN_A_SHOWDOWN:
@@ -145,9 +153,9 @@ public class AchievementManager
             case Categories.CAT_WE_FORCED_THEM_TO_FOLD:
                 return AchievementUnlock.Generate(ach, new uint[] { 10, 100, 500 }, $"Saw # {ach.SubCat} fold against us");
             case Categories.CAT_WE_WON_AGAINST:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # GAMES against a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Won # GAMES against a {ach.SubCat}");
             case Categories.CAT_THEY_LEFT_WITH_NO_MONEY:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Saw # {ach.SubCat} leave the table broken");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Saw # {ach.SubCat} leave the table busted");
             case Categories.CAT_THEY_LEFT_WITH_OUR_MONEY:
                 return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Saw # {ach.SubCat} leave the table with our money");
             case Categories.CAT_WE_PLAYED_A_HAND_AND_FOLDED:
@@ -155,9 +163,9 @@ public class AchievementManager
             case Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST:
                 break;
             case Categories.CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # GAMES as a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Won # GAMES as a {ach.SubCat}");
             case Categories.CAT_WE_WON_WITH_A_RANKING:
-                return AchievementUnlock.Generate(ach, new uint[] { 1, 25, 25 }, $"Won # GAMES with a {ach.SubCat}");
+                return AchievementUnlock.Generate(ach, new uint[] { 1, 5, 25 }, $"Won # GAMES with {ach.SubCat}");
             default:
                 throw new NotImplementedException($"There is no Unlock implemented for achievement category {ach.Category}");
         }

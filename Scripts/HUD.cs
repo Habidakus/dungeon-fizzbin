@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +13,8 @@ public partial class HUD : CanvasLayer
     public Texture2D? NineGridButton_Default = null;
     [Export]
     public Texture2D? NineGridButton_Hover = null;
+    [Export]
+    public Texture2D? SpeciesUnlockAchievement = null;
     [Export]
     public Texture2D? GoldAchievement = null;
     [Export]
@@ -26,6 +29,7 @@ public partial class HUD : CanvasLayer
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
     private Control NextHandMenu { get { return GetChildControl(PlayPage, "NextHandMenu"); } }
     private Control AchievementsPage { get { return GetChildControl("AchievementsPage"); } }
+    private Control PlayAsNewSpeciesPage { get { return GetChildControl("PlayAsNewSpecies"); } }
     private PotBackground PotBackground
     {
         get
@@ -96,14 +100,17 @@ public partial class HUD : CanvasLayer
         InitializeStateChangeButton(MenuPage, "PlayButton2");
         InitializeStateChangeButton(MenuPage, "QuitButton2");
         InitializeStateChangeButton(MenuPage, "Achievements");
+        InitializeStateChangeButton(MenuPage, "NewPlayer");
         InitializeStateChangeButton(PlayPage, "PlayAnotherHand");
         InitializeStateChangeButton(PlayPage, "LeaveTable");
         InitializeStateChangeButton(AchievementsPage, "BackButton");
+        InitializeStateChangeButton(PlayAsNewSpeciesPage, "BackButton");
 
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
         AchievementsPage.Hide();
+        PlayAsNewSpeciesPage.Hide();
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -132,7 +139,36 @@ public partial class HUD : CanvasLayer
         }
     }
 
-public void StartState(string state)
+    private void ShowMenuPage(Main mainNode)
+    {
+        if (MenuPage.FindChild("Achievements") is StateChangeButton achievementsButton)
+        {
+            if (mainNode.Achievments.AchievementsUnlocked.Any())
+            {
+                achievementsButton.Show();
+            }
+            else
+            {
+                achievementsButton.Hide();
+            }
+        }
+
+        if (MenuPage.FindChild("NewPlayer") is StateChangeButton newPlayerButton)
+        {
+            if (Species.GetUnlockedSpecies(mainNode.Achievments).Where(a => a != Species.Human).Any())
+            {
+                newPlayerButton.Show();
+            }
+            else
+            {
+                newPlayerButton.Hide();
+            }
+        }
+
+        MenuPage.Show();
+    }
+
+    public void StartState(string state, Main mainNode)
 	{
 		switch (state)
         {
@@ -142,10 +178,13 @@ public void StartState(string state)
                 TitlePage.Show();
 				break;
             case "Menu":
-                MenuPage.Show();
+                ShowMenuPage(mainNode);
                 break;
             case "Achievements":
                 AchievementsPage.Show();
+                break;
+            case "PlayAsNewSpecies":
+                PlayAsNewSpeciesPage.Show();
                 break;
             case "Play_Deal":
             case "Play_Loop":
@@ -183,6 +222,9 @@ public void StartState(string state)
                 break;
             case "Achievements":
                 AchievementsPage.Hide();
+                break;
+            case "PlayAsNewSpecies":
+                PlayAsNewSpeciesPage.Hide();
                 break;
             case "Play_Deal":
             case "Play_Loop":
@@ -795,30 +837,7 @@ public void StartState(string state)
                 unknownLabel.Text = $"{unknownCount} x Unknown";
                 unlocksBox.AddChild(unknownLabel);
             }
-
-            //Tuple<Species, float>[] sortedSpeciesUnlocks = speciesUnlocks.OrderByDescending(a => a.Item2).ToArray();
-            //foreach (Tuple<Species, float> speciesUnlock in sortedSpeciesUnlocks)
-            //{
-            //    Label label = new Label();
-            //    string comma = speciesUnlock != sortedSpeciesUnlocks.Last() ? ", " : "";
-
-            //    if (speciesUnlock.Item2 == 0)
-            //        label.Text = $"UNKNOWN{comma}";
-            //    else if (speciesUnlock.Item2 >= 1)
-            //        label.Text = $"{speciesUnlock.Item1.Name}: Unlocked{comma}";
-            //    else
-            //        label.Text = $"{speciesUnlock.Item1.Name}: {Math.Round(100.0 * speciesUnlock.Item2)}%{comma}";
-
-            //    unlocksBox.AddChild(label);
-            //}
-
-            //unlocksBox.Size = new Vector2(1152 - unlocksBox.Position.X, unlocksBox.Size.Y);
-            //unlocksBox.UpdateMinimumSize();
-            //unlocksBox.ResetSize();
         }
-
-        //AchievementsPage.UpdateMinimumSize();
-        //AchievementsPage.ResetSize();
     }
 
     private void ConfigureAchievementBox(AchievementUnlock unlock, Node visibileAchievementNode)
@@ -831,6 +850,8 @@ public void StartState(string state)
                 imageRect.Texture = SilverAchievement;
             else if (unlock.IsGold)
                 imageRect.Texture = GoldAchievement;
+            else if (unlock.IsSpeciesUnlock)
+                imageRect.Texture = SpeciesUnlockAchievement;
             else
                 throw new Exception($"Bad achievement level for {unlock}");
         }
@@ -853,7 +874,6 @@ public void StartState(string state)
 
     private void ShowNextPopUpAchievement()
     {
-
         // 868, -59
         // 868, 8
         if (FindChild("PopUpAchievement") is Control visiblePopUpAchievement)
@@ -865,5 +885,10 @@ public void StartState(string state)
             tween.TweenInterval(3);
             tween.TweenProperty(visiblePopUpAchievement, "position", new Vector2(868, -59), 1);
         }
+    }
+
+    internal void SetSelectSpecies(Species[] species)
+    {
+        //throw new NotImplementedException();
     }
 }

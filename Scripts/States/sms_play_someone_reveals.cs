@@ -6,7 +6,7 @@ using System;
 public partial class sms_play_someone_reveals : state_machine_state
 {
     private double wait;
-    private const double duration = 2.5;
+    private const double duration = 2;
     public override void EnterState()
     {
         wait = duration;
