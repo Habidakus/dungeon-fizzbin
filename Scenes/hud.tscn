@@ -51,7 +51,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.588235, 0.654902, 0.0588235, 1)
+color = Color(0.65098, 0.0588235, 0.176471, 1)
 
 [node name="MarginContainer" type="MarginContainer" parent="TitlePage"]
 layout_mode = 1
@@ -262,7 +262,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.588235, 0.654902, 0.0588235, 1)
+color = Color(0.65, 0.0585, 0.1768, 1)
 
 [node name="MarginContainer" type="MarginContainer" parent="MenuPage"]
 layout_mode = 1
@@ -411,7 +411,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.588235, 0.654902, 0.0588235, 1)
+color = Color(0.65098, 0.0588235, 0.176471, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="AchievementsPage"]
 layout_mode = 1
@@ -548,7 +548,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.588235, 0.654902, 0.0588235, 1)
+color = Color(0.65, 0.0585, 0.1768, 1)
 
 [node name="Label" type="Label" parent="PlayAsNewSpecies"]
 layout_mode = 0

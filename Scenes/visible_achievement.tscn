@@ -21,7 +21,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_0oijm")
-color = Color(0.423529, 0.470588, 0.0431373, 1)
+color = Color(0.152941, 0.466667, 0.0784314, 1)
 
 [node name="VBoxContainer" type="HBoxContainer" parent="."]
 custom_minimum_size = Vector2(276, 55)
