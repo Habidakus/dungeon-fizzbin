@@ -23,6 +23,7 @@
 14th (1/4) Cleaned out debug print lines, started work on species unlock, cleaned up visual hand UX
 15th Added achievements
 16th Player can now switch species
+17th (1/2) updated to use theme, corrected some UX/UI
 
 total: 16.25 days
 
@@ -33,7 +34,11 @@ TODO:
 - Need to implement bluffing
 - If you never put any money in past ante, it's not an intersting game achievement.
 
-felt green #277714
-card red #f03a17
-monarch red #770b21
-jewel green #147754
+felt green #277714 (HSV 109 83 47)
+jewel green #147754 (HSV 159 83 47)
+card red #f03a17 (HSV 10 91 94)
+monarch red #770b21 (HSV 348 91 47)
+
+murky green #6c780b (HSV 66.5 91 47)
+pea green #96A70F (66.7 91 65.5)
+light royal blue #3F29F0 (HSV 246.5 83 94)

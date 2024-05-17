@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://whhs3vhsqldk"]
+[gd_scene load_steps=3 format=3 uid="uid://whhs3vhsqldk"]
 
 [ext_resource type="Texture2D" uid="uid://bncymmiotr2pw" path="res://Art/Gold.png" id="1_kqtfk"]
+[ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="2_0oijm"]
 
 [node name="ViewableAchievement" type="Control"]
 custom_minimum_size = Vector2(276, 55)
@@ -10,6 +11,7 @@ offset_right = 276.0
 offset_bottom = 55.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme = ExtResource("2_0oijm")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -18,13 +20,15 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.121569, 0.121569, 0.121569, 1)
+theme = ExtResource("2_0oijm")
+color = Color(0.423529, 0.470588, 0.0431373, 1)
 
 [node name="VBoxContainer" type="HBoxContainer" parent="."]
 custom_minimum_size = Vector2(276, 55)
 layout_mode = 0
 offset_right = 276.0
 offset_bottom = 55.0
+theme = ExtResource("2_0oijm")
 
 [node name="Image" type="TextureRect" parent="VBoxContainer"]
 layout_mode = 2
@@ -35,5 +39,11 @@ expand_mode = 2
 custom_minimum_size = Vector2(186, 55)
 layout_mode = 2
 size_flags_horizontal = 3
+theme = ExtResource("2_0oijm")
+theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/bold_font_size = 18
+theme_override_font_sizes/italics_font_size = 18
+theme_override_font_sizes/bold_italics_font_size = 18
+theme_override_font_sizes/mono_font_size = 18
 bbcode_enabled = true
 text = "This is some explanation text..."

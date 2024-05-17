@@ -23,10 +23,10 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            if (FindChild("Container") is Control container)
+            if (FindChild("Margin") is Control margin)
             {
-                cr.Position = container.Position;
-                cr.Size = container.Size;
+                cr.Position = margin.Position;
+                cr.Size = margin.Size;
             }
         }
         else
@@ -337,6 +337,7 @@ public partial class VisibleHand : Node2D
                 if (discardBox.GetChildCount() == 0)
                 {
                     Label discardtext = new Label();
+                    discardtext.Theme = discardBox.Theme;
                     discardtext.Text = "Discard: ";
                     discardtext.HorizontalAlignment = HorizontalAlignment.Right;
                     discardtext.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -374,6 +375,7 @@ public partial class VisibleHand : Node2D
             if (infoBox.GetChildCount() == 0)
             {
                 Label nameText = new Label();
+                nameText.Theme = infoBox.Theme;
                 nameText.Text = name;
                 nameText.HorizontalAlignment = HorizontalAlignment.Left;
                 nameText.VerticalAlignment = VerticalAlignment.Bottom;
@@ -381,6 +383,7 @@ public partial class VisibleHand : Node2D
                 infoBox.AddChild(nameText);
 
                 Label speciesText = new Label();
+                speciesText.Theme = infoBox.Theme;
                 speciesText.Text = species.Name;
                 speciesText.HorizontalAlignment = HorizontalAlignment.Right;
                 speciesText.VerticalAlignment = VerticalAlignment.Bottom;
@@ -411,6 +414,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("Score") is Label scoreLabel)
         {
+            scoreLabel.RemoveThemeFontSizeOverride("font_size");
             scoreLabel.Text = (amountBet > 0) ? $"Ante: ${amountBet:F2}" : "Fold";
             scoreLabel.Show();
         }
@@ -424,6 +428,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("Score") is Label scoreLabel)
         {
+            scoreLabel.RemoveThemeFontSizeOverride("font_size");
             scoreLabel.Text = (amountBet > 0) ? $"Fold: ${amountBet:F2}": "Fold";
             scoreLabel.Show();
         }
@@ -458,6 +463,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("Score") is Label scoreLabel)
         {
+            scoreLabel.RemoveThemeFontSizeOverride("font_size");
             if (string.IsNullOrEmpty(description))
                 scoreLabel.Text = $"${amountBet:F2}";
             else
@@ -484,6 +490,7 @@ public partial class VisibleHand : Node2D
 
         if (FindChild("Score") is Label scoreLabel)
         {
+            scoreLabel.AddThemeFontSizeOverride("font_size", 18);
             scoreLabel.Text = $"\"{leavingText}\"";
             scoreLabel.Show();
         }

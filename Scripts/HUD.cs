@@ -278,7 +278,7 @@ public partial class HUD : CanvasLayer
 
     internal void SetStake(double amount)
     {
-        if (PlayPage.FindChild("PlayersCash") is Godot.Label label)
+        if (PlayPage.FindChild("PlayersCash") is Label label)
         {
             label.Text = $"Your stake: ${amount:F2}";
         }
@@ -492,18 +492,32 @@ public partial class HUD : CanvasLayer
 
             if (_selectedCardsAsText.Count == _selectedCardsGoalCount)
             {
-                instructions.Text = $"[center]Please click here to confirm passing these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
+                instructions.Text = $"[center]Passing these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
             }
             else
             {
                 int remainingToSelect = _selectedCardsGoalCount - _selectedCardsAsText.Count;
                 if (remainingToSelect > 1)
                 {
-                    instructions.Text = $"[center]Please select {remainingToSelect} more cards to pass to {_selectedCardsDestination}[/center]";
+                    if (_selectedCardsAsText.Count > 0)
+                    {
+                        instructions.Text = $"[center]Select {remainingToSelect} more cards to pass to {_selectedCardsDestination}[/center]";
+                    }
+                    else
+                    {
+                        instructions.Text = $"[center]Please select {remainingToSelect} cards to pass to {_selectedCardsDestination}[/center]";
+                    }
                 }
                 else if (remainingToSelect == 1)
                 {
-                    instructions.Text = $"[center]Please select one more card to pass to {_selectedCardsDestination}[/center]";
+                    if (_selectedCardsAsText.Count > 0)
+                    {
+                        instructions.Text = $"[center]Select one more card to pass to {_selectedCardsDestination}[/center]";
+                    }
+                    else
+                    {
+                        instructions.Text = $"[center]Please select one card to pass to {_selectedCardsDestination}[/center]";
+                    }
                 }
                 else if (remainingToSelect == -1)
                 {
@@ -810,7 +824,9 @@ public partial class HUD : CanvasLayer
                 unlocksBox.RemoveChild(child);
 
             Label unlockedLabel = new Label();
+            unlockedLabel.Theme = unlocksBox.Theme;
             Label inProgressLabel = new Label();
+            inProgressLabel.Theme = unlocksBox.Theme;
             int unknownCount = 0;
 
             foreach (var speciesUnlock in speciesUnlocks)
@@ -841,6 +857,7 @@ public partial class HUD : CanvasLayer
             {
                 Label unknownLabel = new Label();
                 unknownLabel.Text = $"{unknownCount} x Unknown";
+                unknownLabel.Theme = unlocksBox.Theme;
                 unlocksBox.AddChild(unknownLabel);
             }
         }
@@ -913,8 +930,7 @@ public partial class HUD : CanvasLayer
                 {
                     Label label = new Label();
                     label.SetAnchorsPreset(Control.LayoutPreset.Center);
-                    label.AddThemeColorOverride("font_color", new Color(0, 0, 0));
-                    label.AddThemeFontSizeOverride("font_size", 22);
+                    label.Theme = buttonContainer.Theme;
                     label.Text = sp.Name;
                     label.ResetSize();
                     label.CustomMinimumSize = label.Size;

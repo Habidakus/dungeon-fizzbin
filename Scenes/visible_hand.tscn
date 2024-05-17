@@ -1,27 +1,31 @@
-[gd_scene load_steps=3 format=3 uid="uid://es0qj11xru43"]
+[gd_scene load_steps=4 format=3 uid="uid://es0qj11xru43"]
 
 [ext_resource type="Script" path="res://Scripts/VisibleHand.cs" id="1_qn6xg"]
 [ext_resource type="PackedScene" uid="uid://bgth6f6cw771c" path="res://Scenes/card.tscn" id="2_d84d1"]
+[ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="3_rkxvb"]
 
 [node name="VisibleHand" type="Node2D"]
 script = ExtResource("1_qn6xg")
 _visibleCardScene = ExtResource("2_d84d1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(30, 30)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -188.5
-offset_top = -84.5
-offset_right = 188.5
-offset_bottom = 84.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = 15.0
+offset_bottom = 15.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 color = Color(0.0784314, 0.466667, 0.329412, 1)
 
-[node name="Container" type="VBoxContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="."]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -35,23 +39,35 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
-[node name="Cards" type="HBoxContainer" parent="Container"]
+[node name="Container" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Cards" type="HBoxContainer" parent="Margin/Container"]
 custom_minimum_size = Vector2(138, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 
-[node name="Score" type="Label" parent="Container"]
+[node name="Score" type="Label" parent="Margin/Container"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme = ExtResource("3_rkxvb")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Discards" type="HBoxContainer" parent="Container"]
+[node name="Discards" type="HBoxContainer" parent="Margin/Container"]
 layout_mode = 2
 size_flags_horizontal = 8
+theme = ExtResource("3_rkxvb")
 
-[node name="PlayerInfo" type="HBoxContainer" parent="Container"]
+[node name="PlayerInfo" type="HBoxContainer" parent="Margin/Container"]
 layout_mode = 2
+theme = ExtResource("3_rkxvb")
 
-[connection signal="resized" from="Container" to="." method="OnContainerResized"]
+[connection signal="resized" from="Margin" to="." method="OnContainerResized"]
+[connection signal="resized" from="Margin/Container" to="." method="OnContainerResized"]
