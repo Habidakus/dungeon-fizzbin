@@ -492,7 +492,7 @@ public partial class HUD : CanvasLayer
 
             if (_selectedCardsAsText.Count == _selectedCardsGoalCount)
             {
-                instructions.Text = $"[center]Passing these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
+                instructions.Text = $"[center]Pass these {_selectedCardsGoalCount} to {_selectedCardsDestination}[/center]";
             }
             else
             {
@@ -785,10 +785,12 @@ public partial class HUD : CanvasLayer
         _selectedCardsAsText = null;
         _selectedCardsDestination = string.Empty;
         _selectedCardsConfirmed = false;
-        if (FindChild($"Hand{positionID}") is VisibleHand hand)
-        {
-            hand.DisableCardSelection(CardSelectionGuiHandler);
-        }
+
+        // Don't bother to actually remove the check, it can remain until we get rid of the card.
+        //if (FindChild($"Hand{positionID}") is VisibleHand hand)
+        //{
+        //    hand.DisableCardSelection(CardSelectionGuiHandler);
+        //}
 
         if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect confirmationButton)
         {
