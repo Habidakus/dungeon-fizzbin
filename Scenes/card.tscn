@@ -1,5 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://bgth6f6cw771c"]
+[gd_scene load_steps=5 format=3 uid="uid://bgth6f6cw771c"]
 
+[ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="1_l4t6w"]
 [ext_resource type="Texture2D" uid="uid://hj3lrlmeu2u8" path="res://Art/CardBoarder.png" id="1_wpm4y"]
 [ext_resource type="Texture2D" uid="uid://b63bq0nb4c2s6" path="res://Art/cardBack.png" id="2_rrf1p"]
 [ext_resource type="Texture2D" uid="uid://dmfjidm1b488n" path="res://Art/eye.png" id="3_55efg"]
@@ -12,6 +13,7 @@ pivot_offset = Vector2(34.5, 20)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 0
+theme = ExtResource("1_l4t6w")
 texture = ExtResource("1_wpm4y")
 patch_margin_left = 6
 patch_margin_top = 6

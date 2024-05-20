@@ -17,6 +17,7 @@ class Card /*: IComparable<Card> */
 
     public static double MaxFractionalValue { get { return Rank.MaxFractionalValue + Suit.MaxFractionalValue; } }
     public double FractionalValue { get { return Rank.FractionalValue + Suit.FractionalValue; } }
+    public string Tooltip { get { return $"{Rank.Tooltip} of {Suit.Tooltip}"; } }
 
     public override string ToString()
     {
@@ -65,6 +66,7 @@ class Suit : IComparable<Suit>
     internal readonly string _text;
     internal double FractionalValue { get; private set; }
     internal static double MaxFractionalValue { get { return 0.95; } }
+    public string Tooltip { get { return $"{_text}s"; } }
 
     internal Suit(string unicode, SuitColor color, string text, double fractionalValue)
     {
@@ -129,6 +131,36 @@ class Rank /*: IComparable<Rank>*/
     internal double FractionalValue { get { return Wraps ? MaxFractionalValue : _strength; } }
     readonly internal int _strength;
     readonly internal string _unicode;
+
+    public string Tooltip
+    { 
+        get
+        {
+            if (Wraps)
+                return "Ace";
+
+            switch (_strength)
+            {
+                case 0: return "Shadow";
+                case 1: return "Minion";
+                case 2: return "Two";
+                case 3: return "Three";
+                case 4: return "Four";
+                case 5: return "Five";
+                case 6: return "Six";
+                case 7: return "Seven";
+                case 8: return "Eight";
+                case 9: return "Nine";
+                case 10: return "Ten";
+                case 11: return "Jack";
+                case 12: return "Queen";
+                case 13: return "King";
+                case 14: return "Empress";
+                case 15: return "God";
+                default: throw new Exception($"Missing tooltip name for Rank {_unicode}");
+            }
+        } 
+    }
 
     internal Rank(char ascii, bool wraps)
     {

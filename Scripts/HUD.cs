@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 public partial class HUD : CanvasLayer
 {
     [Export]
-    public Texture2D? NineGridButton_Default = null;
+    public Texture2D? NineGridButton_DefaultX = null;
     [Export]
-    public Texture2D? NineGridButton_Hover = null;
+    public Texture2D? NineGridButton_HoverX = null;
     [Export]
     public Texture2D? SpeciesUnlockAchievement = null;
     [Export]
@@ -86,9 +86,9 @@ public partial class HUD : CanvasLayer
 
     private void InitializeStateChangeButton(Control page, string buttonName)
     {
-        if (page.FindChild(buttonName) is StateChangeButton quitButton)
+        if (page.FindChild(buttonName) is StateChangeButton stateChangeButton)
         {
-            quitButton.Initialize(StateMachine);
+            stateChangeButton.Initialize(StateMachine, Color.FromHtml("#FF0000"));
         }
         else
         {
@@ -96,23 +96,63 @@ public partial class HUD : CanvasLayer
         }
     }
 
+    private void InitializeStateChangeButton2(Control page, string buttonName, string bbCode)
+    {
+        if (page.FindChild(buttonName) is StateChangeButton stateChangeButton)
+        {
+            stateChangeButton.Initialize2(StateMachine, bbCode);
+        }
+        else if (page.FindChild(buttonName) is Node node)
+        {
+            throw new Exception($"{page.Name}.{node.Name} is not a StateChangeButton");
+        }
+        else
+        {
+            throw new Exception($"{page.Name} has no child named {buttonName}");
+        }
+    }
+
+    private void SetBackgroundColor(Control control)
+    {
+        if (control.FindChild("Background") is ColorRect background)
+        {
+            background.Color = Main.Color_Background;
+        }
+    }
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        InitializeStateChangeButton(MenuPage, "PlayButton2");
-        InitializeStateChangeButton(MenuPage, "QuitButton2");
-        InitializeStateChangeButton(MenuPage, "Achievements");
-        InitializeStateChangeButton(MenuPage, "NewPlayer");
-        InitializeStateChangeButton(PlayPage, "PlayAnotherHand");
-        InitializeStateChangeButton(PlayPage, "LeaveTable");
-        InitializeStateChangeButton(AchievementsPage, "BackButton");
-        InitializeStateChangeButton(PlayAsNewSpeciesPage, "BackButton");
+        InitializeStateChangeButton2(MenuPage, "PlaySCB", "[center]Play[/center]");
+        InitializeStateChangeButton2(MenuPage, "QuitSCB", "[center]Quit[/center]");
+        InitializeStateChangeButton2(MenuPage, "AchievementsSCB", "[center]Achievements[/center]");
+        InitializeStateChangeButton2(MenuPage, "NewPlayerSCB", "[center]Switch Species[/center]");
+        InitializeStateChangeButton2(PlayPage, "PlayAnotherHandSCB", "[center]Play Another Hand[/center]");
+        InitializeStateChangeButton2(PlayPage, "LeaveTableSCB", "[center]Leave Table[/center]");
+        InitializeStateChangeButton2(AchievementsPage, "BackSCB", "[center]Cancel[/center]");
+        InitializeStateChangeButton2(PlayAsNewSpeciesPage, "BackSCB", "[center]Cancel[/center]");
+
+        SetBackgroundColor(TitlePage);
+        SetBackgroundColor(MenuPage);
+        SetBackgroundColor(AchievementsPage);
+        SetBackgroundColor(PlayAsNewSpeciesPage);
 
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
         AchievementsPage.Hide();
         PlayAsNewSpeciesPage.Hide();
+
+        if (PlayPage.FindChild("ConfirmationButton") is Control confirmationButton)
+        {
+            if (confirmationButton.FindChild("ColorRect") is ColorRect confirmationColorRect)
+            {
+                confirmationColorRect.Color = Main.Color_ButtonDefault;
+            }
+
+            confirmationButton.Hide();
+        }
+
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -441,14 +481,14 @@ public partial class HUD : CanvasLayer
         {
             if (buttonEvent.Pressed)
             {
-                if (visibleCard.FindChild("Label") is Godot.Label label)
+                if (visibleCard.FindChild("Label") is Label label)
                 {
                     if (_selectedCardsAsText == null)
                     {
                         throw new Exception($"Why is _selectedCardsAsText null when {Name}.Text={label.Text} is selected? (note that _potentialBetValues={_potentialBetValues})");
                     }
 
-                    CanvasItem ci = VisibleHand.GetCardSelectionMark(visibleCard);
+                    Polygon2D ci = VisibleHand.GetCardSelectionMark(visibleCard);
                     if (ci.Visible)
                     {
                         _selectedCardsAsText.RemoveAll(a => a.CompareTo(label.Text) == 0);
@@ -457,6 +497,7 @@ public partial class HUD : CanvasLayer
                     else
                     {
                         _selectedCardsAsText.Add(label.Text);
+                        ci.Color = Main.Color_SelectionMark;
                         ci.Show();
                         if (ci is Node2D scaleableNode)
                         {
@@ -580,7 +621,7 @@ public partial class HUD : CanvasLayer
 
     internal void OnConfirmationButtonMouseEnter()
     {
-        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect npr)
+        if (PlayPage.FindChild("ConfirmationButton").FindChild("ColorRect") is ColorRect confirmationColorRect)
         {
             if (_selectedCardsAsText != null)
             {
@@ -589,7 +630,8 @@ public partial class HUD : CanvasLayer
                     // We are passing, and must only accept the button if the count is right
                     if (0 == _selectedCardsGoalCount - _selectedCardsAsText.Count)
                     {
-                        npr.Texture = NineGridButton_Hover;
+                        confirmationColorRect.Color = Main.Color_ButtonHover;
+                        //npr.Texture = NineGridButton_Hover;
                     }
                 }
                 else
@@ -597,22 +639,25 @@ public partial class HUD : CanvasLayer
                     // We are discarding, and can accept up to _selectedCardGoalCount discards
                     if (_selectedCardsAsText.Count <= _selectedCardsGoalCount)
                     {
-                        npr.Texture = NineGridButton_Hover;
+                        confirmationColorRect.Color = Main.Color_ButtonHover;
+                        //npr.Texture = NineGridButton_Hover;
                     }
                 }
             }
             else if (_potentialBetValues != null)
             {
-                npr.Texture = NineGridButton_Hover;
+                confirmationColorRect.Color = Main.Color_ButtonHover;
+                //npr.Texture = NineGridButton_Hover;
             }
         }
     }
 
     internal void OnConfirmationButtonMouseExit()
     {
-        if (PlayPage.FindChild("ConfirmationButton") is NinePatchRect npr)
+        if (PlayPage.FindChild("ConfirmationButton").FindChild("ColorRect") is ColorRect confirmationColorRect)
         {
-            npr.Texture = NineGridButton_Default;
+            confirmationColorRect.Color = Main.Color_ButtonDefault;
+            //npr.Texture = NineGridButton_Default;
         }
     }
 
@@ -885,6 +930,11 @@ public partial class HUD : CanvasLayer
         {
             richText.Text = unlock.Text;
         }
+
+        if (visibileAchievementNode.FindChild("ColorRect") is ColorRect colorRec)
+        {
+            colorRec.Color = Main.Color_Achievement;
+        }
     }
 
     private double _popUpWait = 0;
@@ -930,22 +980,23 @@ public partial class HUD : CanvasLayer
             {
                 if (SpeciesSelectButton.Instantiate() is StateChangeButton newButton)
                 {
-                    Label label = new Label();
-                    label.SetAnchorsPreset(Control.LayoutPreset.Center);
-                    label.Theme = buttonContainer.Theme;
-                    label.Text = sp.Name;
-                    label.ResetSize();
-                    label.CustomMinimumSize = label.Size;
-                    newButton.CustomMinimumSize = label.Size + new Vector2(80, 20);
                     newButton.State = "ChangeSpecies";
-                    label.Position = Vector2.Zero - (new Vector2(8, 7) + (label.Size / 2));
-                    newButton.Initialize(StateMachine, sp);
-                    newButton.AddChild(label);
+                    newButton.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+                    newButton.Initialize2(StateMachine, $"[center]{sp.Name}[/center]", sp);
+                    if (newButton.FindChild("Text") is RichTextLabel rtl)
+                    {
+                        //rtl.Position += new Vector2(-4, 8);
+                        //rtl.CustomMinimumSize = new Vector2(Math.Max(rtl.Size.X, sp.Name.Length * 11), rtl.Size.Y);
+                        //rtl.ResetSize();
+                        //newButton.CustomMinimumSize = rtl.Size + new Vector2(122, 44);
+                        //newButton.UpdateMinimumSize();
+                    }
+
                     buttonContainer.AddChild(newButton);
                 }
             }
 
-            buttonContainer.ResetSize();
+            //buttonContainer.ResetSize();
         }
     }
 }

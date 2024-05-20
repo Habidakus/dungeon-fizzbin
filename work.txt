@@ -24,6 +24,7 @@
 15th Added achievements
 16th Player can now switch species
 17th (1/2) updated to use theme, corrected some UX/UI
+20th 
 
 total: 16.25 days
 
@@ -33,6 +34,9 @@ TODO:
 - Need to upload to github
 - Need to implement bluffing
 - If you never put any money in past ante, it's not an intersting game achievement.
+- Tutorial
+- Tooltips
+- Color selector
 
 felt green #277714 (HSV 109 83 47)
 jewel green #147754 (HSV 159 83 47)
@@ -43,3 +47,18 @@ murky green #6c780b (HSV 66.5 91 47)
 pea green #96A70F (66.7 91 65.5)
 light royal blue #3F29F0 (HSV 246.5 83 94)
 shiraz #a60f2d (HSV 348 91 65)
+
+felt green #277714 (HSV 109 83 47)
+	Dark 0B3400
+	Light 6AB756
+Evergreen 0F5A4D (HSV 205 )
+	Dark 002720
+	Light 418A7E
+Noble Red 881724 (HSV 355 )
+	Dark 3B0007
+	Light D0626F
+ Enchanted Forest (HSV 145 )
+	Dark 2D3A00
+	Light AFCD61
+	
+

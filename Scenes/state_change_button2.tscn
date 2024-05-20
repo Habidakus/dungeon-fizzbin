@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8533332gnox6"]
+
+[ext_resource type="Script" path="res://Scripts/StateChangeButton.cs" id="1_3y5ko"]
+[ext_resource type="Texture2D" uid="uid://c3wtsh6w7cinw" path="res://Art/EmptyButton.png" id="2_ogvvg"]
+[ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="3_lgm0r"]
+
+[node name="StateChangeButton2" type="NinePatchRect"]
+z_as_relative = false
+custom_minimum_size = Vector2(0, 52)
+anchors_preset = -1
+anchor_right = 0.381076
+anchor_bottom = 0.0771605
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+texture = ExtResource("2_ogvvg")
+patch_margin_left = 22
+patch_margin_top = 22
+patch_margin_right = 22
+patch_margin_bottom = 22
+script = ExtResource("1_3y5ko")
+metadata/_edit_use_anchors_ = true
+
+[node name="ColorRect" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_top = 7.0
+offset_right = -7.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 4
+color = Color(0.152941, 0.466667, 0.0784314, 1)
+
+[node name="Text" type="RichTextLabel" parent="."]
+clip_contents = false
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = 10.0
+offset_right = -18.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 8
+theme = ExtResource("3_lgm0r")
+bbcode_enabled = true
+text = "This is some test text. Incredible lies."
+scroll_active = false
+autowrap_mode = 2

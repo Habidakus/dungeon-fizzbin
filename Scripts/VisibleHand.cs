@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 #nullable enable
 
 public partial class VisibleHand : Node2D
@@ -105,9 +106,9 @@ public partial class VisibleHand : Node2D
         throw new Exception($"Visible Card {visibleCard.Name} has no child {nodeName}");
     }
 
-    internal static CanvasItem GetCardSelectionMark(Control visibleCard)
+    internal static Polygon2D GetCardSelectionMark(Control visibleCard)
     {
-        if (visibleCard.FindChild("SelectionMark", recursive: false) is CanvasItem retVal)
+        if (visibleCard.FindChild("SelectionMark", recursive: false) is Polygon2D retVal)
             return retVal;
 
         throw new Exception($"Visible Card {visibleCard.Name} has no child SelectionMark");
@@ -120,10 +121,18 @@ public partial class VisibleHand : Node2D
 
         Label cardLabel = GetCardLabel(visibleCard);
         cardLabel.Visible = exposed;
+        cardLabel.Theme = visibleCard.Theme;
         cardLabel.Text = card.ToString();
+        cardLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 
         TextureRect cardBack = GetCardBackside(visibleCard);
         cardBack.Visible = !exposed;
+        cardBack.MouseFilter = Control.MouseFilterEnum.Stop;
+
+        if (exposed)
+        {
+            visibleCard.TooltipText = card.Tooltip;
+        }
 
         //visibleCard.UpdateMinimumSize();
         //visibleCard.ResetSize();
@@ -178,6 +187,7 @@ public partial class VisibleHand : Node2D
             TextureRect bigEyeIcon = GetCardVisibiltityAll(visibleCard);
             bigEyeIcon.Show();
             BlinkCard(bigEyeIcon);
+            bigEyeIcon.TooltipText = "Can be seen by entire table";
 
             for (int j = 1; j< 5; ++j)
             {
@@ -193,6 +203,7 @@ public partial class VisibleHand : Node2D
                     TextureRect smallEyeIcon = GetCardVisibiltityPerPosition(visibleCard, positionID);
                     smallEyeIcon.Show();
                     BlinkCard(smallEyeIcon);
+                    smallEyeIcon.TooltipText = "Can be seen by someone else";
                 }
             }
         }
@@ -250,7 +261,7 @@ public partial class VisibleHand : Node2D
 
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            cr.Color = Color.FromHtml("277714");
+            cr.Color = Main.Color_HandActive;
         }
     }
 
@@ -439,7 +450,7 @@ public partial class VisibleHand : Node2D
 
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            cr.Color = Color.FromString("#770b21", Color.Color8(128,128,128));
+            cr.Color = Main.Color_HandInactive;
         }
         else
         {
@@ -451,7 +462,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            cr.Color = Color.FromString("#770b21", Color.Color8(128, 128, 128));
+            cr.Color = Main.Color_HandInactive;
         }
         else
         {
@@ -481,7 +492,7 @@ public partial class VisibleHand : Node2D
     {
         if (FindChild("ColorRect") is ColorRect cr)
         {
-            cr.Color = Color.FromHtml("147754");
+            cr.Color = Main.Color_PlayerLeaves;
         }
         else
         {

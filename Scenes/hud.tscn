@@ -1,32 +1,30 @@
-[gd_scene load_steps=14 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=13 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
 [ext_resource type="PackedScene" uid="uid://ci4dydx2sl63t" path="res://Scenes/pot.tscn" id="3_0m0fb"]
-[ext_resource type="Texture2D" uid="uid://0k1ihafmqhqf" path="res://Art/ButtonHover.png" id="3_m1pt8"]
 [ext_resource type="Texture2D" uid="uid://casny3bj57bv6" path="res://Art/NewSpeciesUnlock.png" id="4_ey0ob"]
-[ext_resource type="Texture2D" uid="uid://u3mwu4hycy5e" path="res://Art/ButtonDefault.png" id="4_lpgy3"]
 [ext_resource type="Texture2D" uid="uid://bncymmiotr2pw" path="res://Art/Gold.png" id="4_ti031"]
 [ext_resource type="Texture2D" uid="uid://coimq1vbwm0oa" path="res://Art/Silver.png" id="5_4w2wm"]
 [ext_resource type="PackedScene" uid="uid://bgth6f6cw771c" path="res://Scenes/card.tscn" id="6_qtayb"]
 [ext_resource type="Texture2D" uid="uid://bdar7og3fe5xu" path="res://Art/Bronze.png" id="6_tkyqm"]
 [ext_resource type="PackedScene" uid="uid://whhs3vhsqldk" path="res://Scenes/visible_achievement.tscn" id="7_2eio4"]
-[ext_resource type="PackedScene" uid="uid://beskx4rpqqp30" path="res://Scenes/state_change_button.tscn" id="7_bfjw0"]
 [ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="10_7rybn"]
+[ext_resource type="Texture2D" uid="uid://c3wtsh6w7cinw" path="res://Art/EmptyButton.png" id="12_06srf"]
+[ext_resource type="PackedScene" uid="uid://b8533332gnox6" path="res://Scenes/state_change_button2.tscn" id="14_jphh5"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_yllrm")
-NineGridButton_Default = ExtResource("4_lpgy3")
-NineGridButton_Hover = ExtResource("3_m1pt8")
 SpeciesUnlockAchievement = ExtResource("4_ey0ob")
 GoldAchievement = ExtResource("4_ti031")
 SilverAchievement = ExtResource("5_4w2wm")
 BronzeAchievement = ExtResource("6_tkyqm")
 VisibleAchievement = ExtResource("7_2eio4")
-SpeciesSelectButton = ExtResource("7_bfjw0")
+SpeciesSelectButton = ExtResource("14_jphh5")
 
 [node name="Background" type="ColorRect" parent="."]
 visible = false
+z_index = -2
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -35,6 +33,7 @@ grow_vertical = 2
 color = Color(0.152941, 0.466667, 0.0784314, 1)
 
 [node name="TitlePage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -94,7 +93,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -123,7 +121,6 @@ position = Vector2(576, 324)
 _visibleCardScene = ExtResource("6_qtayb")
 
 [node name="NextHandMenu" type="VBoxContainer" parent="PlayPage"]
-visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -138,46 +135,14 @@ grow_horizontal = 0
 grow_vertical = 0
 alignment = 2
 
-[node name="PlayAnotherHand" parent="PlayPage/NextHandMenu" instance=ExtResource("7_bfjw0")]
+[node name="PlayAnotherHandSCB" parent="PlayPage/NextHandMenu" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(280, 52)
 layout_mode = 2
 State = "Play_Deal"
 
-[node name="Label" type="Label" parent="PlayPage/NextHandMenu/PlayAnotherHand"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -98.5
-offset_top = -15.5
-offset_right = 98.5
-offset_bottom = 15.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "Play another hand"
-vertical_alignment = 1
-
-[node name="LeaveTable" parent="PlayPage/NextHandMenu" instance=ExtResource("7_bfjw0")]
+[node name="LeaveTableSCB" parent="PlayPage/NextHandMenu" instance=ExtResource("14_jphh5")]
 layout_mode = 2
 State = "Menu"
-
-[node name="Label" type="Label" parent="PlayPage/NextHandMenu/LeaveTable"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -63.5
-offset_top = -15.5
-offset_right = 63.5
-offset_bottom = 15.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "Leave Table"
 
 [node name="PlayerFacingInfo" type="VBoxContainer" parent="PlayPage"]
 layout_mode = 1
@@ -212,12 +177,11 @@ size_flags_horizontal = 3
 max_value = 9.0
 
 [node name="ConfirmationButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo"]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 3
 mouse_filter = 0
-texture = ExtResource("4_lpgy3")
+texture = ExtResource("12_06srf")
 patch_margin_left = 30
 patch_margin_top = 30
 patch_margin_right = 30
@@ -228,13 +192,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 7
 
 [node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer"]
 layout_mode = 2
@@ -244,6 +208,11 @@ bbcode_enabled = true
 text = "[center]Please select 3 cards that you will pass to Happy Hornswoggle.[/center]"
 fit_content = true
 scroll_active = false
+
+[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer"]
+z_index = -1
+layout_mode = 2
+mouse_filter = 2
 
 [node name="MenuPage" type="Control" parent="."]
 visible = false
@@ -256,6 +225,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Background" type="ColorRect" parent="MenuPage"]
+z_index = -2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -279,27 +249,12 @@ theme_override_constants/margin_bottom = 100
 [node name="VBoxContainer" type="VBoxContainer" parent="MenuPage/MarginContainer"]
 layout_mode = 2
 
-[node name="PlayButton2" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
+[node name="PlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
 layout_mode = 2
 State = "Play_Deal"
 
-[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/PlayButton2"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "Play	"
-
-[node name="padding" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+[node name="padding4" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -307,32 +262,11 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Achievements" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
-custom_minimum_size = Vector2(235, 0)
+[node name="AchievementsSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
 layout_mode = 2
-patch_margin_left = 20
-patch_margin_right = 20
 State = "Achievements"
 
-[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/Achievements"]
-custom_minimum_size = Vector2(175, 0)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "Achievements"
-horizontal_alignment = 1
-
-[node name="padding3" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+[node name="padding5" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -340,32 +274,11 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NewPlayer" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
-custom_minimum_size = Vector2(235, 0)
+[node name="NewPlayerSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
 layout_mode = 2
-patch_margin_left = 20
-patch_margin_right = 20
 State = "PlayAsNewSpecies"
 
-[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/NewPlayer"]
-custom_minimum_size = Vector2(175, 0)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "New Species"
-horizontal_alignment = 1
-
-[node name="padding2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+[node name="padding6" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -373,30 +286,11 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="QuitButton2" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("7_bfjw0")]
+[node name="QuitSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
 layout_mode = 2
-patch_margin_left = 20
-patch_margin_right = 20
 State = "Quit"
 
-[node name="Label2" type="Label" parent="MenuPage/MarginContainer/VBoxContainer/QuitButton2"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "Quit"
-
 [node name="AchievementsPage" type="Control" parent="."]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -405,6 +299,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Background" type="ColorRect" parent="AchievementsPage"]
+z_index = -2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -493,27 +388,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackButton" parent="AchievementsPage/HBoxContainer" instance=ExtResource("7_bfjw0")]
-custom_minimum_size = Vector2(80, 0)
+[node name="BackSCB" parent="AchievementsPage/HBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 State = "Menu"
-
-[node name="Label" type="Label" parent="AchievementsPage/HBoxContainer/BackButton"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -30.0
-offset_top = -15.0
-offset_right = 29.0
-offset_bottom = 16.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("10_7rybn")
-text = "Back"
-horizontal_alignment = 1
 
 [node name="Label2" type="Label" parent="AchievementsPage/HBoxContainer"]
 layout_mode = 2
@@ -542,6 +421,7 @@ grow_vertical = 2
 theme = ExtResource("10_7rybn")
 
 [node name="Background" type="ColorRect" parent="PlayAsNewSpecies"]
+z_index = -2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -588,30 +468,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackButton" parent="PlayAsNewSpecies/HBoxContainer" instance=ExtResource("7_bfjw0")]
-custom_minimum_size = Vector2(80, 0)
+[node name="BackSCB" parent="PlayAsNewSpecies/HBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
-patch_margin_left = 50
-patch_margin_right = 50
 State = "Menu"
-
-[node name="Label" type="Label" parent="PlayAsNewSpecies/HBoxContainer/BackButton"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -35.5
-offset_top = -15.5
-offset_right = 35.5
-offset_bottom = 15.5
-grow_horizontal = 2
-grow_vertical = 2
-pivot_offset = Vector2(35.5, 15.5)
-theme = ExtResource("10_7rybn")
-text = "Cancel"
-horizontal_alignment = 1
 
 [node name="Label2" type="Label" parent="PlayAsNewSpecies/HBoxContainer"]
 layout_mode = 2
