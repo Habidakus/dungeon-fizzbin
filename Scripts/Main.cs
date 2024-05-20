@@ -7,14 +7,14 @@ using System.Linq;
 
 public partial class Main : Node
 {
-    static public Color Color_SelectionMark { get { return Color.FromHtml("#770b21C0"); } } // Note the alpha
-    static public Color Color_HandInactive { get { return Color.FromHtml("#770b21"); } }
+    static public Color Color_SelectionMark { get { return Color.FromHtml("#881724C0"); } } // Note the alpha
+    static public Color Color_HandInactive { get { return Color.FromHtml("#881724"); } }
     static public Color Color_HandActive { get { return Color.FromHtml("#277714"); } }
-    static public Color Color_Achievement { get { return Color.FromHtml("#277714"); } }
-    static public Color Color_PlayerLeaves { get { return Color.FromHtml("#147754"); } }
-    static public Color Color_Background { get { return Color.FromHtml("#147754"); } }
-    static public Color Color_ButtonHover { get { return Color.FromHtml("#147754"); } }
+    static public Color Color_Achievement { get { return Color.FromHtml("#418A7E"); } }
     static public Color Color_ButtonDefault { get { return Color.FromHtml("#277714"); } }
+    static public Color Color_ButtonHover { get { return Color.FromHtml("#418A7E"); } }
+    static public Color Color_PlayerLeaves { get { return Color.FromHtml("#6AB756"); } }
+    static public Color Color_Background { get { return Color.FromHtml("#0F5A4D"); } }
 
     private const string SaveFilePath = "user://save_game.dat";
     Random rnd = new Random((int)DateTime.Now.Ticks);

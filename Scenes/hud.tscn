@@ -121,6 +121,7 @@ position = Vector2(576, 324)
 _visibleCardScene = ExtResource("6_qtayb")
 
 [node name="NextHandMenu" type="VBoxContainer" parent="PlayPage"]
+visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
