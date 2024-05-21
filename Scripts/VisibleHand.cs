@@ -220,6 +220,8 @@ public partial class VisibleHand : Node2D
                 {
                     TextureRect cardBack = GetCardBackside(visibleCard);
                     cardBack.Hide();
+
+                    visibleCard.TooltipText = $"{card.Tooltip}, visible to you";
                     cardLabel.Show();
                     cardLabel.ResetSize();
                 }
