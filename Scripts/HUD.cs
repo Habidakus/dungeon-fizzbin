@@ -31,6 +31,7 @@ public partial class HUD : CanvasLayer
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
     private Control NextHandMenu { get { return GetChildControl(PlayPage, "NextHandMenu"); } }
     private Control AchievementsPage { get { return GetChildControl("AchievementsPage"); } }
+    private Control HowToPlayPage { get { return GetChildControl("HowToPlayPage"); } }
     private Control PlayAsNewSpeciesPage { get { return GetChildControl("PlayAsNewSpecies"); } }
     private PotBackground PotBackground
     {
@@ -114,21 +115,25 @@ public partial class HUD : CanvasLayer
         InitializeStateChangeButton(MenuPage, "PlaySCB", "[center]Play[/center]");
         InitializeStateChangeButton(MenuPage, "QuitSCB", "[center]Quit[/center]");
         InitializeStateChangeButton(MenuPage, "AchievementsSCB", "[center]Achievements[/center]");
+        InitializeStateChangeButton(MenuPage, "HowToPlaySCB", "[center]How To Play[/center]");
         InitializeStateChangeButton(MenuPage, "NewPlayerSCB", "[center]Switch Species[/center]");
         InitializeStateChangeButton(PlayPage, "PlayAnotherHandSCB", "[center]Play Another Hand[/center]");
         InitializeStateChangeButton(PlayPage, "LeaveTableSCB", "[center]Leave Table[/center]");
-        InitializeStateChangeButton(AchievementsPage, "BackSCB", "[center]Cancel[/center]");
+        InitializeStateChangeButton(AchievementsPage, "BackSCB", "[center]Back[/center]");
+        InitializeStateChangeButton(HowToPlayPage, "BackSCB", "[center]Back[/center]");
         InitializeStateChangeButton(PlayAsNewSpeciesPage, "BackSCB", "[center]Cancel[/center]");
 
         SetBackgroundColor(TitlePage);
         SetBackgroundColor(MenuPage);
         SetBackgroundColor(AchievementsPage);
+        SetBackgroundColor(HowToPlayPage);
         SetBackgroundColor(PlayAsNewSpeciesPage);
 
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
         AchievementsPage.Hide();
+        HowToPlayPage.Hide();
         PlayAsNewSpeciesPage.Hide();
 
         if (PlayPage.FindChild("ConfirmationButton") is Control confirmationButton)
@@ -213,6 +218,9 @@ public partial class HUD : CanvasLayer
             case "Achievements":
                 AchievementsPage.Show();
                 break;
+            case "How_To_Play":
+                HowToPlayPage.Show();
+                break;
             case "PlayAsNewSpecies":
                 PlayAsNewSpeciesPage.Show();
                 break;
@@ -254,6 +262,9 @@ public partial class HUD : CanvasLayer
                 break;
             case "Achievements":
                 AchievementsPage.Hide();
+                break;
+            case "How_To_Play":
+                HowToPlayPage.Hide();
                 break;
             case "PlayAsNewSpecies":
                 PlayAsNewSpeciesPage.Hide();

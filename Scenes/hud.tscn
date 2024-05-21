@@ -93,6 +93,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -287,11 +288,24 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HowToPlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+layout_mode = 2
+State = "How_To_Play"
+
+[node name="padding7" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="QuitSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
 layout_mode = 2
 State = "Quit"
 
 [node name="AchievementsPage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -475,6 +489,83 @@ layout_mode = 2
 State = "Menu"
 
 [node name="Label2" type="Label" parent="PlayAsNewSpecies/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("10_7rybn")
+
+[node name="HowToPlayPage" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="HowToPlayPage"]
+z_index = -2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.65, 0.0585, 0.1768, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="HowToPlayPage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HowToPlayPage/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("10_7rybn")
+text = "How to Play:"
+
+[node name="MarginContainer" type="MarginContainer" parent="HowToPlayPage/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="RichTextLabel" type="RichTextLabel" parent="HowToPlayPage/MarginContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme = ExtResource("10_7rybn")
+bbcode_enabled = true
+text = "At it's heart, [i]Dungeon Fizzbin[/i] is just poker. The primary difference from five card draw poker is that each species that sits down at the table changes how the game is played. If two members of the same species sit down at the table, then the rule that their species changes is augmented even further. For instance, when single human joins for a hand of Dungeon Fizzbin, the first card each player discards is flipped face up so that everyone at the table can see it. If a second human sits down at the table, then the first two discards will be flipped face up so that they are both visible to all players.
+[p]
+The specific rules for each species (other than humans, described above) is left for the player to figure out for themselves. Even if you never figure out a specific species alteration to the rules, if you play against them long enough the rule will eventually be revealed.
+[p]
+As you play you'll unlock achievements, and evenutally the ability to play as species other than human.
+"
+fit_content = true
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="HowToPlayPage/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("10_7rybn")
+
+[node name="BackSCB" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+State = "Menu"
+
+[node name="Label2" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")

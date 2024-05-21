@@ -25,7 +25,7 @@
 16th Player can now switch species
 17th (1/2) updated to use theme, corrected some UX/UI
 20th Re-organized UX code so all colors could be drawn from Main, added some tooltips
-21st (1/4) fixed tooltip bugs, added a couple centaur names
+21st (1/2) fixed tooltip bugs, added a couple centaur names, added how to play page
 
 total: 16.25 days
 
