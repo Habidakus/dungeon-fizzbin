@@ -187,7 +187,7 @@ public partial class VisibleHand : Node2D
             TextureRect bigEyeIcon = GetCardVisibiltityAll(visibleCard);
             bigEyeIcon.Show();
             BlinkCard(bigEyeIcon);
-            bigEyeIcon.TooltipText = "Can be seen by entire table";
+            bigEyeIcon.TooltipText = $"{visibleCard.TooltipText}, can be seen by entire table";
 
             for (int j = 1; j< 5; ++j)
             {
@@ -203,7 +203,7 @@ public partial class VisibleHand : Node2D
                     TextureRect smallEyeIcon = GetCardVisibiltityPerPosition(visibleCard, positionID);
                     smallEyeIcon.Show();
                     BlinkCard(smallEyeIcon);
-                    smallEyeIcon.TooltipText = "Can be seen by someone else";
+                    smallEyeIcon.TooltipText = $"{visibleCard.TooltipText}, can be seen by someone else";
                 }
             }
         }

@@ -53,7 +53,7 @@ public partial class StateChangeButton : NinePatchRect
             //rtl.CustomMinimumSize = rtl.Size;
             //this.CustomMinimumSize = rtl.Size + new Vector2(PatchMarginLeft /*+ PatchMarginRight*/, PatchMarginBottom /*+ PatchMarginTop*/);
             //this.ResetSize();
-            GD.Print($"{Name}.Text.MinSize = {rtl.CustomMinimumSize} {Name}.MinSize = {CustomMinimumSize} {Name}.Text.Size = {rtl.Size} {Name}.Size = {Size}");
+            //GD.Print($"{Name}.Text.MinSize = {rtl.CustomMinimumSize} {Name}.MinSize = {CustomMinimumSize} {Name}.Text.Size = {rtl.Size} {Name}.Size = {Size}");
         }
     }
 
