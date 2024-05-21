@@ -24,7 +24,7 @@
 15th Added achievements
 16th Player can now switch species
 17th (1/2) updated to use theme, corrected some UX/UI
-20th 
+20th Re-organized UX code so all colors could be drawn from Main, added some tooltips
 
 total: 16.25 days
 
