@@ -12,7 +12,7 @@ public partial class sms_achievements : state_machine_state
         AchievementManager achievments = GetMainNode().Achievments;
         GetHUD().SetAchievmentsAndUnlocks(
             achievments.AchievementsUnlocked.ToArray(),
-            Species.GetUnlockedSpeciesAndFraction(achievments).ToArray());
+            Species.GetUnlockedSpeciesPlayableAndFraction(achievments).ToArray());
     }
 
     public override void Update(double delta)

@@ -10,7 +10,7 @@ public partial class sms_playAsNewSpecies : state_machine_state
     public override void EnterState(Object? additionalInfo = null)
     {
         AchievementManager achievments = GetMainNode().Achievments;
-        GetHUD().SetSelectSpecies(Species.GetUnlockedSpecies(achievments).ToArray());
+        GetHUD().SetSelectSpecies(Species.GetUnlockedSpeciesPlayable(achievments).ToArray());
     }
 
     public override void Update(double delta)

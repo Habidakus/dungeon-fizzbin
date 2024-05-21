@@ -59,7 +59,7 @@ class Suit : IComparable<Suit>
     };
 
     static internal Suit Skull = new Suit('\u2620', SuitColor.Blue, "Death", 0.20);
-    static internal Suit Swords = new Suit('\u2694', SuitColor.Blue, "Swords", 0.90);
+    static internal Suit Swords = new Suit('\u2694', SuitColor.Blue, "Sword", 0.90);
 
     internal readonly string _unicode;
     internal readonly SuitColor _color;

@@ -22,14 +22,16 @@ class Species
     private double _weight = 1;
     private double Weight { get { return (Main.HandNumber < _introHand) ? 0 : _weight; } }
     public String Name { get; private set; }
+    public String RuleBBCode { get; private set; }
     private SpeciesNameGenerator? _nameGenerator;
     private readonly DealComponent _dealComponent;
     private readonly SpeciesAllowed? _allowed;
     private SpeciesText? _speciesText;
 
-    private Species(String name, double weight, int introHand, DealComponent dealComponent, SpeciesNameGenerator? sng = null, SpeciesAllowed? allowed = null, SpeciesText? speciesText = null)
+    private Species(String name, double weight, int introHand, String ruleBBCode, DealComponent dealComponent, SpeciesNameGenerator? sng = null, SpeciesAllowed? allowed = null, SpeciesText? speciesText = null)
     {
         Name = name;
+        RuleBBCode = ruleBBCode;
         _weight = weight;
         _introHand = introHand;
         _nameGenerator = sng;
@@ -53,22 +55,50 @@ class Species
         AllSpecies = new List<Species>() {
             //new Species("BLANK1", 1, 0, DealComponent_DoNothing, null, null, null),
             //new Species("BLANK2", 1, 0, DealComponent_DoNothing, null, null, null),
-            new Species("Human", 0.5, 0, DealComponent_Human, NameGenerator_Human, null, GetText_Human),
-            new Species("Elf", 1, 0, DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
-            new Species("Goblin", 0.5, 0, DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin, GetText_Greenskin),
-            new Species("Dwarf", 0.25, 5, DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
-            new Species("Dragonkin", 1, 5, DealComponent_Dragonkin, NameGenerator_Dragonkin, null, GetText_Dragonkin),
-            new Species("Troll", 1, 10, DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll, GetText_Greenskin),
-            new Species("Lizardman", 1, 10, DealComponent_Lizardman, NameGenerator_Lizardman),
-            new Species("Orc", 1, 15, DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
-            new Species("Halfling", 1, 15, DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
-            new Species("Centaur", 0.5, 15, DealComponent_Centaur, NameGenerator_Centaur, null, GetText_Centaur),
-            new Species("Pixie", 1, 15, DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
-            new Species("Giant", 1, 15, DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
+            new Species("Human", 0.5, 0,
+                "First card(s) discarded by each player are revealed to the entire table.",
+                DealComponent_Human, NameGenerator_Human, null, GetText_Human),
+            new Species("Elf", 1, 0,
+                $"Add the {Rank.Empress._unicode} ({Rank.Empress.Tooltip}) and {Rank.Jupiter._unicode} ({Rank.Jupiter.Tooltip}) ranks to the deck, which are higher than a {Rank.DefaultRanks[11]._unicode} ({Rank.DefaultRanks[11].Tooltip})",
+                DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
+            new Species("Goblin", 0.5, 0,
+                $"Removes the {Rank.DefaultRanks[5]._unicode} ({Rank.DefaultRanks[5].Tooltip}) and {Rank.DefaultRanks[4]._unicode} ({Rank.DefaultRanks[4].Tooltip}) ranks from the deck.",
+                DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin, GetText_Greenskin),
+            new Species("Dwarf", 0.25, 5,
+                "For each Dwarf add two cards to the river, and deal one less card to each player.",
+                DealComponent_Dwarf, NameGenerator_Dwarf, null, GetText_Dwarf),
+            new Species("Dragonkin", 1, 5,
+                $"Add the {Suit.Skull._unicode} ({Suit.Skull.Tooltip}) and {Suit.Swords._unicode} ({Suit.Swords.Tooltip}) suits to the deck; this allows the Prison hand.",
+                DealComponent_Dragonkin, NameGenerator_Dragonkin, null, GetText_Dragonkin),
+            new Species("Troll", 1, 10,
+                $"Remove the {Suit.DefaultSuits[0]._unicode} ({Suit.DefaultSuits[0].Tooltip}) and {Suit.DefaultSuits[3]._unicode} ({Suit.DefaultSuits[3].Tooltip}) suits from the deck.",
+                DealComponent_Troll, NameGenerator_Troll, CanAdd_Troll, GetText_Greenskin),
+            new Species("Lizardman", 1, 10,
+                "See the highest ranked card(s) in your right neighbor's hand.",
+                DealComponent_Lizardman, NameGenerator_Lizardman),
+            new Species("Orc", 1, 15,
+                $"Removes the {Rank.DefaultRanks[6]._unicode} ({Rank.DefaultRanks[6].Tooltip}) and {Rank.DefaultRanks[7]._unicode} ({Rank.DefaultRanks[7].Tooltip}) ranks from the deck.",
+                DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
+            new Species("Halfling", 1, 15, 
+                "Before the discard phase, pass card(s) to your left neighbor - this card will continue to be revealed to you.",
+                DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
+            new Species("Centaur", 0.5, 15,
+                "You must pay more to the ante for each card you discard.",
+                DealComponent_Centaur, NameGenerator_Centaur, null, GetText_Centaur),
+            new Species("Pixie", 1, 15,
+                "The ranking of cards are inverted; thus a two of hearts is more important than a three of hearts, although hands still rank in difficulty.",
+                DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
+            new Species("Giant", 1, 15,
+                "The highest three cards dealt are visible to all players.",
+                DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
             //new Species("Ghoul", 1, 15),
             //new Species("Dogman", 1, 15),
-            new Species("Birdman", 0.5, 20, DealComponent_Birdman, NameGenerator_Birdman, CanAdd_Birdman, GetText_Birdman),
-            new Species("Firbolg", 1, 30, DealComponent_Firbolg, NameGenerator_Firbolg, null, GetText_Firbolg),
+            new Species("Birdman", 0.5, 20,
+                "Any hand that finishes with merely a pair (or prison with two Birdmen) is scrubbed and the pot is added to the next hand.",
+                 DealComponent_Birdman, NameGenerator_Birdman, CanAdd_Birdman, GetText_Birdman),
+            new Species("Firbolg", 1, 30,
+                $"Add the {Rank.Lead._unicode} ({Rank.Lead.Tooltip}) and {Rank.Anhk._unicode} ({Rank.Anhk.Tooltip}) ranks to the deck, which are lower than a {Rank.DefaultRanks[0]._unicode} ({Rank.DefaultRanks[0].Tooltip})",
+                DealComponent_Firbolg, NameGenerator_Firbolg, null, GetText_Firbolg),
             //new Species("Golem", 1, 30),
             //new Species("Lich", 0.25, 30),
             //new Species("Vampire", 0.5, 30),
@@ -88,7 +118,7 @@ class Species
         }
     }
 
-    internal static IEnumerable<Tuple<Species,float>> GetUnlockedSpeciesAndFraction(AchievementManager achievementManager)
+    internal static IEnumerable<Tuple<Species,float>> GetUnlockedSpeciesPlayableAndFraction(AchievementManager achievementManager)
     {
         if (AllSpecies == null)
         {
@@ -97,14 +127,15 @@ class Species
 
         foreach (Species species in AllSpecies!)
         {
-            float unlockedFraction = achievementManager.GetUnlockedFraction(species);
+            float unlockedFraction = achievementManager.GetUnlockedFraction(species, s_minUnlockPlayable);
             yield return Tuple.Create(species, unlockedFraction);
         }
 
         yield break;
     }
 
-    internal static IEnumerable<Species> GetUnlockedSpecies(AchievementManager achievementManager)
+    static readonly float s_minUnlockPlayable = 3.33f;
+    internal static IEnumerable<Species> GetUnlockedSpeciesPlayable(AchievementManager achievementManager)
     {
         if (AllSpecies == null)
         {
@@ -113,7 +144,27 @@ class Species
 
         foreach (Species species in AllSpecies!)
         {
-            float unlockedFraction = achievementManager.GetUnlockedFraction(species);
+            float unlockedFraction = achievementManager.GetUnlockedFraction(species, s_minUnlockPlayable);
+            if (unlockedFraction >= 1)
+            {
+                yield return species;
+            }
+        }
+
+        yield break;
+    }
+
+    static readonly float s_minUnlockRules = 5f;
+    internal static IEnumerable<Species> GetUnlockedSpeciesRules(AchievementManager achievementManager)
+    {
+        if (AllSpecies == null)
+        {
+            InitSpeciesList();
+        }
+
+        foreach (Species species in AllSpecies!)
+        {
+            float unlockedFraction = achievementManager.GetUnlockedFraction(species, s_minUnlockRules);
             if (unlockedFraction >= 1)
             {
                 yield return species;

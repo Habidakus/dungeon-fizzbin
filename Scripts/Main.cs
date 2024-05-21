@@ -505,7 +505,8 @@ public partial class Main : Node
             throw new Exception($"Why does {bestHand} have no hand value in AwardWinner()?");
         }
 
-        HashSet<Species> unlockedSpeciesBeforeAchievementTracking = Species.GetUnlockedSpecies(Achievments).ToHashSet();
+        HashSet<Species> unlockedSpeciesPlayableBeforeAchievementTracking = Species.GetUnlockedSpeciesPlayable(Achievments).ToHashSet();
+        HashSet<Species> unlockedSpeciesRulesBeforeAchievementTracking = Species.GetUnlockedSpeciesRules(Achievments).ToHashSet();
 
         double minimumHandWorthToWinPot = (double)Deal.MinimumHandToWinPot;
         if (!bestHand.Player.HasRevealed)
@@ -571,12 +572,23 @@ public partial class Main : Node
             }
         }
 
-        HashSet<Species> unlockedSpeciesAfterAchievementTracking = Species.GetUnlockedSpecies(Achievments).ToHashSet();
-        foreach (Species newlyUnlockedSpecies in unlockedSpeciesAfterAchievementTracking.Where(a => !unlockedSpeciesBeforeAchievementTracking.Contains(a)))
         {
-            Achievement speciesUnlockAchievement = new Achievement(AchievementManager.Categories.UNLOCK_SPECIES, newlyUnlockedSpecies.Name, 1);
-            AchievementUnlock unlockPopup = new AchievementUnlock(speciesUnlockAchievement, -1, $"You have unlocked playing as {newlyUnlockedSpecies.Name}");
-            GetHUD().ShowAchievementPopUp(unlockPopup);
+            HashSet<Species> unlockedSpeciesPlayableAfterAchievementTracking = Species.GetUnlockedSpeciesPlayable(Achievments).ToHashSet();
+            foreach (Species newlyUnlockedSpecies in unlockedSpeciesPlayableAfterAchievementTracking.Where(a => !unlockedSpeciesPlayableBeforeAchievementTracking.Contains(a)))
+            {
+                Achievement speciesUnlockAchievement = new Achievement(AchievementManager.Categories.UNLOCK_SPECIES_PLAYABLE, newlyUnlockedSpecies.Name, 1);
+                AchievementUnlock unlockPopup = new AchievementUnlock(speciesUnlockAchievement, -1, $"You have unlocked playing as {newlyUnlockedSpecies.Name}");
+                GetHUD().ShowAchievementPopUp(unlockPopup);
+            }
+        }
+        {
+            HashSet<Species> unlockedSpeciesRulesAfterAchievementTracking = Species.GetUnlockedSpeciesRules(Achievments).ToHashSet();
+            foreach (Species newlyUnlockedSpecies in unlockedSpeciesRulesAfterAchievementTracking.Where(a => !unlockedSpeciesRulesBeforeAchievementTracking.Contains(a)))
+            {
+                Achievement speciesUnlockAchievement = new Achievement(AchievementManager.Categories.UNLOCK_SPECIES_RULES, newlyUnlockedSpecies.Name, 1);
+                AchievementUnlock unlockPopup = new AchievementUnlock(speciesUnlockAchievement, -1, $"You have revealed rules introduced by {newlyUnlockedSpecies.Name}");
+                GetHUD().ShowAchievementPopUp(unlockPopup);
+            }
         }
 
         SaveFile.Save(new MainSaveElement(this), SaveFilePath);

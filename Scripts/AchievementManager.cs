@@ -90,7 +90,8 @@ public class AchievementManager
         CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_LOST,
         CAT_WE_PLAYED_A_HAND_TO_THE_END_AND_WON,
         CAT_WE_WON_WITH_A_RANKING,
-        UNLOCK_SPECIES, // Used only to display unlock popup
+        UNLOCK_SPECIES_PLAYABLE, // Used only to display playable unlock popup
+        UNLOCK_SPECIES_RULES, // Used only to display rules unlock popup
     }
 
     private Dictionary<Tuple<Categories, string>, Achievement> _achievements = new();
@@ -105,7 +106,6 @@ public class AchievementManager
         _achievements = achievementsEl._achievements;
     }
 
-    static readonly float s_minUnlock = 3.33f;
     static readonly Dictionary<Categories, float> s_unlockFractions = new Dictionary<Categories, float>()
     {
         { Categories.CAT_PLAY_AGAINST, 0.1f },
@@ -117,7 +117,7 @@ public class AchievementManager
         { Categories.CAT_THEY_LEFT_WITH_OUR_MONEY, 0.10f },
     };
 
-    internal float GetUnlockedFraction(Species species)
+    internal float GetUnlockedFraction(Species species, float weight)
     {
         if (species == Species.Human)
         {
@@ -137,7 +137,7 @@ public class AchievementManager
             }
         }
 
-        return total / s_minUnlock;
+        return total / weight;
     }
 
     internal AchievementUnlock? GetUnlock(Achievement ach)

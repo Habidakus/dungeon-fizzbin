@@ -31,6 +31,7 @@ public partial class HUD : CanvasLayer
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
     private Control NextHandMenu { get { return GetChildControl(PlayPage, "NextHandMenu"); } }
     private Control AchievementsPage { get { return GetChildControl("AchievementsPage"); } }
+    private Control RevealedRulesPage { get { return GetChildControl("RevealedRulesPage"); } }
     private Control HowToPlayPage { get { return GetChildControl("HowToPlayPage"); } }
     private Control PlayAsNewSpeciesPage { get { return GetChildControl("PlayAsNewSpecies"); } }
     private PotBackground PotBackground
@@ -115,18 +116,21 @@ public partial class HUD : CanvasLayer
         InitializeStateChangeButton(MenuPage, "PlaySCB", "[center]Play[/center]");
         InitializeStateChangeButton(MenuPage, "QuitSCB", "[center]Quit[/center]");
         InitializeStateChangeButton(MenuPage, "AchievementsSCB", "[center]Achievements[/center]");
+        InitializeStateChangeButton(MenuPage, "RevealedRulesSCB", "[center]Show Revealed Rules[/center]");
         InitializeStateChangeButton(MenuPage, "HowToPlaySCB", "[center]How To Play[/center]");
         InitializeStateChangeButton(MenuPage, "NewPlayerSCB", "[center]Switch Species[/center]");
         InitializeStateChangeButton(PlayPage, "PlayAnotherHandSCB", "[center]Play Another Hand[/center]");
         InitializeStateChangeButton(PlayPage, "LeaveTableSCB", "[center]Leave Table[/center]");
         InitializeStateChangeButton(AchievementsPage, "BackSCB", "[center]Back[/center]");
         InitializeStateChangeButton(HowToPlayPage, "BackSCB", "[center]Back[/center]");
+        InitializeStateChangeButton(RevealedRulesPage, "BackSCB", "[center]Back[/center]");
         InitializeStateChangeButton(PlayAsNewSpeciesPage, "BackSCB", "[center]Cancel[/center]");
 
         SetBackgroundColor(TitlePage);
         SetBackgroundColor(MenuPage);
         SetBackgroundColor(PlayPage);
         SetBackgroundColor(AchievementsPage);
+        SetBackgroundColor(RevealedRulesPage);
         SetBackgroundColor(HowToPlayPage);
         SetBackgroundColor(PlayAsNewSpeciesPage);
 
@@ -134,6 +138,7 @@ public partial class HUD : CanvasLayer
         MenuPage.Hide();
         PlayPage.Hide();
         AchievementsPage.Hide();
+        RevealedRulesPage.Hide();
         HowToPlayPage.Hide();
         PlayAsNewSpeciesPage.Hide();
 
@@ -191,7 +196,7 @@ public partial class HUD : CanvasLayer
 
         if (MenuPage.FindChild("NewPlayer") is StateChangeButton newPlayerButton)
         {
-            if (Species.GetUnlockedSpecies(mainNode.Achievments).Where(a => a != Species.Human).Any())
+            if (Species.GetUnlockedSpeciesPlayable(mainNode.Achievments).Where(a => a != Species.Human).Any())
             {
                 newPlayerButton.Show();
             }
@@ -218,6 +223,9 @@ public partial class HUD : CanvasLayer
                 break;
             case "Achievements":
                 AchievementsPage.Show();
+                break;
+            case "Show_Revealed_Rules":
+                RevealedRulesPage.Show();
                 break;
             case "How_To_Play":
                 HowToPlayPage.Show();
@@ -263,6 +271,9 @@ public partial class HUD : CanvasLayer
                 break;
             case "Achievements":
                 AchievementsPage.Hide();
+                break;
+            case "Show_Revealed_Rules":
+                RevealedRulesPage.Hide();
                 break;
             case "How_To_Play":
                 HowToPlayPage.Hide();
@@ -998,5 +1009,48 @@ public partial class HUD : CanvasLayer
 
             //buttonContainer.ResetSize();
         }
+    }
+
+    internal void SetRevealedRules(Species[] species)
+    {
+        if (RevealedRulesPage.FindChild("RulesContainmentGrid") is GridContainer rulesGrid)
+        {
+            foreach (Node? child in rulesGrid.GetChildren())
+            {
+                if (child != null)
+                    rulesGrid.RemoveChild(child);
+            }
+
+            foreach (Species sp in species)
+            {
+                AddRuleRevealToGrid(rulesGrid, sp.Name, sp.RuleBBCode);
+            }
+
+            if (species.Where(a => a.Name == "Dragonkin").Any())
+            {
+                AddRuleRevealToGrid(rulesGrid, "Prison", "A hand that contains two of one suit and three of another; only valid when there are more than four suits. All pairs in a Prison are ignored.");
+                AddRuleRevealToGrid(rulesGrid, "Castle", "A hand that is both a Prison and a Straight.");
+            }
+        }
+    }
+
+    private static void AddRuleRevealToGrid(GridContainer rulesGrid, string ruleName, string ruleBBCode)
+    {
+        Label name = new Label();
+        name.Text = $"{ruleName}: ";
+        name.HorizontalAlignment = HorizontalAlignment.Right;
+        name.VerticalAlignment = VerticalAlignment.Top;
+        name.Theme = rulesGrid.Theme;
+        name.CustomMinimumSize = new Vector2(0, 62);
+        rulesGrid.AddChild(name);
+
+        RichTextLabel rule = new RichTextLabel();
+        rule.BbcodeEnabled = true;
+        rule.Text = ruleBBCode;
+        rule.Theme = rulesGrid.Theme;
+        rule.SizeFlagsHorizontal |= Control.SizeFlags.ExpandFill;
+        rule.CustomMinimumSize = new Vector2(800, 62);
+        GD.Print($"{name.Text} {rule.Size} {rule.CustomMinimumSize}");
+        rulesGrid.AddChild(rule);
     }
 }
