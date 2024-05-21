@@ -125,6 +125,7 @@ public partial class HUD : CanvasLayer
 
         SetBackgroundColor(TitlePage);
         SetBackgroundColor(MenuPage);
+        SetBackgroundColor(PlayPage);
         SetBackgroundColor(AchievementsPage);
         SetBackgroundColor(HowToPlayPage);
         SetBackgroundColor(PlayAsNewSpeciesPage);
