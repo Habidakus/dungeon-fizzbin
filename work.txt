@@ -25,6 +25,7 @@
 16th Player can now switch species
 17th (1/2) updated to use theme, corrected some UX/UI
 20th Re-organized UX code so all colors could be drawn from Main, added some tooltips
+21st (1/4) fixed tooltip bugs, added a couple centaur names
 
 total: 16.25 days
 
@@ -35,18 +36,10 @@ TODO:
 - Need to implement bluffing
 - If you never put any money in past ante, it's not an intersting game achievement.
 - Tutorial
-- Tooltips
 - Color selector
 
 felt green #277714 (HSV 109 83 47)
-jewel green #147754 (HSV 159 83 47)
 card red #f03a17 (HSV 10 91 94)
-monarch red #770b21 (HSV 348 91 47)
-
-murky green #6c780b (HSV 66.5 91 47)
-pea green #96A70F (66.7 91 65.5)
-light royal blue #3F29F0 (HSV 246.5 83 94)
-shiraz #a60f2d (HSV 348 91 65)
 
 felt green #277714 (HSV 109 83 47)
 	Dark 0B3400
