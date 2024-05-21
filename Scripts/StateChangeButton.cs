@@ -7,10 +7,7 @@ public partial class StateChangeButton : NinePatchRect
 {
     [Export]
     public string? State = null;
-    [Export]
-    public Texture2D? Hover = null;
 
-    public Texture2D? Default = null;
     private state_machine? _state_machine = null;
     private Object? _additional_info = null;
     private ColorRect? _color_rect = null;
@@ -29,14 +26,7 @@ public partial class StateChangeButton : NinePatchRect
 	{
 	}
 
-    public void Initialize(state_machine sm, Color Bogus, Object? additionalInfo = null)
-    {
-        Default = Texture;
-        _state_machine = sm;
-        _additional_info = additionalInfo;
-    }
-
-    public void Initialize2(state_machine sm, string bbCode, Object? additionalInfo = null)
+    public void Initialize(state_machine sm, string bbCode, Object? additionalInfo = null)
     {
         _state_machine = sm;
         _additional_info = additionalInfo;
@@ -63,10 +53,6 @@ public partial class StateChangeButton : NinePatchRect
         {
             _color_rect.Color = Main.Color_ButtonHover;
         }
-        else if (Hover != null)
-        {
-            Texture = Hover;
-        }
     }
 
     public void OnMouseExit()
@@ -74,10 +60,6 @@ public partial class StateChangeButton : NinePatchRect
         if (_color_rect != null)
         {
             _color_rect.Color = Main.Color_ButtonDefault;
-        }
-        else if (Default != null)
-        {
-            Texture = Default;
         }
         else
         {

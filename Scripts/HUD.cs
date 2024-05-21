@@ -84,23 +84,11 @@ public partial class HUD : CanvasLayer
 		throw new Exception($"No child of {Name} called {name}");
 	}
 
-    private void InitializeStateChangeButton(Control page, string buttonName)
+    private void InitializeStateChangeButton(Control page, string buttonName, string bbCode)
     {
         if (page.FindChild(buttonName) is StateChangeButton stateChangeButton)
         {
-            stateChangeButton.Initialize(StateMachine, Color.FromHtml("#FF0000"));
-        }
-        else
-        {
-            throw new Exception($"{page.Name} has no child named {buttonName}");
-        }
-    }
-
-    private void InitializeStateChangeButton2(Control page, string buttonName, string bbCode)
-    {
-        if (page.FindChild(buttonName) is StateChangeButton stateChangeButton)
-        {
-            stateChangeButton.Initialize2(StateMachine, bbCode);
+            stateChangeButton.Initialize(StateMachine, bbCode);
         }
         else if (page.FindChild(buttonName) is Node node)
         {
@@ -123,14 +111,14 @@ public partial class HUD : CanvasLayer
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        InitializeStateChangeButton2(MenuPage, "PlaySCB", "[center]Play[/center]");
-        InitializeStateChangeButton2(MenuPage, "QuitSCB", "[center]Quit[/center]");
-        InitializeStateChangeButton2(MenuPage, "AchievementsSCB", "[center]Achievements[/center]");
-        InitializeStateChangeButton2(MenuPage, "NewPlayerSCB", "[center]Switch Species[/center]");
-        InitializeStateChangeButton2(PlayPage, "PlayAnotherHandSCB", "[center]Play Another Hand[/center]");
-        InitializeStateChangeButton2(PlayPage, "LeaveTableSCB", "[center]Leave Table[/center]");
-        InitializeStateChangeButton2(AchievementsPage, "BackSCB", "[center]Cancel[/center]");
-        InitializeStateChangeButton2(PlayAsNewSpeciesPage, "BackSCB", "[center]Cancel[/center]");
+        InitializeStateChangeButton(MenuPage, "PlaySCB", "[center]Play[/center]");
+        InitializeStateChangeButton(MenuPage, "QuitSCB", "[center]Quit[/center]");
+        InitializeStateChangeButton(MenuPage, "AchievementsSCB", "[center]Achievements[/center]");
+        InitializeStateChangeButton(MenuPage, "NewPlayerSCB", "[center]Switch Species[/center]");
+        InitializeStateChangeButton(PlayPage, "PlayAnotherHandSCB", "[center]Play Another Hand[/center]");
+        InitializeStateChangeButton(PlayPage, "LeaveTableSCB", "[center]Leave Table[/center]");
+        InitializeStateChangeButton(AchievementsPage, "BackSCB", "[center]Cancel[/center]");
+        InitializeStateChangeButton(PlayAsNewSpeciesPage, "BackSCB", "[center]Cancel[/center]");
 
         SetBackgroundColor(TitlePage);
         SetBackgroundColor(MenuPage);
@@ -982,7 +970,7 @@ public partial class HUD : CanvasLayer
                 {
                     newButton.State = "ChangeSpecies";
                     newButton.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-                    newButton.Initialize2(StateMachine, $"[center]{sp.Name}[/center]", sp);
+                    newButton.Initialize(StateMachine, $"[center]{sp.Name}[/center]", sp);
                     if (newButton.FindChild("Text") is RichTextLabel rtl)
                     {
                         //rtl.Position += new Vector2(-4, 8);
