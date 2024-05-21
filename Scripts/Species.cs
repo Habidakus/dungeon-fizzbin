@@ -621,10 +621,10 @@ class Species
     // -------------------------------- Centaur --------------------------------
 
     static private List<string> CENTAUR_FRONT = new List<string>() {
-        "Swift", "Thunder", "Arrow", "Untrammeled", "Far", "Black", "Flame", "Ginger", "Wild", "Shadow", "Snow", "Sun", 
+        "Swift", "Thunder", "Arrow", "Untrammeled", "Far", "Black", "Flame", "Ginger", "Wild", "Shadow", "Snow", "Sun", "Summer", "Winter",
     };
     static private List<string> CENTAUR_END = new List<string>() {
-        "hoof", "legs", "mane", "wind", "breeze", "cloud", "heart", "fire", 
+        "hoof", "legs", "mane", "wind", "breeze", "cloud", "heart", "fire", "bow", 
     };
     private static string NameGenerator_Centaur(Random rng)
     {
