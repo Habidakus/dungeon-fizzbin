@@ -16,6 +16,7 @@ public class AchievementUnlock : IComparable<AchievementUnlock>
     public bool IsBronze { get { return _levelReached == 0; } }
     public bool IsSilver { get { return _levelReached == 1; } }
     public bool IsGold { get { return _levelReached == 2; } }
+    public int InitialHandNumberAdvancement { get { return _levelReached >= 0 ? _levelReached + 1 : 0; } }
 
     static string[] levelsAsText = new string[] { "Bronze", "Silver", "Gold" };
 
@@ -116,6 +117,20 @@ public class AchievementManager
         { Categories.CAT_THEY_LEFT_WITH_NO_MONEY, 0.10f },
         { Categories.CAT_THEY_LEFT_WITH_OUR_MONEY, 0.10f },
     };
+
+    internal int CalculateInitialHandNumber()
+    {
+        int total = 0;
+        foreach (Achievement ach in _achievements.Values)
+        {
+            if (GetUnlock(ach) is AchievementUnlock unlock)
+            {
+                total += unlock.InitialHandNumberAdvancement;
+            }
+        }
+
+        return total / 3;
+    }
 
     internal float GetUnlockedFraction(Species species, float weight)
     {

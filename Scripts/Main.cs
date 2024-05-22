@@ -106,6 +106,11 @@ public partial class Main : Node
         _deal = new Deal(CarryoverPot);
         CarryoverPot = 0;
 
+        if (HandNumber == 0)
+            HandNumber = Achievments.CalculateInitialHandNumber();
+        else
+            HandNumber += 1;
+
         HUD hud = GetHUD();
         foreach (Player player in _players)
         {
@@ -122,8 +127,6 @@ public partial class Main : Node
         }
 
         _players.Sort((a,b) => a.PositionID.CompareTo(b.PositionID));
-
-        HandNumber += 1;
 
         _deal.Shuffle(_players, rnd);
         _deal.UpdateHUD(hud);

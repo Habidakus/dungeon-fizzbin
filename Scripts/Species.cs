@@ -53,8 +53,8 @@ class Species
     private static void InitSpeciesList()
     {
         AllSpecies = new List<Species>() {
-            //new Species("BLANK1", 1, 0, DealComponent_DoNothing, null, null, null),
-            //new Species("BLANK2", 1, 0, DealComponent_DoNothing, null, null, null),
+            //new Species("BLANK1", 1, 0, "TBD", DealComponent_DoNothing, null, null, null),
+            //new Species("BLANK2", 1, 0, "TBD", DealComponent_DoNothing, null, null, null),
             new Species("Human", 0.5, 0,
                 "First card(s) discarded by each player are revealed to the entire table.",
                 DealComponent_Human, NameGenerator_Human, null, GetText_Human),
@@ -544,7 +544,7 @@ class Species
         "g", "co", "ra", "r", "t", "kr", "gg", "chi",
     };
     static private List<string> DRAGONKIN_ADJ = new List<string>() {
-        "Gold", "Silver", "Bronze", "Fierce", "Iron", "Wise", "Old", "Pale", "Vile", "Foul", "Doombringer",
+        "Gold", "Silver", "Bronze", "Fierce", "Iron", "Wise", "Old", "Pale", "Vile", "Foul", "Doombane",
     };
     internal static string NameGenerator_Dragonkin(Random rng)
     {
