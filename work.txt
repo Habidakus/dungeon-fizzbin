@@ -1,43 +1,49 @@
-16th initial state machine & hud
-17th initial work on deck, hands, and discards
-18th (half) visible hands, sample if potential hand too large
-19th (half) aggregate worth
-22nd fix sample prediction, card art, expanded state machine
-23rd Card visibility based on viewer, discard logic, added Castle & Prison hand ranks
-24th Worked on betting sequence, added the Ante, made discard use card graphics
-25th Added initial species rules, and names for many species
-26th Completed Work on halfling, dwarf, and pixie rules. Added the river UI and the pot.
-27th (half) Worked on minimizing memory usage when determining which cards to discard or use from the river
-28th Added the centaur and giant rules
-29th (half) Added highlight mode to visually indicate which player's turn it currently is
-30th You can play multiple hands in a row, fixed a hand strength calculation bug
-1st working on UI and replacing a player who has run out of money
-2nd created state change button, added button to keep playing or leave table
-3rd (1/4) added passing cards animation
-6th Player gets to pick which cards they pass
-7th Player gets to pick which cards they discard, other bug fixes
-8th (1/2) Fixed bug with calculating Prison, added birdman
-9th Save file, name selection based on prime-advancement rather than pure random, initial achievement tracking
-10th (1/4) More work on the achievements
-13th Better visuals on who can see your card(s)
-14th (1/4) Cleaned out debug print lines, started work on species unlock, cleaned up visual hand UX
-15th Added achievements
-16th Player can now switch species
-17th (1/2) updated to use theme, corrected some UX/UI
-20th Re-organized UX code so all colors could be drawn from Main, added some tooltips
-21st fixed tooltip bugs, added a couple centaur names, added how to play page, added revealed rules page
-22nd (1/4) Advance handcount by the number of achievements gained
 
-total: 16.25 days
+Effort tracking:
+
+April 16th initial state machine & hud
+April 17th initial work on deck, hands, and discards
+April 18th (half) visible hands, sample if potential hand too large
+April 19th (half) aggregate worth
+April 22nd fix sample prediction, card art, expanded state machine
+April 23rd Card visibility based on viewer, discard logic, added Castle & Prison hand ranks
+April 24th Worked on betting sequence, added the Ante, made discard use card graphics
+April 25th Added initial species rules, and names for many species
+April 26th Completed Work on halfling, dwarf, and pixie rules. Added the river UI and the pot.
+April 27th (half) Worked on minimizing memory usage when determining which cards to discard or use from the river
+April 28th Added the centaur and giant rules
+April 29th (half) Added highlight mode to visually indicate which player's turn it currently is
+April 30th You can play multiple hands in a row, fixed a hand strength calculation bug
+May 1st working on UI and replacing a player who has run out of money
+May 2nd created state change button, added button to keep playing or leave table
+May 3rd (1/4) added passing cards animation
+May 6th Player gets to pick which cards they pass
+May 7th Player gets to pick which cards they discard, other bug fixes
+May 8th (1/2) Fixed bug with calculating Prison, added birdman
+May 9th Save file, name selection based on prime-advancement rather than pure random, initial achievement tracking
+May 10th (1/4) More work on the achievements
+May 13th Better visuals on who can see your card(s)
+May 14th (1/4) Cleaned out debug print lines, started work on species unlock, cleaned up visual hand UX
+May 15th Added achievements
+May 16th Player can now switch species
+May 17th (1/2) updated to use theme, corrected some UX/UI
+May 20th Re-organized UX code so all colors could be drawn from Main, added some tooltips
+May 21st fixed tooltip bugs, added a couple centaur names, added how to play page, added revealed rules page
+May 22nd (1/4) Advance handcount by the number of achievements gained
+May 27th (1/4) Upload to github, added license and readme
+
+total: 23.25 days
 
 TODO:
+
 - Need to fix sorting after hand-rank, we need to compare all cards, in order of importance. We also need to compare second pair by rank if both cards of the first pair are the same rank (eg: 9966 vs 9955, can't have the 9955 win if the 9 was a better suit).
-- Need to add the Why/Who/What pages
-- Need to upload to github
+- Need to add the Credits & About page
+- Need to add a Tutorial
 - Need to implement bluffing
 - If you never put any money in past ante, it's not an intersting game achievement.
-- Tutorial
-- Color selector
+- Have a settings page, where among other things you can have a color selector
+
+Working colors:
 
 felt green #277714 (HSV 109 83 47)
 card red #f03a17 (HSV 10 91 94)
@@ -51,7 +57,7 @@ Evergreen 0F5A4D (HSV 205 )
 Noble Red 881724 (HSV 355 )
 	Dark 3B0007
 	Light D0626F
- Enchanted Forest (HSV 145 )
+Enchanted Forest (HSV 145 )
 	Dark 2D3A00
 	Light AFCD61
 	
