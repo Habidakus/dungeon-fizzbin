@@ -1,10 +1,10 @@
 ﻿using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Godot.OpenXRInterface;
 
 #nullable enable
 
@@ -858,6 +858,7 @@ class Hand : IComparable<Hand>
 
     private Tuple<bool, List<Hand>> GenerateHands(Bits discardIndices, List<Card> availableCards, Random rnd, int sampleCutOff)
     {
+        using Profile profile = new Profile("GenerateHands");
         if (discardIndices.Count == 0)
         {
             throw new Exception("GenerateHands() with zero discard indicies");
@@ -872,10 +873,12 @@ class Hand : IComparable<Hand>
 
         if (count <= sampleCutOff)
         {
+            using Profile p2 = new Profile("unsampled");
             return Tuple.Create(false, GenerateAllHands(discardIndices, availableCards));
         }
         else
         {
+            using Profile p2 = new Profile("sampled");
             return Tuple.Create(true, GenerateSampledHands(discardIndices, availableCards, rnd, sampleCutOff / 2));
         }
     }
@@ -902,6 +905,7 @@ class Hand : IComparable<Hand>
 
     private List<Hand> GenerateSampledHands(Bits discardIndices, List<Card> availableCards, Random rnd, int numberOfHandsToGenerate)
     {
+        using Profile profile = new Profile("GenerateSampledHands");
         List<Hand> retVal = new List<Hand>();
         List<int> pullIndices = new List<int>();
         for (int k = 0; k < discardIndices.Count; ++k)
@@ -959,21 +963,43 @@ class Hand : IComparable<Hand>
 
     internal Tuple<AggregateValue, List<Card>> SelectDiscards(Bits discardIndices, List<Card> availableCards, int minRank, int maxRank, int suitsCount, double costToDiscard, Random rnd, int sampleCutOff)
     {
+        using Profile profile = new Profile("SelectDiscards-8");
         if (discardIndices.Count == 0)
         {
             throw new Exception("SelectDiscards() with zero discard indicies");
         }
 
         Tuple<bool, List<Hand>> generatedHands = GenerateHands(discardIndices, availableCards, rnd, sampleCutOff);
+        Span<Hand> handSpan = generatedHands.Item2.ToArray().AsSpan();
+        //Hand h = handSpan[handSpan.Length - 1];
         SortedSet<Hand> sortedHands = new SortedSet<Hand>();
-        foreach (Hand hand in generatedHands.Item2)
+
         {
-            hand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
-            sortedHands.Add(hand);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            using Profile iterProfile = new("Iter1");
+            using Profile sp = new Profile("A");
+            sp.Pause();
+            int index = 0;
+            int size = handSpan.Length;
+            const int inc = 1627; // prime
+            for (int i = 0; i < size; ++i)
+            {
+                if (stopwatch.ElapsedMilliseconds > 20)
+                {
+                    sp.AppendName("_broken");
+                    break;
+                }
+                sp.Resume();
+                Hand hand = handSpan[index];
+                index = (index + inc) % size;
+                hand.ComputeBestScore(minRank, maxRank, suitsCount, _player.Deal._river);
+                sortedHands.Add(hand);
+                sp.Pause();
+            }
         }
 
         List<Card> discards = new List<Card>();
-        foreach(int index in discardIndices.EachInt)
+        foreach (int index in discardIndices.EachInt)
         {
             discards.Add(_cards[index]);
         }
@@ -1086,6 +1112,7 @@ class Hand : IComparable<Hand>
 
     internal Tuple<AggregateValue, List<Card>> SelectDiscards(int noOfDiscards, List<Card> availableCards, int minRank, int maxRank, int suitsCount, Random rnd)
     {
+        using Profile profile = new Profile("SelectDiscards-6");
         if (noOfDiscards == 0)
         {
             return Tuple.Create(new AggregateValue(_player, this, 0, (double)_player.Deal.MinimumHandToWinPot), new List<Card>());
@@ -1123,7 +1150,7 @@ class Hand : IComparable<Hand>
         else
         {
             AggregateValue best = new AggregateValue(_player, 0, (double)_player.Deal.MinimumHandToWinPot);
-            const int sampleCutOff = 9000;
+            const int sampleCutOff = 45000;
             Bits viableSlots = GetViableDiscardSlots(null);
             double costToDiscard = noOfDiscards * _player.Deal.CostPerDiscard;
             foreach (Bits iter in AllCombinationsOfAvailableSlotsChoseY(noOfDiscards, viableSlots))
@@ -1219,6 +1246,7 @@ class Hand : IComparable<Hand>
 
     internal List<Card> SelectDiscards(int minDiscards, int maxDiscards, Deal actualDeal, Random rnd)
     {
+        using Profile profile = new Profile("SelectDiscards-4");
         actualDeal.ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         List<Card> availableCards = actualDeal.AvailableCardsFromHandsView(this);
         List<Card> retVal = new List<Card>();
@@ -1294,6 +1322,110 @@ class Hand : IComparable<Hand>
     }
 }
 
+class Profile : IDisposable
+{
+    private int _threadId;
+    private string _fullName;
+    private string? _appendName;
+    private readonly Profile? _parent = null;
+    private Stopwatch? _stopwatch;
+
+    static object _lockA = new object();
+    static object _lockB = new object();
+    static Dictionary<int, Profile> _activeProfiles = new();
+    static Dictionary<Tuple<int, string>, long> _milliseconds = new();
+    static Dictionary<Tuple<int, string>, long> _instances = new();
+
+    static internal void Dump()
+    {
+        lock (_lockB)
+        {
+            foreach (var threadId in _milliseconds.Keys.Select(a => a.Item1).Distinct())
+            {
+                Tuple<string, long>[] threadSpecificMilliseconds = _milliseconds.Where(a => a.Key.Item1 == threadId).Select(a => Tuple.Create(a.Key.Item2, a.Value)).OrderBy(a => a.Item2).ToArray();
+                long totalMS = threadSpecificMilliseconds.Sum(a => a.Item2);
+                Debug.Print($"Thread #{threadId}");
+                foreach (Tuple<string, long> entry in threadSpecificMilliseconds)
+                {
+                    long count = _instances.Where(a => a.Key.Item1 == threadId && a.Key.Item2 == entry.Item1).Select(a => a.Value).First();
+                    Debug.Print($"{100.0 * entry.Item2 / totalMS}%  count={count}  {entry.Item1}({entry.Item2}ms)");
+                }
+            }
+        }
+    }
+
+    internal void AppendName(string v)
+    {
+        _appendName = v;
+    }
+
+    internal Profile(string name)
+    {
+        _threadId = System.Environment.CurrentManagedThreadId;
+        lock (_lockA)
+        {
+            if (_activeProfiles.TryGetValue(_threadId, out Profile? currentProfile))
+            {
+                _parent = currentProfile;
+                _fullName = $"{_parent._fullName}/{name}";
+                if (_parent._stopwatch!.IsRunning == false)
+                {
+                    Debug.Print("Can't create profile child on paused parent");
+                }
+            }
+            else
+            {
+                _parent = null;
+                _fullName = name;
+            }
+
+            _activeProfiles[_threadId] = this;
+        }
+
+        _stopwatch = Stopwatch.StartNew();
+    }
+
+    internal void Pause()
+    {
+        _stopwatch!.Stop();
+    }
+    internal void Resume()
+    {
+        _stopwatch!.Start();
+    }
+
+    public void Dispose()
+    {
+        if (_stopwatch == null)
+            return;
+
+        _stopwatch.Stop();
+        Tuple<int, string> key = (_appendName == null) ? Tuple.Create(_threadId, _fullName) : Tuple.Create(_threadId, $"{_fullName}{_appendName}");
+        lock (_lockB)
+        {
+            if (_milliseconds.TryGetValue(key, out long total))
+            {
+                _milliseconds[key] = total + _stopwatch.ElapsedMilliseconds;
+                _instances[key] += 1;
+            }
+            else
+            {
+                _milliseconds[key] = _stopwatch.ElapsedMilliseconds;
+                _instances[key] = 1;
+            }
+        }
+
+        if (_parent == null)
+        {
+            _activeProfiles.Remove(_threadId);
+        }
+        else
+        {
+            _activeProfiles[_threadId] = _parent;
+        }
+    }
+}
+
 
 class AggregateValue : IComparable<AggregateValue>
 {
@@ -1307,6 +1439,7 @@ class AggregateValue : IComparable<AggregateValue>
 
     public AggregateValue(Player player, Hand hand, double discardCost, double minHandWorth)
     {
+        using Profile profile = new("AggregateValue-4");
         _player = player;
         SetHopefulValue(hand._handValue);
 
@@ -1323,6 +1456,7 @@ class AggregateValue : IComparable<AggregateValue>
 
     internal AggregateValue(Player player, double discardCost, double minHandWorth)
     {
+        using Profile profile = new("AggregateValue-3");
         _player = player;
         _normalizedWealth = 0;
         _minHandWorth = minHandWorth;
@@ -1421,6 +1555,8 @@ class AggregateValue : IComparable<AggregateValue>
         {
             return;
         }
+
+        using Profile profile = new("AddAggreageWorth-2");
 
         double highCardValue = (handValue._highCard.FractionalValue / Card.MaxFractionalValue);
         double handWorth = handValue.Worth < _minHandWorth ? 0 : handValue.Worth;
