@@ -31,6 +31,7 @@ May 20th Re-organized UX code so all colors could be drawn from Main, added some
 May 21st fixed tooltip bugs, added a couple centaur names, added how to play page, added revealed rules page
 May 22nd (1/4) Advance handcount by the number of achievements gained
 May 27th (1/4) Upload to github, added license and readme
+Sept 25th (1/4) Did some simple optimizations, and limit processing times on various AI
 
 total: 23.25 days
 
@@ -61,4 +62,3 @@ Enchanted Forest (HSV 145 )
 	Dark 2D3A00
 	Light AFCD61
 	
-

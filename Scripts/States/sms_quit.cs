@@ -5,7 +5,6 @@ public partial class sms_quit : state_machine_state
 {
     public override void EnterState(Object additionalInfo = null)
     {
-        Profile.Dump();
         GetTree().Quit();
     }
 

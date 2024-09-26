@@ -1,6 +1,7 @@
 ﻿using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -130,7 +131,6 @@ class Deal
 
     public void ForceBetOrFold_NPC(Player player, List<Player> allPlayers, double currentRaise, Random rnd, int bettingRound, Action<int, double> confirmBetPlaced)
     {
-        DateTime start = DateTime.Now;
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
         Hand hand = GetPlayerHand(player);
@@ -155,7 +155,7 @@ class Deal
                         otherHand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
                     }
 
-                    List<Card> unseenCards = AvailableCardsFromHandsView(hand);
+                    Card[] unseenCards = AvailableCardsFromHandsView(hand).ToArray();
                     double percent = WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(otherPlayer, hand, unseenCards, rnd);
                     if (percent > maxPercent)
                     {
@@ -167,8 +167,6 @@ class Deal
 
         double ourChance = 100.0 - maxPercent;
         player.ForceBetOrFold(hand, ourChance, currentRaise, canStopTheRoundByMatching, bettingRound, confirmBetPlaced);
-
-        GD.Print($"Bet computation time: {(DateTime.Now - start).TotalSeconds:F2}");
     }
 
     public void Dump()
@@ -422,7 +420,7 @@ class Deal
         Rank.ExtractMinAndMax(_ranks, _suits, out minRank, out maxRank, out suitsCount);
     }
 
-    internal double WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(Player otherPlayer, Hand ourHand, List<Card> unseenCards, Random rnd)
+    internal double WhatIsThePercentChanceOtherPlayerIsBetterThanOurHand(Player otherPlayer, Hand ourHand, Span<Card> unseenCards, Random rnd)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
         Hand otherHand = GetPlayerHand(otherPlayer);
@@ -432,21 +430,24 @@ class Deal
         }
 
         int theyWin = 0;
-        const int numHandsToCreate = 1000;
+        int count = 0;
+        Stopwatch stopwatch = Stopwatch.StartNew();
         int potentialDiscards = Math.Min(otherPlayer.DiscardCount, otherHand._cards.Count - otherHand.CardsVisibleToSeer(ourHand.PositionID));
-        for (int i = 0; i < numHandsToCreate; ++i)
+
+        for (int i = 0; count < 10 || stopwatch.ElapsedMilliseconds < 750; ++i)
         {
             Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd, ourHand._player);
             potentialHand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
             HandValue av = potentialHand.ApplyRandomDiscard(potentialDiscards, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
 
+            ++count;
             if (ourHand._handValue!.PixieCompareTo(av, PixieCompare) < 0)
             {
                 theyWin += 1;
             }
         }
 
-        return 100.0 * theyWin / numHandsToCreate;
+        return 100.0 * theyWin / count;
     }
 
     internal void ExposeHighestRankingCards(HUD hud)
