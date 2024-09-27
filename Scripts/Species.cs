@@ -308,7 +308,16 @@ class Species
         "Mac", "Mc", "O'",
     };
     static private List<string> DWARF_LAST_NAMES_SUFFIX = new List<string>() {
-        "Hammer", "Smashy", "Tankard", "Stonefinger", "Mountain", "Nostril", "Stalewind", "Doubleax", "Thickale", "Leadshoe", "Deepshaft"
+        "Blackanvil",
+        "Deepshaft", "Doubleax",
+        "Goldbones",
+        "Hammer",
+        "Leadshoe",
+        "Mountain", "Motherlode",
+        "Nostril",
+        "Rocknoggin",
+        "Smashy", "Stonefinger", "Stalewind", "Shaletooth",
+        "Tankard", "Thickale", "Tinmonger",
     };
     internal static string NameGenerator_Dwarf(Random rng)
     {
