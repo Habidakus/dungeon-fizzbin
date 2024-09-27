@@ -302,16 +302,20 @@ class Species
     // -------------------------------- DWARF --------------------------------
 
     static private List<string> DWARF_FIRST_NAMES = new List<string>() {
-        "Urist", "Ùshrir", "Sodel", "Limul", "Dumat", "Bofur", "Dori", "Ori", "Thorin", "Rhys", "Tagwen"
+        "Urist", "Ùshrir", "Sodel", "Limul", "Dumat", "Bofur", "Dori", "Ori", "Thorin", "Rhys", "Tagwen", "Hjodill"
     };
-    static private List<string> DWARF_LAST_NAMES = new List<string>() {
-        "MacHammer", "McSmashy", "McTankard", "McStonefinger", "MacMountain", "McNostril", "MacStalewind", "McDoubleax"
+    static private List<string> DWARF_LAST_NAMES_PREFIX = new List<string>() {
+        "Mac", "Mc", "O'",
+    };
+    static private List<string> DWARF_LAST_NAMES_SUFFIX = new List<string>() {
+        "Hammer", "Smashy", "Tankard", "Stonefinger", "Mountain", "Nostril", "Stalewind", "Doubleax", "Thickale", "Leadshoe", "Deepshaft"
     };
     internal static string NameGenerator_Dwarf(Random rng)
     {
         string firstName = PickFromArray("Dwarf", 0, DWARF_FIRST_NAMES.ToArray(), rng);
-        string secondName = PickFromArray("Dwarf", 1, DWARF_LAST_NAMES.ToArray(), rng);
-        return $"{firstName} {secondName}";
+        string prefixName = PickFromArray("Dwarf", 1, DWARF_LAST_NAMES_PREFIX.ToArray(), rng);
+        string suffixName = PickFromArray("Dwarf", 2, DWARF_LAST_NAMES_SUFFIX.ToArray(), rng);
+        return $"{firstName} {prefixName}{suffixName}";
     }
     static internal void DealComponent_Dwarf(Deal deal)
     {
