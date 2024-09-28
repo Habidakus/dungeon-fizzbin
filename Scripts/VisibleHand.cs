@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
+
 #nullable enable
 
 public partial class VisibleHand : Node2D
@@ -154,7 +154,7 @@ public partial class VisibleHand : Node2D
     //    }
     //}
 
-    internal void FineTuneVisibility(Card card, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
+    internal void FineTuneVisibility(Deal deal, Card card, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
     {
         foreach (Node child in CardsChildren)
         {
@@ -163,7 +163,7 @@ public partial class VisibleHand : Node2D
                 Label cardLabel = GetCardLabel(visibleCard);
                 if (cardLabel.Text == card.ToString() && cardLabel.Visible == true)
                 {
-                    FineTuneVisibility(visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
+                    FineTuneVisibility(deal, visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
                 }
             }
         }
@@ -176,7 +176,7 @@ public partial class VisibleHand : Node2D
         tween.TweenProperty(ci, "modulate:a", 1f, 1.0f);
     }
 
-    private static void FineTuneVisibility(Control visibleCard, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
+    private static void FineTuneVisibility(Deal deal, Control visibleCard, int[] playersWhoCanSeeOtherThanOwnerAndNonNPC)
     {
         if (playersWhoCanSeeOtherThanOwnerAndNonNPC.IsEmpty())
         {
@@ -203,7 +203,8 @@ public partial class VisibleHand : Node2D
                     TextureRect smallEyeIcon = GetCardVisibiltityPerPosition(visibleCard, positionID);
                     smallEyeIcon.Show();
                     BlinkCard(smallEyeIcon);
-                    smallEyeIcon.TooltipText = $"{visibleCard.TooltipText}, can be seen by someone else";
+                    string playerName = deal.GetPlayer(positionID).Name;
+                    smallEyeIcon.TooltipText = $"{visibleCard.TooltipText}, can be seen by {playerName}";
                 }
             }
         }
@@ -330,7 +331,7 @@ public partial class VisibleHand : Node2D
                     {
                         int[] playersWhoCanSeeOtherThanOwnerAndNonNPC =
                             hand.ObserversOtherThanOwnerAndNonNPC(card, nonNPCPlayer.PositionID).ToArray();
-                        FineTuneVisibility(visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
+                        FineTuneVisibility(nonNPCPlayer.Deal, visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
                     }
                 }
             }
@@ -341,7 +342,7 @@ public partial class VisibleHand : Node2D
         }
     }
 
-    internal void AddDiscard(Card discard, List<int> playersWhoCanSeeThisDiscard, int handPositionId, int nonNPCPositionID)
+    internal void AddDiscard(Deal deal, Card discard, List<int> playersWhoCanSeeThisDiscard, int handPositionId, int nonNPCPositionID)
     {
         if (FindChild("Discards") is BoxContainer discardBox)
         {
@@ -366,7 +367,7 @@ public partial class VisibleHand : Node2D
                     if (isVisibleToNonNPC)
                     {
                         int[] playersWhoCanSeeOtherThanOwnerAndNonNPC = playersWhoCanSeeThisDiscard.Where(a => a != handPositionId && a != nonNPCPositionID).ToArray();
-                        FineTuneVisibility(visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
+                        FineTuneVisibility(deal, visibleCard, playersWhoCanSeeOtherThanOwnerAndNonNPC);
                     }
                 }
             }

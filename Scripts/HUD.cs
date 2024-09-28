@@ -369,11 +369,11 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void MoveCardToDiscard(int positionID, Card card, List<int> playersWhoCanSeeThisDiscard, int nonNPCPositionID)
+    internal void MoveCardToDiscard(Deal deal, int positionID, Card card, List<int> playersWhoCanSeeThisDiscard, int nonNPCPositionID)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
-            visibleHand.AddDiscard(card, playersWhoCanSeeThisDiscard, positionID, nonNPCPositionID);
+            visibleHand.AddDiscard(deal, card, playersWhoCanSeeThisDiscard, positionID, nonNPCPositionID);
         }
     }
 
@@ -424,7 +424,7 @@ public partial class HUD : CanvasLayer
             
             //else visibleHand.ExposeNonNPCCardToNPC(card, viewingPlayer.PositionID);
 
-            visibleHand.FineTuneVisibility(card, playersWhoCanSeeOtherThanOwnerAndNonNPC);
+            visibleHand.FineTuneVisibility(viewingPlayer.Deal, card, playersWhoCanSeeOtherThanOwnerAndNonNPC);
         }
     }
 

@@ -315,6 +315,11 @@ class Deal
         return _hands.First(a => a._player == player);
     }
 
+    internal Player GetPlayer(int positionID)
+    {
+        return _hands.First(a => a.PositionID == positionID).Player;
+    }
+
     internal bool NeedsToProcessPassedCards(out int positionID)
     {
         foreach (Hand hand in _hands)
@@ -390,7 +395,7 @@ class Deal
         hand._handValue = null;
         _discards.Add(new DiscardCards(card, playersWhoCanSeeThisDiscard, player.PositionID));
         hud.SetVisibleHand(hand, NonNPCPlayer);
-        hud.MoveCardToDiscard(player.PositionID, card, playersWhoCanSeeThisDiscard, NonNPCPlayer.PositionID);
+        hud.MoveCardToDiscard(player.Deal, player.PositionID, card, playersWhoCanSeeThisDiscard, NonNPCPlayer.PositionID);
     }
 
     internal bool ProgressReplaceDiscard(HUD hud)
