@@ -61,7 +61,7 @@ class Species
             new Species("Elf", 1, 0,
                 $"Add the {Rank.Empress._unicode} ({Rank.Empress.Tooltip}) and {Rank.Jupiter._unicode} ({Rank.Jupiter.Tooltip}) ranks to the deck, which are higher than a {Rank.DefaultRanks[11]._unicode} ({Rank.DefaultRanks[11].Tooltip})",
                 DealComponent_Elf, NameGenerator_Elf, null, GetText_Elf),
-            new Species("Goblin", 0.5, 0,
+            new Species("Goblin", 0.75, 0,
                 $"Removes the {Rank.DefaultRanks[5]._unicode} ({Rank.DefaultRanks[5].Tooltip}) and {Rank.DefaultRanks[4]._unicode} ({Rank.DefaultRanks[4].Tooltip}) ranks from the deck.",
                 DealComponent_Goblin, NameGenerator_Goblin, CanAdd_Goblin, GetText_Greenskin),
             new Species("Dwarf", 0.25, 5,
@@ -76,7 +76,10 @@ class Species
             new Species("Lizardman", 1, 10,
                 "See the highest ranked card(s) in your right neighbor's hand.",
                 DealComponent_Lizardman, NameGenerator_Lizardman),
-            new Species("Orc", 1, 15,
+            new Species("Kobold", 0.75, 10,
+                "See the lowest ranked card(s) in your left neighbor's hand.",
+                DealComponent_Kobold, NameGenerator_Kobold, null, GetText_Kobold),
+            new Species("Orc", 0.75, 15,
                 $"Removes the {Rank.DefaultRanks[6]._unicode} ({Rank.DefaultRanks[6].Tooltip}) and {Rank.DefaultRanks[7]._unicode} ({Rank.DefaultRanks[7].Tooltip}) ranks from the deck.",
                 DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
             new Species("Halfling", 1, 15, 
@@ -453,6 +456,39 @@ class Species
     static internal void DealComponent_Lizardman(Deal deal)
     {
         deal.IncreaseObserveNeighborHighCard();
+    }
+
+    // -------------------------------- KOBOLD --------------------------------
+
+    static private List<string> KOBOLD_FRONT = new List<string>() {
+        "G", "R", "L", "Zz", "Ch", "B", "V", "K", "Sl", "Asm", "N", "K",
+    };
+    static private List<string> KOBOLD_END = new List<string>() {
+        "a", "ack", "al", "as", "ard",
+        "in", "ip", "isk", "ist", "ith",
+        "odz", "om",
+        "eus",
+        "u",
+    };
+    internal static string NameGenerator_Kobold(Random rng)
+    {
+        string startName = PickFromArray("Kobold", 0, KOBOLD_FRONT.ToArray(), rng);
+        string endName = PickFromArray("Kobold", 1, KOBOLD_END.ToArray(), rng);
+        return $"{startName}{endName}";
+    }
+    static internal void DealComponent_Kobold(Deal deal)
+    {
+        deal.IncreaseObserveNeighborLowCard();
+    }
+    static private string GetText_Kobold(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.LeavingPoor: return "Bah, none of this money is shiny!";
+            case Bark.LeavingRich: return "So much shiny! I start my lair now!";
+            default:
+                throw new Exception($"No kobold text for bark={bark}");
+        }
     }
 
     // -------------------------------- GOBLIN --------------------------------

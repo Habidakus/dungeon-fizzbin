@@ -1278,11 +1278,34 @@ class Hand : IComparable<Hand>
         return retVal;
     }
 
-    internal void RevealHighestCardsToOtherPlayer(HUD hud, int revealRightNeighborsHighestCards, Player viewingPlayer, bool pixieCompare)
+    internal void RevealHighestCardsToOtherPlayer(
+        HUD hud,
+        int revealRightNeighborsHighestCards,
+        Player viewingPlayer,
+        bool pixieCompare)
     {
         if (revealRightNeighborsHighestCards > 0)
         {
             List<Card> cardsToReveal = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).TakeLast(revealRightNeighborsHighestCards).ToList();
+            foreach (Card card in cardsToReveal)
+            {
+                _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);
+                int[] playersWhoCanSeeOtherThanOwnerAndNonNPC =
+                    ObserversOtherThanOwnerAndNonNPC(card, _player.Deal.NonNPCPlayer.PositionID).ToArray();
+                hud.ExposeCardToOtherPlayer(PositionID, card, viewingPlayer, playersWhoCanSeeOtherThanOwnerAndNonNPC);
+            }
+        }
+    }
+
+    internal void RevealLowestCardsToOtherPlayer(
+        HUD hud,
+        int revealLeftNeighborsLowestCards,
+        Player viewingPlayer,
+        bool pixieCompare)
+    {
+        if (revealLeftNeighborsLowestCards > 0)
+        {
+            List<Card> cardsToReveal = _cards.OrderBy(a => a, Comparer<Card>.Create((a, b) => a.PixieCompareTo(b, pixieCompare))).Take(revealLeftNeighborsLowestCards).ToList();
             foreach (Card card in cardsToReveal)
             {
                 _exposedCards.Add(card, viewingPlayer.PositionID, canDiscard: false);

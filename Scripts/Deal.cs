@@ -30,6 +30,7 @@ class Deal
     internal List<DiscardCards> _discards = new List<DiscardCards> ();
     internal int DiscardsToReveal { get; private set; }
     internal int RevealRightNeighborsHighestCards { get; set; }
+    internal int RevealLeftNeighborsLowestCards { get; set; }
     internal int PassCardsToLeftNeighbor { get; set; }
     internal int RiverSize { get; private set; }
     internal int HandSize { get; private set; }
@@ -48,10 +49,21 @@ class Deal
         }
     }
 
+    public bool SpeciesRevealPixieCompareValue
+    {
+        get
+        {
+            // If we return false, then we're always going to reveal based on standard/regular poker sorting order.
+            // If we return "PixieCompare" then we're going to show the opposite if pixies are currently playing in the game.
+            return PixieCompare;
+        }
+    }
+
     internal Deal(double carryoverPot)
     {
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
+        RevealLeftNeighborsLowestCards = 0;
         PassCardsToLeftNeighbor = 0;
         HandSize = 5;
         RiverSize = 0;
@@ -463,7 +475,7 @@ class Deal
 
     internal void ExposeHighestRankingCards(HUD hud)
     {
-        SortedSet<Card> allHandCards = new SortedSet<Card>(Comparer<Card>.Create((a,b) => a.PixieCompareTo(b, pixieCompare: false)));
+        SortedSet<Card> allHandCards = new SortedSet<Card>(Comparer<Card>.Create((a,b) => a.PixieCompareTo(b, SpeciesRevealPixieCompareValue)));
         foreach (Hand hand in _hands)
         {
             foreach (Card card in hand._cards)
@@ -597,6 +609,11 @@ class Deal
     internal void IncreaseObserveNeighborHighCard()
     {
         RevealRightNeighborsHighestCards += 1;
+    }
+
+    internal void IncreaseObserveNeighborLowCard()
+    {
+        RevealLeftNeighborsLowestCards += 1;
     }
 
     internal void AddPassToNeighbor()

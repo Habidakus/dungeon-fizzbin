@@ -310,7 +310,9 @@ public partial class Main : Node
 
     internal bool HasPostDiscard()
     {
-        return Deal.RevealRightNeighborsHighestCards > 0 || Deal.NumberOfHighestRankingCardsToExpose > 0;
+        return Deal.RevealRightNeighborsHighestCards > 0 ||
+            Deal.RevealLeftNeighborsLowestCards > 0 ||
+            Deal.NumberOfHighestRankingCardsToExpose > 0;
     }
 
     internal void PerformPostDiscord()
@@ -320,11 +322,14 @@ public partial class Main : Node
         {
             positionIDs.Add(hand.PositionID);
             int leftNeighbor = (hand.PositionID + 1 + _players.Count) % _players.Count;
-            hand.RevealHighestCardsToOtherPlayer(GetHUD(), Deal.RevealRightNeighborsHighestCards, _players[leftNeighbor], Deal.PixieCompare);
+            hand.RevealHighestCardsToOtherPlayer(GetHUD(), Deal.RevealRightNeighborsHighestCards, _players[leftNeighbor], Deal.SpeciesRevealPixieCompareValue);
+            int rightNeighbor = (hand.PositionID - 1 + _players.Count) % _players.Count;
+            hand.RevealLowestCardsToOtherPlayer(GetHUD(), Deal.RevealLeftNeighborsLowestCards, _players[rightNeighbor], Deal.SpeciesRevealPixieCompareValue);
         }
 
         Deal.ExposeHighestRankingCards(GetHUD());
         Deal.RevealRightNeighborsHighestCards = 0;
+        Deal.RevealLeftNeighborsLowestCards = 0;
     }
 
     public bool SomeoneNeedsToBet(out int highlightPositionId)
