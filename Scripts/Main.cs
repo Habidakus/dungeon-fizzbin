@@ -545,7 +545,7 @@ public partial class Main : Node
         }
 
         Deal.UpdatePot(hud);
-        hud.HighlightPosition(-1);
+        hud.HighlightPosition(-1, 1f);
 
         PlayersWhoAreLeaving = new List<int>();
 

@@ -392,11 +392,11 @@ public partial class HUD : CanvasLayer
             visibleHand.FoldHand(amountBet);
         }
 
-        PotBackground potBackground = PotBackground;
-        if (potBackground.HighlightPositionId == positionID)
-        {
-            potBackground.SetHighlight(-1, Vector2.Zero);
-        }
+        //PotBackground potBackground = PotBackground;
+        //if (potBackground.HighlightPositionId == positionID)
+        //{
+        //    HighlightPosition(-1);
+        //}
     }
 
     internal void SetBetAmount(int positionID, double amountBet, string? description)
@@ -428,7 +428,7 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    public void HighlightPosition(int positionID)
+    public void HighlightPosition(int positionID, float durationInSeconds)
     {
         Vector2 direction = Vector2.Zero;
         if (positionID != -1)
@@ -439,7 +439,7 @@ public partial class HUD : CanvasLayer
             }
         }
 
-        PotBackground.SetHighlight(positionID, direction);
+        PotBackground.SetHighlight(positionID, direction, durationInSeconds);
     }
 
     internal void PlayerLeaves(int positionID, string leavingText)
