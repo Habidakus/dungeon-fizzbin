@@ -114,9 +114,15 @@ class Deal
     public void ForceBetOrFold(HUD hud, Player player, List<Player> allPlayers, Random rnd, double currentRaise, int bettingRound, Action<int, double> confirmBetPlaced)
     {
         if (player.IsNPC)
-            ForceBetOrFold_NPC(player, allPlayers, currentRaise, rnd, bettingRound, confirmBetPlaced);
+        {
+            Task.Run(() =>
+                ForceBetOrFold_NPC(player, allPlayers, currentRaise, rnd, bettingRound, confirmBetPlaced)
+            );
+        }
         else
+        {
             ForceBetOrFold_NonNPC(hud, player.PositionID, currentRaise, confirmBetPlaced);
+        }
     }
 
     private void ForceBetOrFold_NonNPC(HUD hud, int positionID, double currentRaise, Action<int, double> confirmBetPlaced)
