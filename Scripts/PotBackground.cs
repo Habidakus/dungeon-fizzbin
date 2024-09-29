@@ -4,23 +4,57 @@ using System;
 public partial class PotBackground : Node2D
 {
     internal int HighlightPositionId { get; private set; } = -1;
-    private Vector2 _highlightVectorDirection_current;
-    private Vector2 _highlightVectorDirection_final;
+
+    private float _playerPointerDirection_current;
+    private float _playerPointerDirection_goal;
     private float _lerpSpeed = 1f;
+
+    public Vector2 CurrentDirectionVector
+    {
+        get
+        {
+            float x = (float) Math.Cos(_playerPointerDirection_current);
+            float y = (float) Math.Sin(_playerPointerDirection_current);
+            return new Vector2(x, y);
+        }
+    }
+    private static float GetDirectionFromVector(Vector2 direction)
+    {
+        return (float)Math.Atan2(direction.Y, direction.X);
+    }
+    public float RadiansPointerNeedsToMove
+    {
+        get
+        {
+            if (_playerPointerDirection_current != _playerPointerDirection_goal)
+            {
+                float delta = _playerPointerDirection_goal - _playerPointerDirection_current;
+                while (delta < -Math.PI)
+                {
+                    delta += 2f * (float)Math.PI;
+                }
+                while (delta > Math.PI)
+                {
+                    delta -= 2f * (float)Math.PI;
+                }
+                return delta;
+            }
+            else
+            {
+                return 0f;
+            }
+        }
+    }
+
     internal void SetHighlight(int positionID, Vector2 direction, float durationInSeconds)
     {
         if (positionID == HighlightPositionId)
             return;
 
-        //if (positionID == -1)
-        //    GD.Print("Stopping positionID highlighting");
-        //else
-        //    GD.Print($"Switching highlight from #{HighlightPositionId} to #{positionID}");
-
         if (HighlightPositionId == -1)
         {
             // Who knows where we were pointed, let's just rabbit to the new position right now
-            _highlightVectorDirection_current = direction;
+            _playerPointerDirection_current = GetDirectionFromVector(direction);
             QueueRedraw();
         }
 
@@ -35,10 +69,8 @@ public partial class PotBackground : Node2D
 
         if (direction != Vector2.Zero)
         {
-            _highlightVectorDirection_final = direction;
+            _playerPointerDirection_goal = GetDirectionFromVector(direction);
         }
-
-        //QueueRedraw();
     }
 
 	// Called when the node enters the scene tree for the first time.
@@ -49,16 +81,20 @@ public partial class PotBackground : Node2D
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-        if (_highlightVectorDirection_current != _highlightVectorDirection_final)
+        if (_playerPointerDirection_current != _playerPointerDirection_goal)
         {
-            var old = _highlightVectorDirection_current;
-            _highlightVectorDirection_current = _highlightVectorDirection_current.MoveToward(_highlightVectorDirection_final, (float) delta * _lerpSpeed).Normalized();
-            if (old == _highlightVectorDirection_current)
+            float amountWeWantToGo = RadiansPointerNeedsToMove;
+            float deltaChange = (float)delta * _lerpSpeed;
+            if (deltaChange > Math.Abs(amountWeWantToGo))
             {
-                // We didn't move anywhere, most likely because we're switching our direction by 180 degrees and that
-                // won't work with lerp & then normalize. So instead lets just move any direction for now and then it
-                // should resolve next pass.
-                _highlightVectorDirection_current = _highlightVectorDirection_current.MoveToward(new Vector2(_highlightVectorDirection_final.Y, _highlightVectorDirection_final.X), (float)delta * _lerpSpeed).Normalized();
+                _playerPointerDirection_current = _playerPointerDirection_goal;
+            }
+            else
+            {
+                if (amountWeWantToGo > 0)
+                    _playerPointerDirection_current += deltaChange;
+                else
+                    _playerPointerDirection_current -= deltaChange;
             }
 
             QueueRedraw();
@@ -85,15 +121,16 @@ public partial class PotBackground : Node2D
 
     private void DrawArrow(Vector2 origin, float width, float height, Color color)
     {
-        float len = flerp(width, height, Math.Abs(_highlightVectorDirection_current.Y));
-        float x = origin.X + _highlightVectorDirection_current.X * len * 1.15f;
-        float y = origin.Y + _highlightVectorDirection_current.Y * len * 1.15f;
+        Vector2 vec = CurrentDirectionVector;
+        float len = flerp(width, height, Math.Abs(vec.Y));
+        float x = origin.X + vec.X * len * 1.15f;
+        float y = origin.Y + vec.Y * len * 1.15f;
 
         DrawLine(origin, new Vector2(x, y), color, width: 5, antialiased: true);
         
         Vector2[] coords = new Vector2[3];
-        float dx = _highlightVectorDirection_current.X * 10f;
-        float dy = _highlightVectorDirection_current.Y * 10f;
+        float dx = vec.X * 10f;
+        float dy = vec.Y * 10f;
         coords[0] = new Vector2(x + dx, y + dy);
         coords[1] = new Vector2(x + dy, y - dx);
         coords[2] = new Vector2(x - dy, y + dx);
@@ -112,4 +149,5 @@ public partial class PotBackground : Node2D
 
         DrawPolygon(coords, new Color[] { color });
     }
+
 }
