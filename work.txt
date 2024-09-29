@@ -32,9 +32,9 @@ May 21st fixed tooltip bugs, added a couple centaur names, added how to play pag
 May 22nd (1/4) Advance handcount by the number of achievements gained
 May 27th (1/4) Upload to github, added license and readme
 Sept 25th (1/4) Did some simple optimizations, and limit processing times on various AI
-Sept 28th (1/2) Animated the who-goes-next arrow, and added Kobolds.
+Sept 28th Animated the who-goes-next arrow, added joker cards, fixed a race condition, and added Kobolds & werewolves
 
-total: 24 days
+total: 24.5 days
 
 TODO:
 
