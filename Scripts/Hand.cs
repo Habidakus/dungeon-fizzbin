@@ -440,7 +440,6 @@ class Hand : IComparable<Hand>
             {
                 return false;
             }
-
         }
 
         return true;
@@ -494,7 +493,9 @@ class Hand : IComparable<Hand>
                 fiveCards.Add(i < _cards.Count ? _cards[i] : river![i - _cards.Count]);
             }
 
-            HandValue hv = ComputeBestScore(fiveCards, minRank, maxRank, suitsCount, PixieCompare);
+            HandValue hv = _player.Deal.UsingJokers
+                ? ComputeBestScoreWithJokers(fiveCards, minRank, maxRank, suitsCount, PixieCompare)
+                : ComputeBestScoreWithoutJokers(fiveCards, minRank, maxRank, suitsCount, PixieCompare);
             if (_handValue == null || hv.PixieCompareTo(_handValue, PixieCompare) > 0)
             {
                 _handValue = hv;
@@ -502,7 +503,48 @@ class Hand : IComparable<Hand>
         }
     }
 
-    internal static HandValue ComputeBestScore(List<Card> fiveCards, int minRank, int maxRank, int suitsCount, bool pixieCompare)
+    private static HandValue ComputeBestScoreWithJokers(List<Card> fiveCards, int minRank, int maxRank, int suitsCount, bool pixieCompare)
+    {
+        if (fiveCards.Count != 5)
+        {
+            throw new Exception("Not set up to handle hand sizes other than five.");
+        }
+
+        IEnumerable<Card> nonJokerCardsEnum = fiveCards.Where(a => false == a.IsJoker);
+        List<Card> nonJokerCards = nonJokerCardsEnum.ToList();
+        int nonJokerCardCount = nonJokerCards.Count;
+
+        if (nonJokerCardCount == 5)
+        {
+            return ComputeBestScoreWithoutJokers(fiveCards, minRank, maxRank, suitsCount, pixieCompare);
+        }
+
+        if (nonJokerCardCount < 3)
+        {
+            throw new Exception($"Too many jokers in the deck: {string.Join(',', fiveCards)}");
+        }
+
+        HandValue? bestHandValue = null;
+        Bits nonJokerBits = new Bits(0, 3);
+        foreach (Bits combinations in AllCombinationsOfAvailableSlotsChoseY(5 - nonJokerCardCount, nonJokerBits))
+        {
+            List<Card> subHand = new(nonJokerCards);
+            foreach (int cardIndex in combinations.EachInt)
+            {
+                subHand.Add(nonJokerCards[cardIndex]);
+            }
+
+            HandValue hv = ComputeBestScoreWithoutJokers(subHand, minRank, maxRank, suitsCount, pixieCompare);
+            if (bestHandValue == null || hv.PixieCompareTo(bestHandValue, pixieCompare) > 0)
+            {
+                bestHandValue = hv;
+            }
+        }
+
+        return bestHandValue!;
+    }
+
+    internal static HandValue ComputeBestScoreWithoutJokers(List<Card> fiveCards, int minRank, int maxRank, int suitsCount, bool pixieCompare)
     {
         List<Card> cardsSortedHighestToLowest = fiveCards.OrderByDescending(a => a, Comparer<Card>.Create((a,b)=>a.PixieCompareTo(b, pixieCompare))).ToList();
         Card highCard = cardsSortedHighestToLowest.First();
@@ -1184,8 +1226,15 @@ class Hand : IComparable<Hand>
         {
             Task.Run(() =>
             {
-                _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
-                confirmingPassCardsDetermined(PositionID);
+                try
+                {
+                    _passingCards = SelectDiscards(numberOfCards, numberOfCards, actualDeal, rnd);
+                    confirmingPassCardsDetermined(PositionID);
+                }
+                catch (Exception e)
+                {
+                    Debug.Print($"Other Thread Exception: {e}");
+                }
             });
         }
         else
@@ -1193,25 +1242,33 @@ class Hand : IComparable<Hand>
             hud.EnableCardSelection_Passing(PositionID, numberOfCards, destination.Name);
             Task.Run(() =>
             {
-                List<string> cardsAsText = hud.HavePlayerSelectCardsToPassOrDiscard(this).Result;
-                _passingCards = new List<Card>();
-                foreach (string cardText in cardsAsText)
+                try
                 {
-                    Card[] matchingCards = _cards.Where(a => a.ToString().CompareTo(cardText) == 0).ToArray();
-                    if (matchingCards.Count() == 1)
+                    List<string> cardsAsText = hud.HavePlayerSelectCardsToPassOrDiscard(this).Result;
+                    _passingCards = new List<Card>();
+                    foreach (string cardText in cardsAsText)
                     {
-                        _passingCards.Add(matchingCards[0]);
+                        Card[] matchingCards = _cards.Where(a => a.ToString().CompareTo(cardText) == 0).ToArray();
+                        if (matchingCards.Count() == 1)
+                        {
+                            _passingCards.Add(matchingCards[0]);
+                        }
+                        else if (matchingCards.Count() > 1)
+                        {
+                            throw new Exception($"Expected 1 card match to hand ({this}) but got {string.Join(',', matchingCards.Select(a => a.ToString()))}");
+                        }
+                        else
+                        {
+                            throw new Exception($"Expected 1 card match to hand ({this}) but got zero");
+                        }
                     }
-                    else if (matchingCards.Count() > 1)
-                    {
-                        throw new Exception($"Expected 1 card match to hand ({this}) but got {string.Join(',', matchingCards.Select(a => a.ToString()))}");
-                    }
-                    else
-                    {
-                        throw new Exception($"Expected 1 card match to hand ({this}) but got zero");
-                    }
+
+                    confirmingPassCardsDetermined(PositionID);
                 }
-                confirmingPassCardsDetermined(PositionID);
+                catch (Exception e)
+                {
+                    Debug.Print($"Other Thread Exception: {e}");
+                }
             });
         }
     }

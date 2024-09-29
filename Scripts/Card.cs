@@ -7,7 +7,8 @@ using System.Text;
 class Card /*: IComparable<Card> */
 {
     public Rank Rank { get; private set; }
-    public Suit Suit { get; private set; }
+    public Suit? Suit { get; private set; }
+    public bool IsJoker { get { return Suit == null; } }
 
     internal Card(Suit suit, Rank rank)
     {
@@ -15,25 +16,67 @@ class Card /*: IComparable<Card> */
         Suit = suit;
     }
 
+    // Creates wildcard
+    private Card()
+    {
+        Rank = new Rank('?', false);
+        Suit = null;
+    }
+
+    internal static Card Joker { get { return new(); } }
+
     public static double MaxFractionalValue { get { return Rank.MaxFractionalValue + Suit.MaxFractionalValue; } }
-    public double FractionalValue { get { return Rank.FractionalValue + Suit.FractionalValue; } }
-    public string Tooltip { get { return $"{Rank.Tooltip} of {Suit.Tooltip}"; } }
+    public double FractionalValue
+    {
+        get
+        {
+            return Rank.FractionalValue + ((Suit == null) ? 0 : Suit.FractionalValue);
+        }
+    }
+
+    public string Tooltip
+    {
+        get
+        {
+            return IsJoker ? "Doppelgänger" : $"{Rank.Tooltip} of {Suit!.Tooltip}";
+        }
+    }
 
     public override string ToString()
     {
-        return $"{Rank._unicode}{Suit._unicode}";
+        if (Suit != null)
+            return $"{Rank._unicode}{Suit._unicode}";
+        else
+            return '\u25EB'.ToString();
     }
 
     public int PixieCompareTo(Card? other, bool pixieCompare)
     {
         if (other == null)
+        {
             return -1;
+        }
 
         int comp = Rank.PixieCompareTo(other.Rank, pixieCompare);
         if (comp != 0)
+        {
             return comp;
+        }
         else
-            return Suit.CompareTo(other.Suit);
+        {
+            bool ourSuitNull = Suit == null;
+            bool theirSuitNull = other.Suit == null;
+            if (ourSuitNull != theirSuitNull)
+            {
+                return ourSuitNull ? 1 : -1;
+            }
+            else if (ourSuitNull)
+            {
+                return 0;
+            }
+
+            return Suit!.CompareTo(other.Suit);
+        }
     }
 
     internal int PixieCompareTo(Card b, object pixieCompare)

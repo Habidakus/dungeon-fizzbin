@@ -31,6 +31,8 @@ class Deal
     internal int DiscardsToReveal { get; private set; }
     internal int RevealRightNeighborsHighestCards { get; set; }
     internal int RevealLeftNeighborsLowestCards { get; set; }
+    internal bool UsingJokers { get { return JokerCount > 0; } }
+    internal int JokerCount { get; private set; }
     internal int PassCardsToLeftNeighbor { get; set; }
     internal int RiverSize { get; private set; }
     internal int HandSize { get; private set; }
@@ -64,6 +66,7 @@ class Deal
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
         RevealLeftNeighborsLowestCards = 0;
+        JokerCount = 0;
         PassCardsToLeftNeighbor = 0;
         HandSize = 5;
         RiverSize = 0;
@@ -99,6 +102,11 @@ class Deal
             }
         }
 
+        for (int j = 0; j < JokerCount; ++j)
+        {
+            _drawPile.Add(Card.Joker);
+        }
+
         _drawPile = _drawPile.Shuffle(rnd).ToList();
 
         for (int i = 0; i < RiverSize; ++i)
@@ -128,8 +136,16 @@ class Deal
         if (player.IsNPC)
         {
             Task.Run(() =>
-                ForceBetOrFold_NPC(player, allPlayers, currentRaise, rnd, bettingRound, confirmBetPlaced)
-            );
+            {
+                try
+                {
+                    ForceBetOrFold_NPC(player, allPlayers, currentRaise, rnd, bettingRound, confirmBetPlaced);
+                }
+                catch (Exception e)
+                {
+                    Debug.Print($"Other Thread Exception: {e}");
+                }
+            });
         }
         else
         {
@@ -142,8 +158,15 @@ class Deal
         hud.EnableBetSlider(currentRaise);
         Task.Run(() =>
         {
-            double amountToBet = hud.HaveChosenAmountToBet().Result;
-            confirmBetPlaced(positionID, amountToBet);
+            try
+            {
+                double amountToBet = hud.HaveChosenAmountToBet().Result;
+                confirmBetPlaced(positionID, amountToBet);
+            }
+            catch (Exception e)
+            {
+                Debug.Print($"Other Thread Exception: {e}");
+            }
         });
     }
 
@@ -271,9 +294,16 @@ class Deal
         {
             Task.Run(() =>
             {
-                Hand hand = GetPlayerHand(player);
-                player.Discards = hand.SelectDiscards(0, MaxDiscard, this, rnd);
-                confirmDiscardEvent(player.PositionID);
+                try
+                {
+                    Hand hand = GetPlayerHand(player);
+                    player.Discards = hand.SelectDiscards(0, MaxDiscard, this, rnd);
+                    confirmDiscardEvent(player.PositionID);
+                }
+                catch (Exception e)
+                {
+                    Debug.Print($"Other Thread Exception: {e}");
+                }
             });
         }
         else
@@ -281,25 +311,32 @@ class Deal
             Hand hand = GetPlayerHand(player);
             hud.EnableCardSelection_Discard(player.PositionID, MaxDiscard, CostPerDiscard);
             Task.Run(() => {
-                List<string> cardsAsText = hud.HavePlayerSelectCardsToPassOrDiscard(hand).Result;
-                player.Discards = new List<Card>();
-                foreach (string cardText in cardsAsText)
+                try
                 {
-                    Card[] matchingCards = hand._cards.Where(a => a.ToString().CompareTo(cardText) == 0).ToArray();
-                    if (matchingCards.Count() == 1)
+                    List<string> cardsAsText = hud.HavePlayerSelectCardsToPassOrDiscard(hand).Result;
+                    player.Discards = new List<Card>();
+                    foreach (string cardText in cardsAsText)
                     {
-                        player.Discards.Add(matchingCards[0]);
+                        Card[] matchingCards = hand._cards.Where(a => a.ToString().CompareTo(cardText) == 0).ToArray();
+                        if (matchingCards.Count() == 1)
+                        {
+                            player.Discards.Add(matchingCards[0]);
+                        }
+                        else if (matchingCards.Count() > 1)
+                        {
+                            throw new Exception($"Expected 1 card match to hand ({this}) but got {string.Join(',', matchingCards.Select(a => a.ToString()))}");
+                        }
+                        else
+                        {
+                            throw new Exception($"Expected 1 card match to hand ({this}) but got zero");
+                        }
                     }
-                    else if (matchingCards.Count() > 1)
-                    {
-                        throw new Exception($"Expected 1 card match to hand ({this}) but got {string.Join(',', matchingCards.Select(a => a.ToString()))}");
-                    }
-                    else
-                    {
-                        throw new Exception($"Expected 1 card match to hand ({this}) but got zero");
-                    }
+                    confirmDiscardEvent(player.PositionID);
                 }
-                confirmDiscardEvent(player.PositionID);
+                catch (Exception e)
+                {
+                    Debug.Print($"Other Thread Exception: {e}");
+                }
             });
         }
     }
@@ -461,7 +498,9 @@ class Deal
         {
             Hand potentialHand = otherHand.GeneratePotentialHand(unseenCards, rnd, ourHand._player);
             potentialHand.ComputeBestScore(minRank, maxRank, suitsCount, _river);
-            HandValue av = potentialHand.ApplyRandomDiscard(potentialDiscards, unseenCards, minRank, maxRank, suitsCount, rnd, ourHand._player);
+
+            Card[] unseenCardsNotInPotentialHand = unseenCards.ToArray().Where(a => !potentialHand._cards.Contains(a)).ToArray();
+            HandValue av = potentialHand.ApplyRandomDiscard(potentialDiscards, unseenCardsNotInPotentialHand, minRank, maxRank, suitsCount, rnd, ourHand._player);
 
             ++count;
             if (ourHand._handValue!.PixieCompareTo(av, PixieCompare) < 0)
@@ -512,7 +551,7 @@ class Deal
     {
         const int maxPlayerCount = 5;
 
-        int cardCount = (_ranks.Count + deltaRank) * (_suits.Count + deltaSuit);
+        int cardCount = (_ranks.Count + deltaRank) * (_suits.Count + deltaSuit) + JokerCount;
         int cardsNeeded = RiverSize + maxPlayerCount * (HandSize + MaxDiscard);
         bool canAdd = cardCount >= cardsNeeded;
         return canAdd;
@@ -636,6 +675,11 @@ class Deal
     internal void IncreaseCostPerDiscard()
     {
         PendingCostPerDiscard += 0.5;
+    }
+
+    internal void AddDoppelganger()
+    {
+        JokerCount += 1;
     }
 
     internal void ShowHighestRankCards()

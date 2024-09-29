@@ -109,3 +109,21 @@ class Profile : IDisposable
         }
     }
 }
+
+class DebugTrack : IDisposable
+{
+    private string? _name;
+    internal DebugTrack(string name)
+    {
+        _name = name;
+        Debug.Print($"DT:ENTER {name}");
+    }
+    public void Dispose()
+    {
+        if (_name != null)
+        {
+            Debug.Print($"DT:EXIT {_name}");
+            _name = null;
+        }
+    }
+}

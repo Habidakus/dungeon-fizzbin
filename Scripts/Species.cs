@@ -95,6 +95,9 @@ class Species
                 "The highest three cards dealt are visible to all players.",
                 DealComponent_Giant, NameGenerator_Giant, null, GetText_Giant),
             //new Species("Ghoul", 1, 15),
+            new Species("Werewolf", 1, 15,
+                $"{Card.Joker} ({Card.Joker.Tooltip}) card(s) are added to the deck, which will duplicate any card in your hand or the river.",
+                DealComponent_Werewolf, NameGenerator_Werewolf, null, GetText_Werewolf),
             //new Species("Dogman", 1, 15),
             new Species("Birdman", 0.5, 20,
                 "Any hand that finishes with merely a pair (or prison with two Birdmen) is scrubbed and the pot is added to the next hand.",
@@ -271,6 +274,16 @@ class Species
     }
     static internal void DealComponent_DoNothing(Deal deal)
     {
+    }
+
+    internal static StaticSpeciesSaveElement GenerateStaticSpeciesSaveElement()
+    {
+        return new StaticSpeciesSaveElement(s_speciesNameSteppers);
+    }
+
+    internal static void SetStaticSpeciesData(StaticSpeciesSaveElement staticSpeciesEl)
+    {
+        s_speciesNameSteppers = staticSpeciesEl.SpeciesNameSteppers;
     }
 
     // -------------------------------- HUMAN --------------------------------
@@ -529,7 +542,7 @@ class Species
         switch (bark)
         {
             case Bark.LeavingPoor: return $"Stupid game. {player.Name} go now.";
-            case Bark.LeavingRich: return $"{player.Name} has enough of your gold now.";
+            case Bark.LeavingRich: return $"{player.Name} has enough gold, leave now.";
             default:
                 throw new Exception($"No halfling text for bark={bark}");
         }
@@ -776,14 +789,29 @@ class Species
         }
     }
 
-    internal static StaticSpeciesSaveElement GenerateStaticSpeciesSaveElement()
-    {
-        return new StaticSpeciesSaveElement(s_speciesNameSteppers);
-    }
+    // -------------------------------- Werewolf --------------------------------
 
-    internal static void SetStaticSpeciesData(StaticSpeciesSaveElement staticSpeciesEl)
+    static private List<string> WEREWOLF_NAME = new List<string>() {
+        "Buddy", "Bear", "Max", "Rex", "Fluffy", "Lassie", "Lucky", "Rover", "Spot", "Fido", "Duke", "Checkers",
+    };
+
+    private static string NameGenerator_Werewolf(Random rng)
     {
-        s_speciesNameSteppers = staticSpeciesEl.SpeciesNameSteppers;
+        return PickFromArray("Werewolf", 0, WEREWOLF_NAME.ToArray(), rng);
+    }
+    private static void DealComponent_Werewolf(Deal deal)
+    {
+        deal.AddDoppelganger();
+    }
+    static private string GetText_Werewolf(Player _player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.LeavingPoor: return "Dang, this has taken a bite out of my wallet.";
+            case Bark.LeavingRich: return "It's been nice, but the moon calls to me.";
+            default:
+                throw new Exception($"No giant text for bark={bark}");
+        }
     }
 }
 
