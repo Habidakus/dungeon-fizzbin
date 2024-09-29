@@ -33,8 +33,9 @@ May 22nd (1/4) Advance handcount by the number of achievements gained
 May 27th (1/4) Upload to github, added license and readme
 Sept 25th (1/4) Did some simple optimizations, and limit processing times on various AI
 Sept 28th Animated the who-goes-next arrow, added joker cards, fixed a race condition, and added Kobolds & werewolves
+Sept 29th (1/4) Achievement text is adaptive in size, so it doesn't overflow the achievement text box.
 
-total: 24.5 days
+total: 24.75 days
 
 TODO:
 

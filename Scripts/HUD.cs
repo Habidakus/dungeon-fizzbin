@@ -921,6 +921,34 @@ public partial class HUD : CanvasLayer
         }
     }
 
+    private static bool IsTooMuchText(string text, Font font, int fontSize, float width, float height)
+    {
+        TextLine textLine = new TextLine();
+        textLine.AddString(text, font, fontSize);
+        return (textLine.GetSize().X > width) || (textLine.GetSize().Y > height);
+    }
+
+    private static int GetFontSizeForWidth(string text, float maxWidth, float maxHeight, Font font, int currentFontSize)
+    {
+        int tooLarge = currentFontSize * 2;
+        int tooSmall = 1;
+        while (currentFontSize + 1 != tooLarge)
+        {
+            if (IsTooMuchText(text, font, currentFontSize, maxWidth, maxHeight))
+            {
+                tooLarge = currentFontSize;
+            }
+            else
+            {
+                tooSmall = currentFontSize;
+            }
+
+            currentFontSize = (tooLarge + tooSmall) / 2;
+        }
+
+        return IsTooMuchText(text, font, currentFontSize, maxWidth, maxHeight) ? currentFontSize - 1 : currentFontSize;
+    }
+
     private void ConfigureAchievementBox(AchievementUnlock unlock, Node visibileAchievementNode)
     {
         if (visibileAchievementNode.FindChild("Image") is TextureRect imageRect)
@@ -939,7 +967,14 @@ public partial class HUD : CanvasLayer
 
         if (visibileAchievementNode.FindChild("Text") is RichTextLabel richText)
         {
-            richText.Text = unlock.Text;
+            Font font = richText.GetThemeDefaultFont();
+            int fontSize = richText.GetThemeDefaultFontSize();
+            float maxWidth = (Math.Max(richText.CustomMinimumSize.X, richText.Size.X) - 2f) * 2f;
+            float maxHeight = (Math.Max(richText.CustomMinimumSize.Y, richText.Size.Y) - 3f) / 2f;
+            fontSize = GetFontSizeForWidth(unlock.Text, maxWidth, maxHeight, font, fontSize);
+            //Debug.Print($"FontSize: {fontSize}   Text: {unlock.Text}");
+            richText.BbcodeEnabled = true;
+            richText.Text = $"[font_size={fontSize}]{unlock.Text}[/font_size]";
         }
 
         if (visibileAchievementNode.FindChild("ColorRect") is ColorRect colorRec)
@@ -1050,7 +1085,7 @@ public partial class HUD : CanvasLayer
         rule.Theme = rulesGrid.Theme;
         rule.SizeFlagsHorizontal |= Control.SizeFlags.ExpandFill;
         rule.CustomMinimumSize = new Vector2(800, 62);
-        GD.Print($"{name.Text} {rule.Size} {rule.CustomMinimumSize}");
+        //GD.Print($"{name.Text} {rule.Size} {rule.CustomMinimumSize}");
         rulesGrid.AddChild(rule);
     }
 }
