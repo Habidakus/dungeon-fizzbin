@@ -79,6 +79,12 @@ class Species
             new Species("Kobold", 0.75, 10,
                 "See the lowest ranked card(s) in your left neighbor's hand.",
                 DealComponent_Kobold, NameGenerator_Kobold, null, GetText_Kobold),
+            new Species("Dogman", 0.75, 13,
+                "Add an extra round of discarding cards.",
+                DealComponent_Dogman, NameGenerator_Dogman, CanAdd_Dogman, GetText_Dogman),
+            new Species("Catperson", 0.33, 13,
+                "There is no discard round.",
+                DealComponent_Catperson, NameGenerator_Catperson, CanAdd_Catperson, GetText_Catperson),
             new Species("Orc", 0.75, 15,
                 $"Removes the {Rank.DefaultRanks[6]._unicode} ({Rank.DefaultRanks[6].Tooltip}) and {Rank.DefaultRanks[7]._unicode} ({Rank.DefaultRanks[7].Tooltip}) ranks from the deck.",
                 DealComponent_Orc, NameGenerator_Orc, CanAdd_Orc, GetText_Greenskin),
@@ -87,7 +93,7 @@ class Species
                 DealComponent_Halfling, NameGenerator_Halfling, null, GetText_Halfling),
             new Species("Centaur", 0.5, 15,
                 "You must pay more to the ante for each card you discard.",
-                DealComponent_Centaur, NameGenerator_Centaur, null, GetText_Centaur),
+                DealComponent_Centaur, NameGenerator_Centaur, CanAdd_Centaur, GetText_Centaur),
             new Species("Pixie", 1, 15,
                 "The ranking of cards are inverted; thus a two of hearts is more important than a three of hearts, although hands still rank in difficulty.",
                 DealComponent_Pixie, NameGenerator_Pixie, CanAdd_Pixie),
@@ -98,7 +104,6 @@ class Species
             new Species("Werewolf", 1, 15,
                 $"{Card.Joker} ({Card.Joker.Tooltip}) card(s) are added to the deck, which will duplicate any card in your hand or the river.",
                 DealComponent_Werewolf, NameGenerator_Werewolf, null, GetText_Werewolf),
-            //new Species("Dogman", 1, 15),
             new Species("Birdman", 0.5, 20,
                 "Any hand that finishes with merely a pair (or prison with two Birdmen) is scrubbed and the pot is added to the next hand.",
                  DealComponent_Birdman, NameGenerator_Birdman, CanAdd_Birdman, GetText_Birdman),
@@ -535,7 +540,7 @@ class Species
     }
     static internal bool CanAdd_Goblin(Deal deal)
     {
-        return deal.MeetsMinCards(-2, 0);
+        return deal.MeetsMinCards(-2, 0, 0, 0);
     }
     static internal string GetText_Greenskin(Player player, Bark bark)
     {
@@ -570,7 +575,7 @@ class Species
     }
     static internal bool CanAdd_Orc(Deal deal)
     {
-        return deal.MeetsMinCards(-2, 0);
+        return deal.MeetsMinCards(-2, 0, 0, 0);
     }
 
     // -------------------------------- Troll --------------------------------
@@ -591,7 +596,7 @@ class Species
     }
     static internal bool CanAdd_Troll(Deal deal)
     {
-        bool canAdd = deal.MeetsMinCards(0, -1);
+        bool canAdd = deal.MeetsMinCards(0, -1, 0, 0);
         return canAdd;
     }
 
@@ -749,6 +754,10 @@ class Species
     {
         deal.IncreaseCostPerDiscard();
     }
+    static private bool CanAdd_Centaur(Deal deal)
+    {
+        return deal.DiscardRoundsRemaining > 0;
+    }
     static private string GetText_Centaur(Player _player, Bark bark)
     {
         switch (bark)
@@ -791,13 +800,37 @@ class Species
 
     // -------------------------------- Werewolf --------------------------------
 
-    static private List<string> WEREWOLF_NAME = new List<string>() {
-        "Buddy", "Bear", "Max", "Rex", "Fluffy", "Lassie", "Lucky", "Rover", "Spot", "Fido", "Duke", "Checkers",
+    static private List<string> WEREWOLF_NAME_PREFIX = new List<string>() {
+        "Ael", "Ag", "Agrio", "Al", "Asbo",
+        "Cana", "Cyp",
+        "Dor", "Dro",
+        "Harpa", "Har", "Hylac", "Hy",
+        "Ichnoba",
+        "Lab", "Lach", "La", "Lea", "Leu", "Lycis",
+        "Malam", "Mela",
+        "Na", "Nebropho",
+        "Oriba",
+        "Pampha", "Ptere",
+        "Stric",
+        "Tig",
     };
-
+    static private List<string> WEREWOLF_NAME_SUFFIX = new List<string>() {
+        "ce", "ceus", "con",
+        "don", "dos",
+        "gus",
+        "laeus", "laps", "las", "lo", "los", "lus",
+        "max",
+        "ne", "neus", "nus",
+        "pe", "pus", "pyia",
+        "re", "ris", "rius", "ron", "ros",
+        "sus",
+        "te", "tes", "tor",
+    };
     private static string NameGenerator_Werewolf(Random rng)
     {
-        return PickFromArray("Werewolf", 0, WEREWOLF_NAME.ToArray(), rng);
+        string prefix = PickFromArray("Werewolf", 0, WEREWOLF_NAME_PREFIX.ToArray(), rng);
+        string suffix = PickFromArray("Werewolf", 1, WEREWOLF_NAME_SUFFIX.ToArray(), rng);
+        return $"{prefix}{suffix}";
     }
     private static void DealComponent_Werewolf(Deal deal)
     {
@@ -810,7 +843,120 @@ class Species
             case Bark.LeavingPoor: return "Dang, this has taken a bite out of my wallet.";
             case Bark.LeavingRich: return "It's been nice, but the moon calls to me.";
             default:
-                throw new Exception($"No giant text for bark={bark}");
+                throw new Exception($"No werewolf text for bark={bark}");
+        }
+    }
+
+    // -------------------------------- Dogman --------------------------------
+
+    static private List<string> DOGMAN_NAME = new List<string>() {
+        "Buddy", "Bear", "Max", "Rex", "Fluffy", "Lassie", "Lucky", "Rover", "Spot", "Fido", "Duke", "Checkers",
+    };
+    private static string NameGenerator_Dogman(Random rng)
+    {
+        // TODO: Make dogman and werewolf names separate
+        return PickFromArray("Dogman", 0, DOGMAN_NAME.ToArray(), rng);
+    }
+    private static void DealComponent_Dogman(Deal deal)
+    {
+        deal.AddDiscardRound();
+    }
+    private static bool CanAdd_Dogman(Deal deal)
+    {
+        int newMaxDiscards = Math.Max(1, deal.MaxDiscard - 1);
+        bool enoughCards = deal.MeetsMinCards(0, 0, newMaxDiscards - deal.MaxDiscard, 1);
+        bool enoughSpaceToDisplayAllDiscards = (newMaxDiscards * (deal.DiscardRoundsRemaining + 1)) < 5;
+        bool weHaventSetDicardRoundsToZero = deal.DiscardRoundsRemaining > 0;
+        return weHaventSetDicardRoundsToZero && enoughSpaceToDisplayAllDiscards && enoughCards;
+    }
+    private static string GetText_Dogman(Player player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.LeavingPoor: return "I'll see myself out.";
+            case Bark.LeavingRich: return "This was so much fun! Lets play again soon!";
+            default:
+                throw new Exception($"No dogman text for bark={bark}");
+        }
+    }
+
+    // -------------------------------- Catperson --------------------------------
+
+    static private List<string> CAT_NAME_PREFIX = new List<string>() {
+        "Admiral",
+        "Baby",
+        "Captain",
+        "Lord",
+        "Major",
+        "Mister",
+        "Professor",
+        "Queen",
+        "Sir",
+    };
+    static private List<string> CAT_NAME_BASE = new List<string>()
+    {
+        "Boo",
+        "Chonks",
+        "Edgar",
+        "Fluffles",
+        "Kinako",
+        "Maite",
+        "Mingus",
+        "Mittens",
+        "Sushi",
+        "Turbo",
+        "Tumtum",
+    };
+    static private List<string> CAT_NAME_SUFFIX = new List<string>()
+    {
+        "Clawmonger",
+        "Purrmachine",
+        "the Crepuscular",
+        "the Curious",
+        "the Inquisitive",
+        "the Lightning",
+        "the Patient",
+        "the Regal",
+        "the Scribbler",
+        "the Sniffer",
+        "the Stampede",
+        "the Thief",
+        "Von Meow",
+        "Von Clausewitz",
+        "Wigglebutt",
+    };
+
+    private static string NameGenerator_Catperson(Random rng)
+    {
+        string branchType = PickFromArray("Catperson", 0, new string[] { "a", "b", "a", "b", "a", "b" }, rng);
+        string name = PickFromArray("Catperson", 1, CAT_NAME_BASE.ToArray(), rng);
+        if (branchType == "a")
+        {
+            string prefix = PickFromArray("Catperson", 2, CAT_NAME_PREFIX.ToArray(), rng);
+            return $"{prefix} {name}";
+        }
+        else
+        {
+            string suffix = PickFromArray("Catperson", 3, CAT_NAME_SUFFIX.ToArray(), rng);
+            return $"{name} {suffix}";
+        }
+    }
+    private static void DealComponent_Catperson(Deal deal)
+    {
+        deal.NoDiscardRounds();
+    }
+    private static bool CanAdd_Catperson(Deal deal)
+    {
+        return deal.DiscardRoundsRemaining == 1 && deal.CostPerDiscard == 0;
+    }
+    private static string GetText_Catperson(Player player, Bark bark)
+    {
+        switch (bark)
+        {
+            case Bark.LeavingPoor: return "I was never here.";
+            case Bark.LeavingRich: return "No crying now, all this is mine...";
+            default:
+                throw new Exception($"No catman text for bark={bark}");
         }
     }
 }

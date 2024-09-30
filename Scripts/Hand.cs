@@ -483,6 +483,10 @@ class Hand : IComparable<Hand>
     internal void ComputeBestScore(int minRank, int maxRank, int suitsCount, List<Card> river)
     {
         Bits availableSlots = new Bits(0, _cards.Count + river.Count);
+        if (availableSlots.Count < 5)
+        {
+            throw new Exception($"There are less than five cards given to Hand.ComputeBestScore({this})");
+        }
 
         _handValue = null;
         foreach(Bits combinations in AllCombinationsOfAvailableSlotsChoseY(5, availableSlots))

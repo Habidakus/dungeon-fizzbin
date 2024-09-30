@@ -33,9 +33,9 @@ May 22nd (1/4) Advance handcount by the number of achievements gained
 May 27th (1/4) Upload to github, added license and readme
 Sept 25th (1/4) Did some simple optimizations, and limit processing times on various AI
 Sept 28th Animated the who-goes-next arrow, added joker cards, fixed a race condition, and added Kobolds & werewolves
-Sept 29th (1/4) Achievement text is adaptive in size, so it doesn't overflow the achievement text box. Fixed who-goes-next pointer to rotate smoothly
+Sept 29th Achievement text is adaptive in size, so it doesn't overflow the achievement text box. Fixed who-goes-next pointer to rotate smoothly. Added Catpeople and Dogmen.
 
-total: 24.75 days
+total: 25.25 days
 
 TODO:
 

@@ -33,6 +33,7 @@ class Deal
     internal int RevealLeftNeighborsLowestCards { get; set; }
     internal bool UsingJokers { get { return JokerCount > 0; } }
     internal int JokerCount { get; private set; }
+    internal int DiscardRoundsRemaining { get; set; }
     internal int PassCardsToLeftNeighbor { get; set; }
     internal int RiverSize { get; private set; }
     internal int HandSize { get; private set; }
@@ -63,6 +64,7 @@ class Deal
 
     internal Deal(double carryoverPot)
     {
+        DiscardRoundsRemaining = 1;
         DiscardsToReveal = 0;
         RevealRightNeighborsHighestCards = 0;
         RevealLeftNeighborsLowestCards = 0;
@@ -547,12 +549,13 @@ class Deal
         NumberOfHighestRankingCardsToExpose = 0;
     }
 
-    public bool MeetsMinCards(int deltaRank, int deltaSuit)
+    public bool MeetsMinCards(int deltaRank, int deltaSuit, int deltaDiscardCards, int deltaDiscardRounds)
     {
         const int maxPlayerCount = 5;
 
         int cardCount = (_ranks.Count + deltaRank) * (_suits.Count + deltaSuit) + JokerCount;
-        int cardsNeeded = RiverSize + maxPlayerCount * (HandSize + MaxDiscard);
+        int totalPossibleDiscards = (MaxDiscard + deltaDiscardCards) * (DiscardRoundsRemaining + deltaDiscardRounds);
+        int cardsNeeded = RiverSize + maxPlayerCount * (HandSize + totalPossibleDiscards);
         bool canAdd = cardCount >= cardsNeeded;
         return canAdd;
     }
@@ -675,6 +678,17 @@ class Deal
     internal void IncreaseCostPerDiscard()
     {
         PendingCostPerDiscard += 0.5;
+    }
+
+    internal void AddDiscardRound()
+    {
+        DiscardRoundsRemaining += 1;
+        MaxDiscard = Math.Max(1, MaxDiscard - 1);
+    }
+
+    internal void NoDiscardRounds()
+    {
+        DiscardRoundsRemaining = 0;
     }
 
     internal void AddDoppelganger()

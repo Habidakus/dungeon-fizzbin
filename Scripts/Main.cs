@@ -236,14 +236,20 @@ public partial class Main : Node
 
     public bool SomeoneNeedsToDiscard(out int highlightPositionID)
     {
-        for (int i = 0; i < _players.Count; ++i)
+        while (Deal.DiscardRoundsRemaining > 0)
         {
-            int j = (InitialBetter + i) % _players.Count;
-            if (!_players[j].HasDiscarded)
+            for (int i = 0; i < _players.Count; ++i)
             {
-                highlightPositionID = _players[j].PositionID;
-                return true;
+                int j = (InitialBetter + i) % _players.Count;
+                if (!_players[j].HasDiscarded)
+                {
+                    highlightPositionID = _players[j].PositionID;
+                    return true;
+                }
             }
+
+            Deal.DiscardRoundsRemaining -= 1;
+            _players.ForEach(p => p.HasDiscarded = false);
         }
 
         highlightPositionID = -1;
