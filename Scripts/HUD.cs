@@ -25,7 +25,10 @@ public partial class HUD : CanvasLayer
     public PackedScene? VisibleAchievement = null;
     [Export]
     public PackedScene? SpeciesSelectButton = null;
+    [Export]
+    public AudioStream[] ChipSounds;
 
+    private AudioStreamPlayer? _audio_stream_player;
     private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
     private Control PlayPage { get { return GetChildControl("PlayPage"); } }
@@ -34,6 +37,7 @@ public partial class HUD : CanvasLayer
     private Control RevealedRulesPage { get { return GetChildControl("RevealedRulesPage"); } }
     private Control HowToPlayPage { get { return GetChildControl("HowToPlayPage"); } }
     private Control PlayAsNewSpeciesPage { get { return GetChildControl("PlayAsNewSpecies"); } }
+    private Control CreditsPage { get { return GetChildControl("ShowCredits"); } }
     private PotBackground PotBackground
     {
         get
@@ -148,6 +152,7 @@ public partial class HUD : CanvasLayer
     {
         InitializeStateChangeButton(MenuPage, "PlaySCB", "[center]Play[/center]");
         InitializeStateChangeButton(MenuPage, "QuitSCB", "[center]Quit[/center]");
+        InitializeStateChangeButton(MenuPage, "CreditsSCB", "[center]Credits[/center]");
         InitializeStateChangeButton(MenuPage, "AchievementsSCB", "[center]Achievements[/center]");
         InitializeStateChangeButton(MenuPage, "RevealedRulesSCB", "[center]Show Revealed Rules[/center]");
         InitializeStateChangeButton(MenuPage, "HowToPlaySCB", "[center]How To Play[/center]");
@@ -158,22 +163,27 @@ public partial class HUD : CanvasLayer
         InitializeStateChangeButton(HowToPlayPage, "BackSCB", "[center]Back[/center]");
         InitializeStateChangeButton(RevealedRulesPage, "BackSCB", "[center]Back[/center]");
         InitializeStateChangeButton(PlayAsNewSpeciesPage, "BackSCB", "[center]Cancel[/center]");
+        InitializeStateChangeButton(CreditsPage, "BackSCB", "[center]Back[/center]");
 
         SetBackgroundColor(TitlePage);
         SetBackgroundColor(MenuPage);
         SetBackgroundColor(PlayPage);
         SetBackgroundColor(AchievementsPage);
         SetBackgroundColor(RevealedRulesPage);
+        SetBackgroundColor(CreditsPage);
         SetBackgroundColor(HowToPlayPage);
         SetBackgroundColor(PlayAsNewSpeciesPage);
 
         TitlePage.Hide();
         MenuPage.Hide();
         PlayPage.Hide();
+        CreditsPage.Hide();
         AchievementsPage.Hide();
         RevealedRulesPage.Hide();
         HowToPlayPage.Hide();
         PlayAsNewSpeciesPage.Hide();
+
+        _audio_stream_player = GetNode<AudioStreamPlayer>("AudioStreamPlayer");
 
         ConfirmationButtonColorRect.Color = Main.Color_ButtonDefault;
         ConfirmationButton.Hide();
@@ -258,6 +268,9 @@ public partial class HUD : CanvasLayer
             case "PlayAsNewSpecies":
                 PlayAsNewSpeciesPage.Show();
                 break;
+            case "Show_Credits":
+                CreditsPage.Show();
+                break;
             case "ChangeSpecies":
                 break;
             case "Play_Deal":
@@ -305,6 +318,9 @@ public partial class HUD : CanvasLayer
                 break;
             case "PlayAsNewSpecies":
                 PlayAsNewSpeciesPage.Hide();
+                break;
+            case "Show_Credits":
+                CreditsPage.Hide();
                 break;
             case "ChangeSpecies":
                 break;
@@ -1078,5 +1094,22 @@ public partial class HUD : CanvasLayer
         rule.CustomMinimumSize = new Vector2(800, 62);
         //GD.Print($"{name.Text} {rule.Size} {rule.CustomMinimumSize}");
         rulesGrid.AddChild(rule);
+    }
+
+    internal void MakeChipSound(Random rnd, double amount)
+    {
+        if (amount == 0)
+            return;
+        if (_audio_stream_player == null)
+            return;
+        if (!ChipSounds.Any())
+            return;
+
+        amount = Math.Abs(amount);
+
+        _audio_stream_player.Stream = ChipSounds[rnd.Next() % ChipSounds.Length];
+        _audio_stream_player.PitchScale = (float)Math.Max(0.5, 2.0 - (Math.Log(amount + 1, 2) / 8.0));
+        GD.Print($"Playing chip sound at pitch { _audio_stream_player.PitchScale} for amount {amount}");
+        _audio_stream_player.Play();
     }
 }

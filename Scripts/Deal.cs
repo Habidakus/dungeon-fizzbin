@@ -62,7 +62,7 @@ class Deal
         }
     }
 
-    internal Deal(double carryoverPot)
+    internal Deal(HUD hud, double carryoverPot, Random rnd)
     {
         DiscardRoundsRemaining = 1;
         DiscardsToReveal = 0;
@@ -78,6 +78,7 @@ class Deal
         MinimumHandToWinPot = HandValue.HandRanking.HighCard;
         PendingCostPerDiscard = 0;
         NumberOfHighestRankingCardsToExpose = 0;
+        hud.MakeChipSound(rnd, Math.Abs(Pot - carryoverPot));
         Pot = carryoverPot;
 
         _suits.AddRange(Suit.DefaultSuits);
@@ -343,7 +344,7 @@ class Deal
         }
     }
 
-    internal void HavePlayerDiscard_Post(Player player, HUD hud)
+    internal void HavePlayerDiscard_Post(Player player, HUD hud, Random rnd)
     {
         if (!player.IsNPC)
         {
@@ -353,7 +354,7 @@ class Deal
         if (player.Discards != null)
         {
             double penaltyForDiscard = player.Discards!.Count * CostPerDiscard;
-            MoveMoneyToPot(hud, penaltyForDiscard, player);
+            MoveMoneyToPot(hud, penaltyForDiscard, player, rnd);
             UpdatePot(hud);
         }
 
@@ -701,8 +702,9 @@ class Deal
         NumberOfHighestRankingCardsToExpose += 3;
     }
 
-    internal void MoveMoneyToPot(HUD hud, double amount, Player player)
+    internal void MoveMoneyToPot(HUD hud, double amount, Player player, Random rnd)
     {
+        hud.MakeChipSound(rnd, amount);
         Pot += amount;
         player.RemoveMoney(hud, amount);
     }
@@ -712,16 +714,20 @@ class Deal
         hud.SetPot(Pot);
     }
 
-    internal double CarryoverPot()
+    internal double CarryoverPot(HUD hud, Random rnd)
     {
         double retVal = Pot;
         Pot = 0;
+
+        hud.MakeChipSound(rnd, retVal);
+
         return retVal;
     }
 
-    internal void MovePotToPlayer(HUD hud, Player player)
+    internal void MovePotToPlayer(HUD hud, Player player, Random rnd)
     {
         player.AddMoney(hud, Pot);
+        hud.MakeChipSound(rnd, Pot);
         Pot = 0;
     }
 

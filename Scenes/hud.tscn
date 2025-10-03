@@ -1,6 +1,6 @@
-[gd_scene load_steps=13 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=16 format=3 uid="uid://blunstfg1u5v7"]
 
-[ext_resource type="Script" path="res://Scripts/HUD.cs" id="1_yllrm"]
+[ext_resource type="Script" uid="uid://dge38xbwa5c5o" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
 [ext_resource type="PackedScene" uid="uid://ci4dydx2sl63t" path="res://Scenes/pot.tscn" id="3_0m0fb"]
 [ext_resource type="Texture2D" uid="uid://casny3bj57bv6" path="res://Art/NewSpeciesUnlock.png" id="4_ey0ob"]
@@ -9,7 +9,10 @@
 [ext_resource type="PackedScene" uid="uid://bgth6f6cw771c" path="res://Scenes/card.tscn" id="6_qtayb"]
 [ext_resource type="Texture2D" uid="uid://bdar7og3fe5xu" path="res://Art/Bronze.png" id="6_tkyqm"]
 [ext_resource type="PackedScene" uid="uid://whhs3vhsqldk" path="res://Scenes/visible_achievement.tscn" id="7_2eio4"]
+[ext_resource type="AudioStream" uid="uid://bnqu3ra244ybc" path="res://Sound/Chips/handfull-of-poker-chips-95810.mp3" id="8_i2avg"]
+[ext_resource type="AudioStream" uid="uid://432435pocmyv" path="res://Sound/Chips/poker-chip-drop-38461.mp3" id="9_ssfue"]
 [ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="10_7rybn"]
+[ext_resource type="AudioStream" uid="uid://buhrcbatumpbd" path="res://Sound/Chips/poker-chip-dropping-80329.mp3" id="10_8bf2m"]
 [ext_resource type="Texture2D" uid="uid://c3wtsh6w7cinw" path="res://Art/EmptyButton.png" id="12_06srf"]
 [ext_resource type="PackedScene" uid="uid://b8533332gnox6" path="res://Scenes/state_change_button2.tscn" id="14_jphh5"]
 
@@ -21,6 +24,7 @@ SilverAchievement = ExtResource("5_4w2wm")
 BronzeAchievement = ExtResource("6_tkyqm")
 VisibleAchievement = ExtResource("7_2eio4")
 SpeciesSelectButton = ExtResource("14_jphh5")
+ChipSounds = Array[AudioStream]([ExtResource("8_i2avg"), ExtResource("9_ssfue"), ExtResource("10_8bf2m")])
 
 [node name="Background" type="ColorRect" parent="."]
 visible = false
@@ -93,6 +97,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -333,67 +338,37 @@ theme_override_constants/margin_bottom = 100
 layout_mode = 2
 
 [node name="PlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Play_Deal"
 
-[node name="padding4" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="AchievementsSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Achievements"
 
-[node name="padding5" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="NewPlayerSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "PlayAsNewSpecies"
 
-[node name="padding6" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="HowToPlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "How_To_Play"
 
-[node name="padding7" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="RevealedRulesSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Show_Revealed_Rules"
 
-[node name="padding8" type="Label" parent="MenuPage/MarginContainer/VBoxContainer"]
+[node name="CreditsSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
-size_flags_vertical = 3
-text = "
-"
-horizontal_alignment = 1
-vertical_alignment = 1
+State = "Show_Credits"
 
 [node name="QuitSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Quit"
 
@@ -503,6 +478,96 @@ size_flags_horizontal = 3
 State = "Menu"
 
 [node name="Label2" type="Label" parent="AchievementsPage/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("10_7rybn")
+
+[node name="ShowCredits" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("10_7rybn")
+
+[node name="Background" type="ColorRect" parent="ShowCredits"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.65098, 0.0588235, 0.176471, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="ShowCredits"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ShowCredits/MarginContainer"]
+layout_mode = 2
+
+[node name="padding2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RichTextLabel" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("10_7rybn")
+theme_override_font_sizes/font_size = 72
+text = "Credits"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RichTextLabel2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("10_7rybn")
+theme_override_font_sizes/font_size = 48
+text = "Game: Jason Abbott
+Sound Effects: pixabay.com"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="padding" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ShowCredits/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("10_7rybn")
+
+[node name="BackSCB" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer" instance=ExtResource("14_jphh5")]
+z_index = 1
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+State = "Menu"
+
+[node name="Label2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
@@ -738,6 +803,8 @@ State = "Menu"
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
 [connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]

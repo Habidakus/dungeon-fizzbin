@@ -91,7 +91,7 @@ public partial class Main : Node
     {
         if (_deal == null)
         {
-            _deal = new Deal(CarryoverPot);
+            _deal = new Deal(GetHUD(), CarryoverPot, rnd);
             CarryoverPot = 0;
         }
 
@@ -102,8 +102,9 @@ public partial class Main : Node
     internal void StartFreshDeal()
     {
         //Test();
+        HUD hud = GetHUD();
 
-        _deal = new Deal(CarryoverPot);
+        _deal = new Deal(hud, CarryoverPot, rnd);
         CarryoverPot = 0;
 
         if (HandNumber == 0)
@@ -111,7 +112,6 @@ public partial class Main : Node
         else
             HandNumber += 1;
 
-        HUD hud = GetHUD();
         foreach (Player player in _players)
         {
             _deal.AddPlayer(hud, player);
@@ -134,7 +134,7 @@ public partial class Main : Node
         const double anteAmount = 1;
         foreach (Player player in _players)
         {
-            Deal.MoveMoneyToPot(GetHUD(), player.Ante(hud, anteAmount), player);
+            Deal.MoveMoneyToPot(GetHUD(), player.Ante(hud, anteAmount), player, rnd);
         }
 
         Deal.UpdatePot(hud);
@@ -273,7 +273,7 @@ public partial class Main : Node
 
     public void ForceSomeoneToDiscard_Post(int positionID)
     {
-        Deal.HavePlayerDiscard_Post(_players[positionID], GetHUD());
+        Deal.HavePlayerDiscard_Post(_players[positionID], GetHUD(), rnd);
         GetStateMachine().SwitchState("Play_Animate_Discards");
     }
 
@@ -403,7 +403,7 @@ public partial class Main : Node
         {
             double newMoneyAddedToPot = betAmount - _players[positionID].AmountBet;
             _players[positionID].Bet(hud, betAmount);
-            Deal.MoveMoneyToPot(hud, newMoneyAddedToPot, _players[positionID]);
+            Deal.MoveMoneyToPot(hud, newMoneyAddedToPot, _players[positionID], rnd);
             Deal.UpdatePot(hud);
         }
         else
@@ -536,11 +536,11 @@ public partial class Main : Node
         if (bestHand._handValue.Worth < minimumHandWorthToWinPot)
         {
             hud.SetFeltToLost(bestHand.PositionID);
-            CarryoverPot = Deal.CarryoverPot();
+            CarryoverPot = Deal.CarryoverPot(hud, rnd);
         }
         else
         {
-            Deal.MovePotToPlayer(hud, bestHand._player);
+            Deal.MovePotToPlayer(hud, bestHand._player, rnd);
             if (bestHand.Player.IsNPC)
             {
                 Achievments.TrackLossesToSpecies(bestHand.Player.Species, NonNPCPlayer.HasFolded, this);

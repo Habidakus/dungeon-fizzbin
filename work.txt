@@ -34,17 +34,19 @@ May 27th (1/4) Upload to github, added license and readme
 Sept 25th (1/4) Did some simple optimizations, and limit processing times on various AI
 Sept 28th Animated the who-goes-next arrow, added joker cards, fixed a race condition, and added Kobolds & werewolves
 Sept 29th Achievement text is adaptive in size, so it doesn't overflow the achievement text box. Fixed who-goes-next pointer to rotate smoothly. Added Catpeople and Dogmen.
+Oct 2nd 2025 (1/2) Added credits pagek, updated to Godot 4.5, added initial sound effects
 
 total: 25.25 days
 
 TODO:
 
 - Need to fix sorting after hand-rank, we need to compare all cards, in order of importance. We also need to compare second pair by rank if both cards of the first pair are the same rank (eg: 9966 vs 9955, can't have the 9955 win if the 9 was a better suit).
-- Need to add the Credits & About page
+- Need to add the About page
 - Need to add a Tutorial
 - Need to implement bluffing
 - If you never put any money in past ante, it's not an intersting game achievement.
 - Have a settings page, where among other things you can have a color selector
+- Need to add more sound effects
 
 Working colors:
 

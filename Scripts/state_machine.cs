@@ -14,11 +14,11 @@ public partial class state_machine : Node
 		ProcessMode = ProcessModeEnum.Always;
 		_all_states.Clear();
 
-		foreach (Node child in GetChildren())
+        foreach (Node child in GetChildren())
 		{
 			if (child is state_machine_state sms)
 			{
-				_all_states.Add(sms.Name.ToString().ToLower(), sms);
+                _all_states.Add(sms.Name.ToString().ToLower(), sms);
 			}
 		}
 
