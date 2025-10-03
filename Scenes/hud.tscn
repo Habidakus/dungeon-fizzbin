@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene load_steps=23 format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" uid="uid://dge38xbwa5c5o" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
@@ -12,9 +12,16 @@
 [ext_resource type="AudioStream" uid="uid://bnqu3ra244ybc" path="res://Sound/Chips/handfull-of-poker-chips-95810.mp3" id="8_i2avg"]
 [ext_resource type="AudioStream" uid="uid://432435pocmyv" path="res://Sound/Chips/poker-chip-drop-38461.mp3" id="9_ssfue"]
 [ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="10_7rybn"]
-[ext_resource type="AudioStream" uid="uid://buhrcbatumpbd" path="res://Sound/Chips/poker-chip-dropping-80329.mp3" id="10_8bf2m"]
+[ext_resource type="AudioStream" uid="uid://dys0cswq07elb" path="res://Sound/Chips/poker-chip-dropping-80329.mp3" id="10_8bf2m"]
+[ext_resource type="AudioStream" uid="uid://drtkyy8dyk84j" path="res://Sound/CardDeal/1.wav" id="11_ajim5"]
 [ext_resource type="Texture2D" uid="uid://c3wtsh6w7cinw" path="res://Art/EmptyButton.png" id="12_06srf"]
+[ext_resource type="AudioStream" uid="uid://ccqkfuv0muabc" path="res://Sound/CardDeal/2.wav" id="12_vxf74"]
+[ext_resource type="AudioStream" uid="uid://b2xeciifhburh" path="res://Sound/CardDeal/3.wav" id="13_oersf"]
+[ext_resource type="AudioStream" uid="uid://e7ke5nxo5bue" path="res://Sound/CardDeal/4.wav" id="14_484xk"]
 [ext_resource type="PackedScene" uid="uid://b8533332gnox6" path="res://Scenes/state_change_button2.tscn" id="14_jphh5"]
+[ext_resource type="AudioStream" uid="uid://bm51imw3h6aw5" path="res://Sound/CardDeal/5.wav" id="15_lkt4f"]
+[ext_resource type="AudioStream" uid="uid://bvhoj5l4j3iog" path="res://Sound/CardDeal/6.wav" id="16_wfkbc"]
+[ext_resource type="AudioStream" uid="uid://cdv3fwsy33cc2" path="res://Sound/CardDeal/7.wav" id="17_s17ah"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_yllrm")
@@ -25,6 +32,7 @@ BronzeAchievement = ExtResource("6_tkyqm")
 VisibleAchievement = ExtResource("7_2eio4")
 SpeciesSelectButton = ExtResource("14_jphh5")
 ChipSounds = Array[AudioStream]([ExtResource("8_i2avg"), ExtResource("9_ssfue"), ExtResource("10_8bf2m")])
+CardMoveSounds = Array[AudioStream]([ExtResource("11_ajim5"), ExtResource("12_vxf74"), ExtResource("13_oersf"), ExtResource("14_484xk"), ExtResource("15_lkt4f"), ExtResource("16_wfkbc"), ExtResource("17_s17ah")])
 
 [node name="Background" type="ColorRect" parent="."]
 visible = false
@@ -805,6 +813,7 @@ size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+max_polyphony = 3
 
 [connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]

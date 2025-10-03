@@ -2,7 +2,7 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-uid="uid://buhrcbatumpbd"
+uid="uid://dys0cswq07elb"
 path="res://.godot/imported/poker-chip-dropping-80329.mp3-4a23a16ba5d2971bf2c05a5ade783d64.mp3str"
 
 [deps]
@@ -13,7 +13,7 @@ dest_files=["res://.godot/imported/poker-chip-dropping-80329.mp3-4a23a16ba5d2971
 [params]
 
 loop=false
-loop_offset=0
-bpm=0
+loop_offset=0.0
+bpm=0.0
 beat_count=0
 bar_beats=4

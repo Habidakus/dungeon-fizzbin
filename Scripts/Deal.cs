@@ -92,7 +92,7 @@ class Deal
         player.InitHud(hud);
     }
 
-    internal void Shuffle(List<Player> players, Random rnd)
+    internal void Shuffle(List<Player> players, HUD hud, Random rnd)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
@@ -125,6 +125,7 @@ class Deal
             for (int i = 0; i < HandSize; ++i)
             {
                 hand.AddCard(_drawPile.First());
+                hud.MakeCardDealSound(rnd);
                 _drawPile.RemoveAt(0);
             }
 
@@ -409,7 +410,7 @@ class Deal
         hud.SetVisibleHand(hand, NonNPCPlayer);
     }
 
-    internal void ResolvePassAndRiver(HUD hud)
+    internal void ResolvePassAndRiver(HUD hud, Random rnd)
     {
         // TODO: We should animate all this passing
 
@@ -423,6 +424,7 @@ class Deal
                 foreach (Card card in passingHand._passingCards)
                 {
                     hand.AddCard(card);
+                    hud.MakeCardDealSound(rnd);
                     hand._exposedCards.Add(card: card, seer: getFromPositionID, canDiscard: true);
                 }
 
@@ -440,17 +442,17 @@ class Deal
         PassCardsToLeftNeighbor = 0;
     }
 
-    internal void MoveCardToDiscard(HUD hud, Player player, List<int> playersWhoCanSeeThisDiscard, Card card)
+    internal void MoveCardToDiscard(HUD hud, Player player, List<int> playersWhoCanSeeThisDiscard, Card card, Random rnd)
     {
         Hand hand = GetPlayerHand(player);
         hand._cards.Remove(card);
         hand._handValue = null;
         _discards.Add(new DiscardCards(card, playersWhoCanSeeThisDiscard, player.PositionID));
         hud.SetVisibleHand(hand, NonNPCPlayer);
-        hud.MoveCardToDiscard(player.Deal, player.PositionID, card, playersWhoCanSeeThisDiscard, NonNPCPlayer.PositionID);
+        hud.MoveCardToDiscard(player.Deal, player.PositionID, card, playersWhoCanSeeThisDiscard, NonNPCPlayer.PositionID, rnd);
     }
 
-    internal bool ProgressReplaceDiscard(HUD hud)
+    internal bool ProgressReplaceDiscard(HUD hud, Random rnd)
     {
         ExtractMinAndMax(out int minRank, out int maxRank, out int suitsCount);
 
@@ -461,6 +463,7 @@ class Deal
                 Card card = _drawPile.First();
                 _drawPile.RemoveAt(0);
                 hand._cards.Add(card);
+                hud.MakeCardDealSound(rnd);
                 if (hand._cards.Count < HandSize)
                 {
                     hand._handValue = null;

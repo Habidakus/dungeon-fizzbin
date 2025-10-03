@@ -128,7 +128,7 @@ public partial class Main : Node
 
         _players.Sort((a,b) => a.PositionID.CompareTo(b.PositionID));
 
-        _deal.Shuffle(_players, rnd);
+        _deal.Shuffle(_players, hud, rnd);
         _deal.UpdateHUD(hud);
 
         const double anteAmount = 1;
@@ -230,7 +230,7 @@ public partial class Main : Node
 
     internal void ResolvePassAndRiver()
     {
-        Deal.ResolvePassAndRiver(GetHUD());
+        Deal.ResolvePassAndRiver(GetHUD(), rnd);
         GetStateMachine().SwitchState("Play_Loop");
     }
 
@@ -301,14 +301,14 @@ public partial class Main : Node
                 }
 
                 player.ExposedDiscardCount += 1;
-                Deal.MoveCardToDiscard(hud, player, playersWhoCanSeeThisDiscard, card);
+                Deal.MoveCardToDiscard(hud, player, playersWhoCanSeeThisDiscard, card, rnd);
                 player.Discards.Remove(card);
                 player.DiscardCount += 1;
                 return true;
             }
         }
 
-        if (Deal.ProgressReplaceDiscard(hud))
+        if (Deal.ProgressReplaceDiscard(hud, rnd))
             return true;
 
         return false;

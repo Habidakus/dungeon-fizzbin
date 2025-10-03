@@ -27,6 +27,8 @@ public partial class HUD : CanvasLayer
     public PackedScene? SpeciesSelectButton = null;
     [Export]
     public AudioStream[] ChipSounds;
+    [Export]
+    public AudioStream[] CardMoveSounds;
 
     private AudioStreamPlayer? _audio_stream_player;
     private Control TitlePage { get { return GetChildControl("TitlePage"); } }
@@ -410,11 +412,12 @@ public partial class HUD : CanvasLayer
         }
     }
 
-    internal void MoveCardToDiscard(Deal deal, int positionID, Card card, List<int> playersWhoCanSeeThisDiscard, int nonNPCPositionID)
+    internal void MoveCardToDiscard(Deal deal, int positionID, Card card, List<int> playersWhoCanSeeThisDiscard, int nonNPCPositionID, Random rnd)
     {
         if (FindChild($"Hand{positionID}") is VisibleHand visibleHand)
         {
             visibleHand.AddDiscard(deal, card, playersWhoCanSeeThisDiscard, positionID, nonNPCPositionID);
+            MakeCardDealSound(rnd);
         }
     }
 
@@ -498,6 +501,7 @@ public partial class HUD : CanvasLayer
             if (FindChild($"Hand{toPositionID}") is VisibleHand toHand)
             {
                 fromHand.FlingCard(card, cardIndex, rnd, isVisible, delay, toHand);
+                MakeCardDealSound(rnd);
             }
         }
     }
@@ -1109,7 +1113,18 @@ public partial class HUD : CanvasLayer
 
         _audio_stream_player.Stream = ChipSounds[rnd.Next() % ChipSounds.Length];
         _audio_stream_player.PitchScale = (float)Math.Max(0.5, 2.0 - (Math.Log(amount + 1, 2) / 8.0));
-        GD.Print($"Playing chip sound at pitch { _audio_stream_player.PitchScale} for amount {amount}");
+        _audio_stream_player.Play();
+    }
+
+    internal void MakeCardDealSound(Random rnd)
+    {
+        if (_audio_stream_player == null)
+            return;
+        if (!CardMoveSounds.Any())
+            return;
+
+        _audio_stream_player.Stream = CardMoveSounds[rnd.Next() % CardMoveSounds.Length];
+        _audio_stream_player.PitchScale = (float)(rnd.NextDouble() * 0.4 + 0.8);
         _audio_stream_player.Play();
     }
 }
