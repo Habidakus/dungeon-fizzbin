@@ -105,7 +105,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayPage" type="Control" parent="."]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -125,7 +124,6 @@ grow_vertical = 2
 color = Color(0.65, 0.0585, 0.1768, 1)
 
 [node name="NextHandMenu" type="VBoxContainer" parent="PlayPage"]
-visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -167,12 +165,97 @@ layout_mode = 2
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 theme_override_font_sizes/font_size = 26
-text = "Your Stake: $200.00
-"
+text = "Your Stake: $200.00"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Buffer2" type="Label" parent="PlayPage/PlayerFacingInfo"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PlayPage/PlayerFacingInfo"]
+layout_mode = 2
+
+[node name="FoldButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+texture = ExtResource("12_06srf")
+patch_margin_left = 30
+patch_margin_top = 30
+patch_margin_right = 30
+patch_margin_bottom = 30
+
+[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 7
+
+[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme = ExtResource("10_7rybn")
+bbcode_enabled = true
+text = "[center]Fold[/center]"
+fit_content = true
+scroll_active = false
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton/MarginContainer"]
+z_index = -1
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Control" type="Control" parent="PlayPage/PlayerFacingInfo/HBoxContainer"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+
+[node name="HoldButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+texture = ExtResource("12_06srf")
+patch_margin_left = 30
+patch_margin_top = 30
+patch_margin_right = 30
+patch_margin_bottom = 30
+
+[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 7
+
+[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme = ExtResource("10_7rybn")
+bbcode_enabled = true
+text = "[center]Hold[/center]"
+fit_content = true
+scroll_active = false
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton/MarginContainer"]
+z_index = -1
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Control" type="Control" parent="PlayPage/PlayerFacingInfo"]
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
 [node name="BetSlider" type="HSlider" parent="PlayPage/PlayerFacingInfo"]
@@ -182,6 +265,7 @@ size_flags_horizontal = 3
 max_value = 9.0
 
 [node name="ConfirmationButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo"]
+custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 3
@@ -213,6 +297,7 @@ bbcode_enabled = true
 text = "[center]Please select 3 cards that you will pass to Happy Hornswoggle.[/center]"
 fit_content = true
 scroll_active = false
+vertical_alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer"]
 z_index = -1
@@ -491,6 +576,7 @@ size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
 [node name="ShowCredits" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -581,6 +667,7 @@ size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
 [node name="PopUpAchievement" parent="." instance=ExtResource("7_2eio4")]
+visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -815,6 +902,12 @@ theme = ExtResource("10_7rybn")
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 3
 
+[connection signal="gui_input" from="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton" to="." method="OnFoldButtonInputEvent"]
+[connection signal="mouse_entered" from="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton" to="." method="OnFoldButtonMouseEnter"]
+[connection signal="mouse_exited" from="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton" to="." method="OnFoldButtonMouseExit"]
+[connection signal="gui_input" from="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton" to="." method="OnHoldButtonInputEvent"]
+[connection signal="mouse_entered" from="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton" to="." method="OnHoldButtonMouseEnter"]
+[connection signal="mouse_exited" from="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton" to="." method="OnHoldButtonMouseExit"]
 [connection signal="value_changed" from="PlayPage/PlayerFacingInfo/BetSlider" to="." method="OnBetSliderChanged"]
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonInputEvent"]
 [connection signal="mouse_entered" from="PlayPage/PlayerFacingInfo/ConfirmationButton" to="." method="OnConfirmationButtonMouseEnter"]

@@ -85,6 +85,7 @@ public partial class Main : Node
     public void AdvanceDealer()
     {
         Dealer = (1 + Dealer) % TableSize;
+        GetHUD().ShowEndOfHandButtons();
     }
 
     internal void ChangeSpecies(Species species)

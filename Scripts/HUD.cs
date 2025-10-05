@@ -116,6 +116,50 @@ public partial class HUD : CanvasLayer
         }
     }
 
+    private StateChangeButton PlayAnotherHandButton
+    {
+        get
+        {
+            if (PlayPage.FindChild("PlayAnotherHandSCB") is StateChangeButton stateChangeButton)
+                return stateChangeButton;
+            else
+                throw new Exception($"{Name} has no child PlayAnotherHandSCB");
+        }
+    }
+
+    private StateChangeButton LeaveTableButton
+    {
+        get
+        {
+            if (PlayPage.FindChild("LeaveTableSCB") is StateChangeButton stateChangeButton)
+                return stateChangeButton;
+            else
+                throw new Exception($"{Name} has no child LeaveTableSCB");
+        }
+    }
+
+    private NinePatchRect HoldButton
+    {
+        get
+        {
+            if (PlayPage.FindChild("HoldButton") is NinePatchRect holdButton)
+                return holdButton;
+            else
+                throw new Exception($"{Name} has no child HoldButton");
+        }
+    }
+
+    private NinePatchRect FoldButton
+    {
+        get
+        {
+            if (PlayPage.FindChild("FoldButton") is NinePatchRect foldButton)
+                return foldButton;
+            else
+                throw new Exception($"{Name} has no child FoldButton");
+        }
+    }
+
     private NinePatchRect ConfirmationButton
     {
         get
@@ -127,12 +171,34 @@ public partial class HUD : CanvasLayer
         }
     }
 
+    private ColorRect HoldButtonColorRect
+    {
+        get
+        {
+            if (HoldButton.FindChild("ColorRect") is ColorRect colorRect)
+                return colorRect;
+            else
+                throw new Exception($"{Name}.{HoldButton.Name} has no child ColorRect");
+        }
+    }
+
+    private ColorRect FoldButtonColorRect
+    {
+        get
+        {
+            if (FoldButton.FindChild("ColorRect") is ColorRect colorRect)
+                return colorRect;
+            else
+                throw new Exception($"{Name}.{FoldButton.Name} has no child ColorRect");
+        }
+    }
+
     private ColorRect ConfirmationButtonColorRect
     {
         get
         {
-            if (ConfirmationButton.FindChild("ColorRect") is ColorRect confirmationColorRect)
-                return confirmationColorRect;
+            if (ConfirmationButton.FindChild("ColorRect") is ColorRect colorRect)
+                return colorRect;
             else
                 throw new Exception($"{Name}.{ConfirmationButton.Name} has no child ColorRect");
         }
@@ -184,9 +250,15 @@ public partial class HUD : CanvasLayer
         RevealedRulesPage.Hide();
         HowToPlayPage.Hide();
         PlayAsNewSpeciesPage.Hide();
+        LeaveTableButton.Hide();
+        PlayAnotherHandButton.Hide();
 
         _audio_stream_player = GetNode<AudioStreamPlayer>("AudioStreamPlayer");
 
+        FoldButtonColorRect.Color = Main.Color_ButtonDefault;
+        FoldButton.Hide();
+        HoldButtonColorRect.Color = Main.Color_ButtonDefault;
+        HoldButton.Hide();
         ConfirmationButtonColorRect.Color = Main.Color_ButtonDefault;
         ConfirmationButton.Hide();
     }
@@ -215,6 +287,12 @@ public partial class HUD : CanvasLayer
 
             }
         }
+    }
+
+    internal void ShowEndOfHandButtons()
+    {
+        PlayAnotherHandButton.Show();
+        LeaveTableButton.Show();
     }
 
     private void ShowMenuPage(Main mainNode)
@@ -678,7 +756,6 @@ public partial class HUD : CanvasLayer
                 if (0 == _selectedCardsGoalCount - _selectedCardsAsText.Count)
                 {
                     ConfirmationButtonColorRect.Color = Main.Color_ButtonHover;
-                    //npr.Texture = NineGridButton_Hover;
                 }
             }
             else
@@ -687,21 +764,62 @@ public partial class HUD : CanvasLayer
                 if (_selectedCardsAsText.Count <= _selectedCardsGoalCount)
                 {
                     ConfirmationButtonColorRect.Color = Main.Color_ButtonHover;
-                    //npr.Texture = NineGridButton_Hover;
                 }
             }
         }
         else if (_potentialBetValues != null)
         {
             ConfirmationButtonColorRect.Color = Main.Color_ButtonHover;
-            //npr.Texture = NineGridButton_Hover;
         }
     }
 
     internal void OnConfirmationButtonMouseExit()
     {
         ConfirmationButtonColorRect.Color = Main.Color_ButtonDefault;
-        //npr.Texture = NineGridButton_Default;
+    }
+
+    internal void OnFoldButtonMouseEnter()
+    {
+        FoldButtonColorRect.Color = Main.Color_ButtonHover;
+    }
+
+    internal void OnFoldButtonMouseExit()
+    {
+        FoldButtonColorRect.Color = Main.Color_ButtonDefault;
+    }
+
+    internal void OnHoldButtonMouseEnter()
+    {
+        HoldButtonColorRect.Color = Main.Color_ButtonHover;
+    }
+
+    internal void OnHoldButtonMouseExit()
+    {
+        HoldButtonColorRect.Color = Main.Color_ButtonDefault;
+    }
+
+    internal void OnFoldButtonInputEvent(InputEvent inputEvent)
+    {
+        // We are selecting a potential amount to bet
+        if (inputEvent is InputEventMouseButton mouseButton)
+        {
+            if (!mouseButton.Pressed)
+                return;
+
+            _betValue = 0;
+        }
+    }
+
+    internal void OnHoldButtonInputEvent(InputEvent inputEvent)
+    {
+        // We are selecting a potential amount to bet
+        if (inputEvent is InputEventMouseButton mouseButton)
+        {
+            if (!mouseButton.Pressed)
+                return;
+
+            _betValue = _betFloor;
+        }
     }
 
     internal void OnConfirmationButtonInputEvent(InputEvent inputEvent)
@@ -748,6 +866,7 @@ public partial class HUD : CanvasLayer
 
     private List<double>? _potentialBetValues = null;
     private double _betValue = -1;
+    private double _betFloor = 0;
 
     internal async Task<double> HaveChosenAmountToBet()
     {
@@ -771,8 +890,9 @@ public partial class HUD : CanvasLayer
         const int initValue = 1;
 
         _betValue = -1;
-        _potentialBetValues = new List<double>() { 0, betFloor };
-        _potentialBetValues.AddRange(Player.GetNextBets(betFloor, 8));
+        _betFloor = betFloor;
+        _potentialBetValues = new List<double>() { };
+        _potentialBetValues.AddRange(Player.GetNextBets(betFloor, 10));
 
         if (PlayPage.FindChild("BetSlider") is Slider range)
         {
@@ -781,6 +901,8 @@ public partial class HUD : CanvasLayer
         }
 
         UpdateConfirmationButtonText_Bet(initValue);
+        HoldButton.Show();
+        FoldButton.Show();
         ConfirmationButton.Show();
     }
     
@@ -794,6 +916,8 @@ public partial class HUD : CanvasLayer
             range.Hide();
         }
 
+        HoldButton.Hide();
+        FoldButton.Hide();
         ConfirmationButton.Hide();
     }
 
@@ -804,12 +928,7 @@ public partial class HUD : CanvasLayer
             throw new Exception("Why is _potentialBetValues null when UpdateConfirmationButtonText_Bet()?");
         }
 
-        if (value == 0)
-            ConfirmationButtonInstructions.Text = "[center]Fold[/center]";
-        else if (value == 1)
-            ConfirmationButtonInstructions.Text = $"[center]Hold at ${_potentialBetValues[1]:F2} - or adjust slider[/center]";
-        else
-            ConfirmationButtonInstructions.Text = $"[center]Raise to ${_potentialBetValues[value]:F2}[/center]";
+        ConfirmationButtonInstructions.Text = $"[center]Raise to ${_potentialBetValues[value]:F2}[/center]";
     }
 
     internal void OnBetSliderChanged(float value)
