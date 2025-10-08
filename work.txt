@@ -35,8 +35,9 @@ Sept 25th (1/4) Did some simple optimizations, and limit processing times on var
 Sept 28th Animated the who-goes-next arrow, added joker cards, fixed a race condition, and added Kobolds & werewolves
 Sept 29th Achievement text is adaptive in size, so it doesn't overflow the achievement text box. Fixed who-goes-next pointer to rotate smoothly. Added Catpeople and Dogmen.
 Oct 2nd 2025 (1/2) Added credits pagek, updated to Godot 4.5, added initial sound effects
+Oct 8th (1/2) Added shader to buttons when you mouse hover over them
 
-total: 25.25 days
+total: 25.75 days
 
 TODO:
 
