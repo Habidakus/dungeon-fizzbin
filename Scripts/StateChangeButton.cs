@@ -11,6 +11,9 @@ public partial class StateChangeButton : NinePatchRect
     private state_machine? _state_machine = null;
     private Object? _additional_info = null;
     private ColorRect? _color_rect = null;
+    private ShaderMaterial? _material = null;
+    private float _material_amount = 1;
+    private float _material_amount_direction = 1;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -24,7 +27,17 @@ public partial class StateChangeButton : NinePatchRect
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
 	{
-	}
+        if (_material != null)
+        {
+            var old_value = _material_amount;
+            _material_amount += (float)delta * _material_amount_direction * 2f;
+            _material_amount = Math.Clamp(_material_amount, 0, 1);
+            if (old_value != _material_amount)
+            {
+                _material.SetShaderParameter("amount", _material_amount);
+            }
+        }
+    }
 
     public void Initialize(state_machine sm, string bbCode, Object? additionalInfo = null)
     {
@@ -34,6 +47,15 @@ public partial class StateChangeButton : NinePatchRect
         if (_color_rect != null)
         {
             _color_rect.Color = Main.Color_ButtonDefault;
+            _material = _color_rect.Material as ShaderMaterial;
+            if (_material != null)
+            {
+                _material = _material.Duplicate() as ShaderMaterial;
+                _color_rect.Material = _material;
+                _material?.SetShaderParameter("amount", _material_amount);
+                _material?.SetShaderParameter("background_color", Main.Color_ButtonDefault);
+                _material?.SetShaderParameter("circle_color", Main.Color_ButtonHover);
+            }
         }
 
         if (FindChild("Text") is RichTextLabel rtl)
@@ -52,6 +74,7 @@ public partial class StateChangeButton : NinePatchRect
         if (_color_rect != null)
         {
             _color_rect.Color = Main.Color_ButtonHover;
+            _material_amount_direction = -1;
         }
     }
 
@@ -60,6 +83,7 @@ public partial class StateChangeButton : NinePatchRect
         if (_color_rect != null)
         {
             _color_rect.Color = Main.Color_ButtonDefault;
+            _material_amount_direction = 1;
         }
         else
         {

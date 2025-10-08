@@ -31,6 +31,7 @@ script = ExtResource("1_rrlci")
 
 [node name="HUD" parent="." instance=ExtResource("2_btoq2")]
 unique_name_in_owner = true
+CardMoveSounds = null
 
 [node name="StateMachine" parent="." instance=ExtResource("1_cfnxq")]
 unique_name_in_owner = true

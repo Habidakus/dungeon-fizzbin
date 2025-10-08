@@ -30,6 +30,17 @@ public partial class HUD : CanvasLayer
     [Export]
     public AudioStream[] CardMoveSounds;
 
+
+    private float _fold_material_amount = 1;
+    private float _hold_material_amount = 1;
+    private float _raise_material_amount = 1;
+    private float _fold_material_dir = 1;
+    private float _hold_material_dir = 1;
+    private float _raise_material_dir = 1;
+    private ShaderMaterial? _fold_material = null;
+    private ShaderMaterial? _hold_material = null;
+    private ShaderMaterial? _raise_material = null;
+
     private AudioStreamPlayer? _audio_stream_player;
     private Control TitlePage { get { return GetChildControl("TitlePage"); } }
     private Control MenuPage { get { return GetChildControl("MenuPage"); } }
@@ -255,12 +266,28 @@ public partial class HUD : CanvasLayer
 
         _audio_stream_player = GetNode<AudioStreamPlayer>("AudioStreamPlayer");
 
-        FoldButtonColorRect.Color = Main.Color_ButtonDefault;
+        _fold_material = _InitButton(FoldButtonColorRect);
         FoldButton.Hide();
-        HoldButtonColorRect.Color = Main.Color_ButtonDefault;
+        _hold_material = _InitButton(FoldButtonColorRect);
         HoldButton.Hide();
-        ConfirmationButtonColorRect.Color = Main.Color_ButtonDefault;
+        _raise_material = _InitButton(ConfirmationButtonColorRect);
         ConfirmationButton.Hide();
+    }
+
+    private ShaderMaterial? _InitButton(ColorRect color_rect)
+    {
+        color_rect.Color = Main.Color_ButtonDefault;
+        ShaderMaterial? material = color_rect.Material as ShaderMaterial;
+        if (material != null)
+        {
+            material = material.Duplicate() as ShaderMaterial;
+            color_rect.Material = material;
+            material?.SetShaderParameter("amount", 1);
+            material?.SetShaderParameter("background_color", Main.Color_ButtonDefault);
+            material?.SetShaderParameter("circle_color", Main.Color_ButtonHover);
+        }
+
+        return material;
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -287,6 +314,25 @@ public partial class HUD : CanvasLayer
 
             }
         }
+
+        _fold_material_amount = _ProcessMaterial(delta, _fold_material, _fold_material_amount, _fold_material_dir);
+        _hold_material_amount = _ProcessMaterial(delta, _hold_material, _hold_material_amount, _hold_material_dir);
+        _raise_material_amount = _ProcessMaterial(delta, _raise_material, _raise_material_amount, _raise_material_dir);
+    }
+
+    private float _ProcessMaterial(double delta, ShaderMaterial? material, float old_amount, float dir)
+    {
+        if (material != null)
+        {
+            float new_value = Math.Clamp(old_amount + (float)delta * dir * 2f, 0, 1);
+            if (old_amount != new_value)
+            {
+                material.SetShaderParameter("amount", new_value);
+                return new_value;
+            }
+        }
+
+        return old_amount;
     }
 
     internal void ShowEndOfHandButtons()
@@ -756,6 +802,7 @@ public partial class HUD : CanvasLayer
                 if (0 == _selectedCardsGoalCount - _selectedCardsAsText.Count)
                 {
                     ConfirmationButtonColorRect.Color = Main.Color_ButtonHover;
+                    _raise_material_dir = -1;
                 }
             }
             else
@@ -764,38 +811,45 @@ public partial class HUD : CanvasLayer
                 if (_selectedCardsAsText.Count <= _selectedCardsGoalCount)
                 {
                     ConfirmationButtonColorRect.Color = Main.Color_ButtonHover;
+                    _raise_material_dir = -1;
                 }
             }
         }
         else if (_potentialBetValues != null)
         {
             ConfirmationButtonColorRect.Color = Main.Color_ButtonHover;
+            _raise_material_dir = -1;
         }
     }
 
     internal void OnConfirmationButtonMouseExit()
     {
         ConfirmationButtonColorRect.Color = Main.Color_ButtonDefault;
+        _raise_material_dir = 1;
     }
 
     internal void OnFoldButtonMouseEnter()
     {
         FoldButtonColorRect.Color = Main.Color_ButtonHover;
+        _fold_material_dir = -1;
     }
 
     internal void OnFoldButtonMouseExit()
     {
         FoldButtonColorRect.Color = Main.Color_ButtonDefault;
+        _fold_material_dir = 1;
     }
 
     internal void OnHoldButtonMouseEnter()
     {
         HoldButtonColorRect.Color = Main.Color_ButtonHover;
+        _hold_material_dir = -1;
     }
 
     internal void OnHoldButtonMouseExit()
     {
         HoldButtonColorRect.Color = Main.Color_ButtonDefault;
+        _hold_material_dir = 1;
     }
 
     internal void OnFoldButtonInputEvent(InputEvent inputEvent)
