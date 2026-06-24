@@ -49,6 +49,10 @@ TODO:
 - Have a settings page, where among other things you can have a color selector
 - Need to add more sound effects
 
+Potential new rules:
+- ??? - All players have to return one card before betting (so the hand size is reduced), with two players of the species, two cards are returned?
+- whenever the number of suits is equal to the number of cards in the hand, a hand of all different suits has a winning rank
+
 Working colors:
 
 felt green #277714 (HSV 109 83 47)
