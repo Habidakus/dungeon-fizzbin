@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://m2c8701mmnaj"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://m2c8701mmnaj"]
 
 [ext_resource type="Shader" uid="uid://f12gxqc5fohf" path="res://Art/PoissonCircles.gdshader" id="1_mn1ub"]
 

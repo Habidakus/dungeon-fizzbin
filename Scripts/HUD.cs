@@ -266,6 +266,16 @@ public partial class HUD : CanvasLayer
 
         _audio_stream_player = GetNode<AudioStreamPlayer>("AudioStreamPlayer");
 
+        ColorRect background = GetNode<ColorRect>("%Background");
+        if (background != null && background.Material is ShaderMaterial shaderMaterial)
+        {
+            _backgroundShaderMaterial = shaderMaterial;
+        }
+        else
+        {
+            throw new Exception($"{Name} has no child Background with a ShaderMaterial");
+        }
+
         _fold_material = _InitButton(FoldButtonColorRect);
         FoldButton.Hide();
         _hold_material = _InitButton(FoldButtonColorRect);
@@ -290,6 +300,9 @@ public partial class HUD : CanvasLayer
         return material;
     }
 
+    private ShaderMaterial _backgroundShaderMaterial;
+    private float _bsmAngle = 0f;
+
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
 	{
@@ -313,6 +326,12 @@ public partial class HUD : CanvasLayer
                 }
 
             }
+        }
+
+        if (_backgroundShaderMaterial != null)
+        {
+            _bsmAngle += (float)(delta * 0.1);
+            _backgroundShaderMaterial.SetShaderParameter("noise_offset", new Vector2(Mathf.Cos(_bsmAngle), Mathf.Sin(_bsmAngle)));
         }
 
         _fold_material_amount = _ProcessMaterial(delta, _fold_material, _fold_material_amount, _fold_material_dir);

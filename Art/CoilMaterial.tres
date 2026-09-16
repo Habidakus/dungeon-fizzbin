@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://ckr1whmulchxj"]
+
+[ext_resource type="Shader" uid="uid://bepr0pfrsvxmf" path="res://Art/Coil.gdshader" id="1_n6afp"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_p33ni"]
+noise_type = 3
+frequency = 0.0042
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mwhgf"]
+noise = SubResource("FastNoiseLite_p33ni")
+
+[resource]
+shader = ExtResource("1_n6afp")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_mwhgf")
+shader_parameter/noise_offset = Vector2(0.3, 0)
+shader_parameter/spacing = 17
+shader_parameter/width = 4
+shader_parameter/order = 2.75

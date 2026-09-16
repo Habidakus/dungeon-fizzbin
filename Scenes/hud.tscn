@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://blunstfg1u5v7"]
+[gd_scene format=3 uid="uid://blunstfg1u5v7"]
 
 [ext_resource type="Script" uid="uid://dge38xbwa5c5o" path="res://Scripts/HUD.cs" id="1_yllrm"]
 [ext_resource type="PackedScene" uid="uid://es0qj11xru43" path="res://Scenes/visible_hand.tscn" id="2_ihxo0"]
@@ -14,10 +14,11 @@
 [ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="10_7rybn"]
 [ext_resource type="AudioStream" uid="uid://dys0cswq07elb" path="res://Sound/Chips/poker-chip-dropping-80329.mp3" id="10_8bf2m"]
 [ext_resource type="Texture2D" uid="uid://c3wtsh6w7cinw" path="res://Art/EmptyButton.png" id="12_06srf"]
+[ext_resource type="Material" uid="uid://ckr1whmulchxj" path="res://Art/CoilMaterial.tres" id="12_ba8gd"]
 [ext_resource type="Material" uid="uid://m2c8701mmnaj" path="res://Art/PoissonMaterial.tres" id="13_8bf2m"]
 [ext_resource type="PackedScene" uid="uid://b8533332gnox6" path="res://Scenes/state_change_button2.tscn" id="14_jphh5"]
 
-[node name="HUD" type="CanvasLayer"]
+[node name="HUD" type="CanvasLayer" unique_id=1391964668]
 script = ExtResource("1_yllrm")
 SpeciesUnlockAchievement = ExtResource("4_ey0ob")
 GoldAchievement = ExtResource("4_ti031")
@@ -27,7 +28,7 @@ VisibleAchievement = ExtResource("7_2eio4")
 SpeciesSelectButton = ExtResource("14_jphh5")
 ChipSounds = Array[AudioStream]([ExtResource("8_i2avg"), ExtResource("9_ssfue"), ExtResource("10_8bf2m")])
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1022650412]
 visible = false
 z_index = -2
 anchors_preset = 15
@@ -37,7 +38,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.152941, 0.466667, 0.0784314, 1)
 
-[node name="TitlePage" type="Control" parent="."]
+[node name="TitlePage" type="Control" parent="." unique_id=1595887602]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -48,7 +49,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("10_7rybn")
 
-[node name="Background" type="ColorRect" parent="TitlePage"]
+[node name="Background" type="ColorRect" parent="TitlePage" unique_id=385278242]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -57,7 +58,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65098, 0.0588235, 0.176471, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="TitlePage"]
+[node name="MarginContainer" type="MarginContainer" parent="TitlePage" unique_id=1954626698]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -69,10 +70,10 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TitlePage/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="TitlePage/MarginContainer" unique_id=480192082]
 layout_mode = 2
 
-[node name="padding2" type="Label" parent="TitlePage/MarginContainer/VBoxContainer"]
+[node name="padding2" type="Label" parent="TitlePage/MarginContainer/VBoxContainer" unique_id=1169243666]
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -80,7 +81,7 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RichTextLabel" type="Label" parent="TitlePage/MarginContainer/VBoxContainer"]
+[node name="RichTextLabel" type="Label" parent="TitlePage/MarginContainer/VBoxContainer" unique_id=552636949]
 layout_mode = 2
 size_flags_vertical = 3
 theme = ExtResource("10_7rybn")
@@ -89,7 +90,7 @@ text = "Dungeon Fizzbin"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="padding" type="Label" parent="TitlePage/MarginContainer/VBoxContainer"]
+[node name="padding" type="Label" parent="TitlePage/MarginContainer/VBoxContainer" unique_id=181303067]
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -97,7 +98,7 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PlayPage" type="Control" parent="."]
+[node name="PlayPage" type="Control" parent="." unique_id=1746743956]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -106,8 +107,10 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Background" type="ColorRect" parent="PlayPage"]
+[node name="Background" type="ColorRect" parent="PlayPage" unique_id=470607637]
+unique_name_in_owner = true
 z_index = -2
+material = ExtResource("12_ba8gd")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -116,7 +119,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65, 0.0585, 0.1768, 1)
 
-[node name="NextHandMenu" type="VBoxContainer" parent="PlayPage"]
+[node name="NextHandMenu" type="VBoxContainer" parent="PlayPage" unique_id=926870877]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -131,16 +134,16 @@ grow_horizontal = 0
 grow_vertical = 0
 alignment = 2
 
-[node name="PlayAnotherHandSCB" parent="PlayPage/NextHandMenu" instance=ExtResource("14_jphh5")]
+[node name="PlayAnotherHandSCB" parent="PlayPage/NextHandMenu" unique_id=891715943 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(280, 52)
 layout_mode = 2
 State = "Play_Deal"
 
-[node name="LeaveTableSCB" parent="PlayPage/NextHandMenu" instance=ExtResource("14_jphh5")]
+[node name="LeaveTableSCB" parent="PlayPage/NextHandMenu" unique_id=1975365982 instance=ExtResource("14_jphh5")]
 layout_mode = 2
 State = "Menu"
 
-[node name="PlayerFacingInfo" type="VBoxContainer" parent="PlayPage"]
+[node name="PlayerFacingInfo" type="VBoxContainer" parent="PlayPage" unique_id=1268564036]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -151,21 +154,23 @@ offset_right = 375.0
 offset_bottom = -21.0
 grow_vertical = 0
 
-[node name="Buffer" type="Label" parent="PlayPage/PlayerFacingInfo"]
+[node name="Buffer" type="Label" parent="PlayPage/PlayerFacingInfo" unique_id=1137103307]
 layout_mode = 2
 
-[node name="PlayersCash" type="Label" parent="PlayPage/PlayerFacingInfo"]
+[node name="PlayersCash" type="Label" parent="PlayPage/PlayerFacingInfo" unique_id=959825791]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
+theme_override_colors/font_outline_color = Color(0.05882353, 0.3529412, 0.3019608, 1)
+theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 26
 text = "Your Stake: $200.00"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PlayPage/PlayerFacingInfo"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PlayPage/PlayerFacingInfo" unique_id=269697466]
 layout_mode = 2
 
-[node name="FoldButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer"]
+[node name="FoldButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer" unique_id=1936935542]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -176,7 +181,7 @@ patch_margin_top = 30
 patch_margin_right = 30
 patch_margin_bottom = 30
 
-[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton"]
+[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton" unique_id=506105081]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -189,7 +194,7 @@ theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 7
 theme_override_constants/margin_bottom = 7
 
-[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton/MarginContainer"]
+[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton/MarginContainer" unique_id=303392609]
 layout_mode = 2
 mouse_filter = 2
 theme = ExtResource("10_7rybn")
@@ -199,17 +204,17 @@ fit_content = true
 scroll_active = false
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton/MarginContainer"]
+[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton/MarginContainer" unique_id=116060997]
 z_index = -1
 material = ExtResource("13_8bf2m")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Control" type="Control" parent="PlayPage/PlayerFacingInfo/HBoxContainer"]
+[node name="Control" type="Control" parent="PlayPage/PlayerFacingInfo/HBoxContainer" unique_id=1982696007]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="HoldButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer"]
+[node name="HoldButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer" unique_id=408448480]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -220,7 +225,7 @@ patch_margin_top = 30
 patch_margin_right = 30
 patch_margin_bottom = 30
 
-[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton"]
+[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton" unique_id=1059795920]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -233,7 +238,7 @@ theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 7
 theme_override_constants/margin_bottom = 7
 
-[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton/MarginContainer"]
+[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton/MarginContainer" unique_id=1287731851]
 layout_mode = 2
 mouse_filter = 2
 theme = ExtResource("10_7rybn")
@@ -243,23 +248,23 @@ fit_content = true
 scroll_active = false
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton/MarginContainer"]
+[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/HBoxContainer/HoldButton/MarginContainer" unique_id=1143706337]
 z_index = -1
 material = ExtResource("13_8bf2m")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Control" type="Control" parent="PlayPage/PlayerFacingInfo"]
+[node name="Control" type="Control" parent="PlayPage/PlayerFacingInfo" unique_id=1975283426]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="BetSlider" type="HSlider" parent="PlayPage/PlayerFacingInfo"]
+[node name="BetSlider" type="HSlider" parent="PlayPage/PlayerFacingInfo" unique_id=718998168]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 9.0
 
-[node name="ConfirmationButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo"]
+[node name="ConfirmationButton" type="NinePatchRect" parent="PlayPage/PlayerFacingInfo" unique_id=329029389]
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 size_flags_horizontal = 5
@@ -271,7 +276,7 @@ patch_margin_top = 30
 patch_margin_right = 30
 patch_margin_bottom = 30
 
-[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/ConfirmationButton"]
+[node name="MarginContainer" type="MarginContainer" parent="PlayPage/PlayerFacingInfo/ConfirmationButton" unique_id=206106353]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -284,7 +289,7 @@ theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 7
 theme_override_constants/margin_bottom = 7
 
-[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer"]
+[node name="Instructions" type="RichTextLabel" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer" unique_id=1396474017]
 layout_mode = 2
 mouse_filter = 2
 theme = ExtResource("10_7rybn")
@@ -294,13 +299,13 @@ fit_content = true
 scroll_active = false
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer"]
+[node name="ColorRect" type="ColorRect" parent="PlayPage/PlayerFacingInfo/ConfirmationButton/MarginContainer" unique_id=1854519939]
 z_index = -1
 material = ExtResource("13_8bf2m")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="ControlForHand0" type="Control" parent="PlayPage"]
+[node name="ControlForHand0" type="Control" parent="PlayPage" unique_id=882118700]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -314,10 +319,10 @@ offset_bottom = -101.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Hand0" parent="PlayPage/ControlForHand0" instance=ExtResource("2_ihxo0")]
+[node name="Hand0" parent="PlayPage/ControlForHand0" unique_id=2092851981 instance=ExtResource("2_ihxo0")]
 position = Vector2(20, 19)
 
-[node name="ControlForHand1" type="Control" parent="PlayPage"]
+[node name="ControlForHand1" type="Control" parent="PlayPage" unique_id=656410808]
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
@@ -328,10 +333,10 @@ offset_right = 212.0
 offset_bottom = 20.0
 grow_vertical = 2
 
-[node name="Hand1" parent="PlayPage/ControlForHand1" instance=ExtResource("2_ihxo0")]
+[node name="Hand1" parent="PlayPage/ControlForHand1" unique_id=1114451676 instance=ExtResource("2_ihxo0")]
 position = Vector2(20, 20)
 
-[node name="ControlForHand2" type="Control" parent="PlayPage"]
+[node name="ControlForHand2" type="Control" parent="PlayPage" unique_id=1402390793]
 layout_mode = 1
 anchors_preset = 0
 offset_left = 298.0
@@ -339,10 +344,10 @@ offset_top = 108.0
 offset_right = 338.0
 offset_bottom = 148.0
 
-[node name="Hand2" parent="PlayPage/ControlForHand2" instance=ExtResource("2_ihxo0")]
+[node name="Hand2" parent="PlayPage/ControlForHand2" unique_id=1884341215 instance=ExtResource("2_ihxo0")]
 position = Vector2(20, 20)
 
-[node name="ControlForHand3" type="Control" parent="PlayPage"]
+[node name="ControlForHand3" type="Control" parent="PlayPage" unique_id=986148060]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -353,10 +358,10 @@ offset_right = -298.0
 offset_bottom = 148.0
 grow_horizontal = 0
 
-[node name="Hand3" parent="PlayPage/ControlForHand3" instance=ExtResource("2_ihxo0")]
+[node name="Hand3" parent="PlayPage/ControlForHand3" unique_id=1340207613 instance=ExtResource("2_ihxo0")]
 position = Vector2(20, 20)
 
-[node name="ControlForHand4" type="Control" parent="PlayPage"]
+[node name="ControlForHand4" type="Control" parent="PlayPage" unique_id=1273710058]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -370,10 +375,10 @@ offset_bottom = 20.0
 grow_horizontal = 0
 grow_vertical = 2
 
-[node name="Hand4" parent="PlayPage/ControlForHand4" instance=ExtResource("2_ihxo0")]
+[node name="Hand4" parent="PlayPage/ControlForHand4" unique_id=1052752702 instance=ExtResource("2_ihxo0")]
 position = Vector2(20, 20)
 
-[node name="ControlForPot" type="Control" parent="PlayPage"]
+[node name="ControlForPot" type="Control" parent="PlayPage" unique_id=761177722]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -387,11 +392,11 @@ offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Pot" parent="PlayPage/ControlForPot" instance=ExtResource("3_0m0fb")]
+[node name="Pot" parent="PlayPage/ControlForPot" unique_id=943106932 instance=ExtResource("3_0m0fb")]
 position = Vector2(20, 20)
 _visibleCardScene = ExtResource("6_qtayb")
 
-[node name="MenuPage" type="Control" parent="."]
+[node name="MenuPage" type="Control" parent="." unique_id=701441426]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -401,7 +406,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Background" type="ColorRect" parent="MenuPage"]
+[node name="Background" type="ColorRect" parent="MenuPage" unique_id=498859480]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -411,7 +416,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65, 0.0585, 0.1768, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="MenuPage"]
+[node name="MarginContainer" type="MarginContainer" parent="MenuPage" unique_id=1841457351]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -423,45 +428,45 @@ theme_override_constants/margin_top = 100
 theme_override_constants/margin_right = 500
 theme_override_constants/margin_bottom = 100
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MenuPage/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MenuPage/MarginContainer" unique_id=1791446936]
 layout_mode = 2
 
-[node name="PlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="PlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=637236787 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Play_Deal"
 
-[node name="AchievementsSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="AchievementsSCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=33596689 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Achievements"
 
-[node name="NewPlayerSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="NewPlayerSCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=2002228388 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "PlayAsNewSpecies"
 
-[node name="HowToPlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="HowToPlaySCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=835235259 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "How_To_Play"
 
-[node name="RevealedRulesSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="RevealedRulesSCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=976672695 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Show_Revealed_Rules"
 
-[node name="CreditsSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="CreditsSCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=1908534436 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Show_Credits"
 
-[node name="QuitSCB" parent="MenuPage/MarginContainer/VBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="QuitSCB" parent="MenuPage/MarginContainer/VBoxContainer" unique_id=458503882 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(275, 65)
 layout_mode = 2
 State = "Quit"
 
-[node name="AchievementsPage" type="Control" parent="."]
+[node name="AchievementsPage" type="Control" parent="." unique_id=415414181]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -470,7 +475,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="AchievementsPage"]
+[node name="Background" type="ColorRect" parent="AchievementsPage" unique_id=1022435459]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -480,67 +485,67 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65098, 0.0588235, 0.176471, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="AchievementsPage"]
+[node name="VBoxContainer" type="VBoxContainer" parent="AchievementsPage" unique_id=556084400]
 layout_mode = 1
 offset_right = 1154.0
 offset_bottom = 567.0
 
-[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer"]
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer" unique_id=161010106]
 layout_mode = 2
 size_flags_vertical = 0
 theme = ExtResource("10_7rybn")
 text = "Achievements:
 "
 
-[node name="HBoxContainer" type="HBoxContainer" parent="AchievementsPage/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="AchievementsPage/VBoxContainer" unique_id=737932783]
 custom_minimum_size = Vector2(0, 350)
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.15
 
-[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer" unique_id=607912729]
 custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 
-[node name="UnlocksMargin2" type="ScrollContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer"]
+[node name="UnlocksMargin2" type="ScrollContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer" unique_id=1842497907]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="AchievementBox" type="GridContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer/UnlocksMargin2"]
+[node name="AchievementBox" type="GridContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer/UnlocksMargin2" unique_id=1580792330]
 layout_mode = 2
 columns = 4
 
-[node name="HSeparator" type="HSeparator" parent="AchievementsPage/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="AchievementsPage/VBoxContainer" unique_id=1001718914]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="AchievementsPage/VBoxContainer"]
+[node name="Label2" type="Label" parent="AchievementsPage/VBoxContainer" unique_id=87658556]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 text = "Species Unlocks:
 "
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="AchievementsPage/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="AchievementsPage/VBoxContainer" unique_id=1436133877]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer2"]
+[node name="Label" type="Label" parent="AchievementsPage/VBoxContainer/HBoxContainer2" unique_id=2130310761]
 custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 
-[node name="UnlocksMargin" type="ScrollContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer2"]
+[node name="UnlocksMargin" type="ScrollContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer2" unique_id=278502795]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="UnlocksBox" type="FlowContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer2/UnlocksMargin"]
+[node name="UnlocksBox" type="FlowContainer" parent="AchievementsPage/VBoxContainer/HBoxContainer2/UnlocksMargin" unique_id=1264323980]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="AchievementsPage"]
+[node name="HBoxContainer" type="HBoxContainer" parent="AchievementsPage" unique_id=1599087281]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -554,24 +559,24 @@ offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Label" type="Label" parent="AchievementsPage/HBoxContainer"]
+[node name="Label" type="Label" parent="AchievementsPage/HBoxContainer" unique_id=1016205125]
 custom_minimum_size = Vector2(1000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackSCB" parent="AchievementsPage/HBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="BackSCB" parent="AchievementsPage/HBoxContainer" unique_id=1273457009 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 State = "Menu"
 
-[node name="Label2" type="Label" parent="AchievementsPage/HBoxContainer"]
+[node name="Label2" type="Label" parent="AchievementsPage/HBoxContainer" unique_id=976677771]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="ShowCredits" type="Control" parent="."]
+[node name="ShowCredits" type="Control" parent="." unique_id=186318702]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -582,7 +587,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("10_7rybn")
 
-[node name="Background" type="ColorRect" parent="ShowCredits"]
+[node name="Background" type="ColorRect" parent="ShowCredits" unique_id=1788440243]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -591,7 +596,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65098, 0.0588235, 0.176471, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="ShowCredits"]
+[node name="MarginContainer" type="MarginContainer" parent="ShowCredits" unique_id=1546823060]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -603,10 +608,10 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ShowCredits/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ShowCredits/MarginContainer" unique_id=2100175936]
 layout_mode = 2
 
-[node name="padding2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+[node name="padding2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer" unique_id=1924566377]
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -614,7 +619,7 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RichTextLabel" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+[node name="RichTextLabel" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer" unique_id=1481998145]
 layout_mode = 2
 size_flags_vertical = 3
 theme = ExtResource("10_7rybn")
@@ -623,7 +628,7 @@ text = "Credits"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RichTextLabel2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+[node name="RichTextLabel2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer" unique_id=1954828263]
 layout_mode = 2
 size_flags_vertical = 3
 theme = ExtResource("10_7rybn")
@@ -633,7 +638,7 @@ Sound Effects: pixabay.com"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="padding" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer"]
+[node name="padding" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer" unique_id=1775967891]
 layout_mode = 2
 size_flags_vertical = 3
 text = "
@@ -641,28 +646,28 @@ text = "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="ShowCredits/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="ShowCredits/MarginContainer/VBoxContainer" unique_id=1442064353]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1195139237]
 custom_minimum_size = Vector2(1000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackSCB" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="BackSCB" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1236868176 instance=ExtResource("14_jphh5")]
 z_index = 1
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 State = "Menu"
 
-[node name="Label2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Label2" type="Label" parent="ShowCredits/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1672806451]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="PopUpAchievement" parent="." instance=ExtResource("7_2eio4")]
+[node name="PopUpAchievement" parent="." unique_id=210333073 instance=ExtResource("7_2eio4")]
 visible = false
 anchors_preset = 1
 anchor_left = 1.0
@@ -673,7 +678,7 @@ offset_right = -9.0
 offset_bottom = -4.0
 grow_horizontal = 0
 
-[node name="PlayAsNewSpecies" type="Control" parent="."]
+[node name="PlayAsNewSpecies" type="Control" parent="." unique_id=1822607626]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -683,7 +688,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("10_7rybn")
 
-[node name="Background" type="ColorRect" parent="PlayAsNewSpecies"]
+[node name="Background" type="ColorRect" parent="PlayAsNewSpecies" unique_id=1438349421]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -693,7 +698,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65, 0.0585, 0.1768, 1)
 
-[node name="Label" type="Label" parent="PlayAsNewSpecies"]
+[node name="Label" type="Label" parent="PlayAsNewSpecies" unique_id=475115587]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
@@ -702,7 +707,7 @@ offset_bottom = 31.0
 theme = ExtResource("10_7rybn")
 text = "Select species to play as (you will start with a fresh stake):"
 
-[node name="ButtonContainer" type="GridContainer" parent="PlayAsNewSpecies"]
+[node name="ButtonContainer" type="GridContainer" parent="PlayAsNewSpecies" unique_id=48264959]
 layout_mode = 0
 offset_left = 32.0
 offset_top = 40.0
@@ -711,7 +716,7 @@ offset_bottom = 556.0
 theme = ExtResource("10_7rybn")
 columns = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PlayAsNewSpecies"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PlayAsNewSpecies" unique_id=2075667130]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -725,23 +730,23 @@ offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Label3" type="Label" parent="PlayAsNewSpecies/HBoxContainer"]
+[node name="Label3" type="Label" parent="PlayAsNewSpecies/HBoxContainer" unique_id=588488966]
 custom_minimum_size = Vector2(1000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackSCB" parent="PlayAsNewSpecies/HBoxContainer" instance=ExtResource("14_jphh5")]
+[node name="BackSCB" parent="PlayAsNewSpecies/HBoxContainer" unique_id=1405114800 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
 State = "Menu"
 
-[node name="Label2" type="Label" parent="PlayAsNewSpecies/HBoxContainer"]
+[node name="Label2" type="Label" parent="PlayAsNewSpecies/HBoxContainer" unique_id=1637109008]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="HowToPlayPage" type="Control" parent="."]
+[node name="HowToPlayPage" type="Control" parent="." unique_id=1045395270]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -750,7 +755,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="HowToPlayPage"]
+[node name="Background" type="ColorRect" parent="HowToPlayPage" unique_id=40557827]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -760,7 +765,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65, 0.0585, 0.1768, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="HowToPlayPage"]
+[node name="MarginContainer" type="MarginContainer" parent="HowToPlayPage" unique_id=1253281145]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -772,22 +777,22 @@ theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 30
 theme_override_constants/margin_bottom = 30
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HowToPlayPage/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HowToPlayPage/MarginContainer" unique_id=270122800]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer" unique_id=911117514]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 text = "How to Play:"
 
-[node name="MarginContainer" type="MarginContainer" parent="HowToPlayPage/MarginContainer/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HowToPlayPage/MarginContainer/VBoxContainer" unique_id=227615223]
 layout_mode = 2
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 32
 
-[node name="RichTextLabel" type="RichTextLabel" parent="HowToPlayPage/MarginContainer/VBoxContainer/MarginContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="HowToPlayPage/MarginContainer/VBoxContainer/MarginContainer" unique_id=1780663715]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 bbcode_enabled = true
@@ -799,26 +804,26 @@ As you play you'll unlock achievements, and evenutally the ability to play as sp
 "
 fit_content = true
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="HowToPlayPage/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="HowToPlayPage/MarginContainer/VBoxContainer" unique_id=580870739]
 layout_mode = 2
 
-[node name="Label3" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="Label3" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1375157050]
 custom_minimum_size = Vector2(1000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackSCB" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("14_jphh5")]
+[node name="BackSCB" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=586054577 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
 State = "Menu"
 
-[node name="Label2" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="Label2" type="Label" parent="HowToPlayPage/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=598518505]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="RevealedRulesPage" type="Control" parent="."]
+[node name="RevealedRulesPage" type="Control" parent="." unique_id=470438517]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -827,7 +832,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="RevealedRulesPage"]
+[node name="Background" type="ColorRect" parent="RevealedRulesPage" unique_id=1762887467]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -837,7 +842,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.65, 0.0585, 0.1768, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="RevealedRulesPage"]
+[node name="MarginContainer" type="MarginContainer" parent="RevealedRulesPage" unique_id=1988773378]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -851,51 +856,51 @@ theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 30
 theme_override_constants/margin_bottom = 30
 
-[node name="VBoxContainer" type="VBoxContainer" parent="RevealedRulesPage/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="RevealedRulesPage/MarginContainer" unique_id=16389883]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="RevealedRulesPage/MarginContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="RevealedRulesPage/MarginContainer/VBoxContainer" unique_id=111776603]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 text = "Revealed Species Rules:"
 
-[node name="MarginContainer" type="MarginContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer" unique_id=1620947495]
 layout_mode = 2
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 32
 
-[node name="ScrollContainer" type="ScrollContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer/MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer/MarginContainer" unique_id=1929365072]
 custom_minimum_size = Vector2(1000, 400)
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 
-[node name="RulesContainmentGrid" type="GridContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer/MarginContainer/ScrollContainer"]
+[node name="RulesContainmentGrid" type="GridContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer/MarginContainer/ScrollContainer" unique_id=45635252]
 layout_mode = 2
 theme = ExtResource("10_7rybn")
 columns = 2
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="RevealedRulesPage/MarginContainer/VBoxContainer" unique_id=1541510530]
 layout_mode = 2
 
-[node name="Label3" type="Label" parent="RevealedRulesPage/MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="Label3" type="Label" parent="RevealedRulesPage/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=921105822]
 custom_minimum_size = Vector2(1000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="BackSCB" parent="RevealedRulesPage/MarginContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("14_jphh5")]
+[node name="BackSCB" parent="RevealedRulesPage/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1820998945 instance=ExtResource("14_jphh5")]
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
 State = "Menu"
 
-[node name="Label2" type="Label" parent="RevealedRulesPage/MarginContainer/VBoxContainer/HBoxContainer2"]
+[node name="Label2" type="Label" parent="RevealedRulesPage/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=183303696]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("10_7rybn")
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1109861807]
 max_polyphony = 3
 
 [connection signal="gui_input" from="PlayPage/PlayerFacingInfo/HBoxContainer/FoldButton" to="." method="OnFoldButtonInputEvent"]
