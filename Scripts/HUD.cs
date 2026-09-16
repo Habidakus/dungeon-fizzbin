@@ -330,7 +330,7 @@ public partial class HUD : CanvasLayer
 
         if (_backgroundShaderMaterial != null)
         {
-            _bsmAngle += (float)(delta * 0.1);
+            _bsmAngle += (float)(delta * 0.033);
             _backgroundShaderMaterial.SetShaderParameter("noise_offset", new Vector2(Mathf.Cos(_bsmAngle), Mathf.Sin(_bsmAngle)));
         }
 

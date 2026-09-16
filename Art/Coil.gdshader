@@ -16,5 +16,5 @@ void fragment() {
 	int int_dist = int(floor(mod_dist * 490.0));
 	int mod_eleven = int_dist % spacing;
 	if (mod_eleven + width > spacing)
-		COLOR.rg = vec2(1,1) - COLOR.rg;
+		COLOR.rg = (vec2(1,1) - COLOR.rg) / 2.0;
 }
