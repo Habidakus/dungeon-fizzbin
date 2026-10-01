@@ -328,11 +328,11 @@ public partial class HUD : CanvasLayer
             }
         }
 
-        if (_backgroundShaderMaterial != null)
-        {
-            _bsmAngle += (float)(delta * 0.033);
-            _backgroundShaderMaterial.SetShaderParameter("noise_offset", new Vector2(Mathf.Cos(_bsmAngle), Mathf.Sin(_bsmAngle)));
-        }
+        //if (_backgroundShaderMaterial != null)
+        //{
+        //    _bsmAngle += (float)(delta * 0.033);
+        //    _backgroundShaderMaterial.SetShaderParameter("noise_offset", new Vector2(Mathf.Cos(_bsmAngle), Mathf.Sin(_bsmAngle)));
+        //}
 
         _fold_material_amount = _ProcessMaterial(delta, _fold_material, _fold_material_amount, _fold_material_dir);
         _hold_material_amount = _ProcessMaterial(delta, _hold_material, _hold_material_amount, _hold_material_dir);

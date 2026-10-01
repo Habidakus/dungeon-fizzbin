@@ -9,10 +9,21 @@ frequency = 0.0042
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mwhgf"]
 noise = SubResource("FastNoiseLite_p33ni")
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_75nt3"]
+noise_type = 2
+frequency = 0.001
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mn1ub"]
+noise = SubResource("FastNoiseLite_75nt3")
+
 [resource]
 shader = ExtResource("1_n6afp")
 shader_parameter/noise_texture = SubResource("NoiseTexture2D_mwhgf")
-shader_parameter/noise_offset = Vector2(0.3, 0)
-shader_parameter/spacing = 17
-shader_parameter/width = 4
-shader_parameter/order = 2.75
+shader_parameter/width_texture = SubResource("NoiseTexture2D_mn1ub")
+shader_parameter/speed = 0.033
+shader_parameter/rotate_speed = 0.05
+shader_parameter/spacing = 25
+shader_parameter/width = 3
+shader_parameter/order = 3.5
+shader_parameter/extra_width_threshold = 0.333
+shader_parameter/extra_width_max = -1.5

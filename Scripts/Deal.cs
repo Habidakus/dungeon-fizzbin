@@ -460,6 +460,7 @@ class Deal
         {
             if (hand._cards.Count < HandSize)
             {
+                // #TODO: We need to handle the cases where we run out of cards. 
                 Card card = _drawPile.First();
                 _drawPile.RemoveAt(0);
                 hand._cards.Add(card);
