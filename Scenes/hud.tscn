@@ -14,7 +14,7 @@
 [ext_resource type="Theme" uid="uid://bdt6l8ri8yge2" path="res://defaultTheme.tres" id="10_7rybn"]
 [ext_resource type="AudioStream" uid="uid://dys0cswq07elb" path="res://Sound/Chips/poker-chip-dropping-80329.mp3" id="10_8bf2m"]
 [ext_resource type="Texture2D" uid="uid://c3wtsh6w7cinw" path="res://Art/EmptyButton.png" id="12_06srf"]
-[ext_resource type="Material" uid="uid://ckr1whmulchxj" path="res://Art/CoilMaterial.tres" id="12_ba8gd"]
+[ext_resource type="Material" uid="uid://dwqhyr70n7fu5" path="res://Art/LockMaterial.tres" id="12_ba8gd"]
 [ext_resource type="Material" uid="uid://m2c8701mmnaj" path="res://Art/PoissonMaterial.tres" id="13_8bf2m"]
 [ext_resource type="PackedScene" uid="uid://b8533332gnox6" path="res://Scenes/state_change_button2.tscn" id="14_jphh5"]
 

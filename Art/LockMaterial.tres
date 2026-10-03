@@ -1,0 +1,22 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dwqhyr70n7fu5"]
+
+[ext_resource type="Shader" uid="uid://b3vtxe57a3vwu" path="res://Art/Lock.gdshader" id="1_q5mvv"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_x6s3o"]
+noise_type = 3
+frequency = 0.014
+fractal_octaves = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_k4xb1"]
+noise = SubResource("FastNoiseLite_x6s3o")
+
+[resource]
+shader = ExtResource("1_q5mvv")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_k4xb1")
+shader_parameter/rings = 7.0
+shader_parameter/bands = 17
+shader_parameter/band_expansion = 3
+shader_parameter/band_shortness = 4.0
+shader_parameter/turn_speed = 0.1
+shader_parameter/jitter_speed = 2.0
+shader_parameter/paint_color = Color(0, 0, 0, 1)
